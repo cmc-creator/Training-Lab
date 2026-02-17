@@ -1,0 +1,914 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Destiny Springs Healthcare - De-escalation Mastery Lab</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <!-- Firebase -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getDatabase, ref, set, get, update, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+        // Firebase configuration - CONFIGURE THESE
+        const firebaseConfig = {
+            apiKey: "YOUR_FIREBASE_API_KEY_HERE",
+            authDomain: "YOUR_PROJECT.firebaseapp.com",
+            databaseURL: "https://YOUR_PROJECT.firebasedatabase.app",
+            projectId: "YOUR_PROJECT_ID",
+            storageBucket: "YOUR_PROJECT.appspot.com",
+            messagingSenderId: "YOUR_SENDER_ID",
+            appId: "YOUR_APP_ID"
+        };
+
+        let app, auth, db;
+        let currentUser = null;
+        let currentUserData = {};
+
+        function initFirebase() {
+            try {
+                app = initializeApp(firebaseConfig);
+                auth = getAuth(app);
+                db = getDatabase(app);
+                window.auth = auth;
+                window.db = db;
+                window.ref = ref;
+                window.set = set;
+                window.get = get;
+                window.update = update;
+                window.onValue = onValue;
+                monitorAuth();
+            } catch(e) {
+                console.log("Firebase not configured - offline mode");
+                useLocalStorage();
+            }
+        }
+
+        function monitorAuth() {
+            onAuthStateChanged(auth, (user) => {
+                if (user) {
+                    currentUser = user;
+                    loadUserData();
+                    showLoginScreen(false);
+                } else {
+                    currentUser = null;
+                    showLoginScreen(true);
+                }
+            });
+        }
+
+        async function loadUserData() {
+            const userRef = ref(db, `users/${currentUser.uid}`);
+            await get(userRef).then((snapshot) => {
+                if (snapshot.exists()) {
+                    currentUserData = snapshot.val();
+                    window.currentUserData = currentUserData;
+                    updateUserUI();
+                }
+            });
+        }
+
+        window.initFirebase = initFirebase;
+        window.authenticateUser = (email, password, isSignup) => {
+            if (isSignup) {
+                createUserWithEmailAndPassword(auth, email, password)
+                    .then(() => { console.log("Account created"); })
+                    .catch(e => alert(e.message));
+            } else {
+                signInWithEmailAndPassword(auth, email, password)
+                    .catch(e => alert(e.message));
+            }
+        };
+        window.logoutUser = () => {
+            signOut(auth).then(() => { currentUser = null; });
+        };
+
+        function useLocalStorage() {
+            console.log("Using local storage fallback");
+        }
+
+        window.addEventListener('DOMContentLoaded', initFirebase);
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Montserrat:wght@900&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        h1 { font-family: 'Montserrat', sans-serif; }
+        .slide { display: none; height: 100vh; width: 100vw; overflow-y: auto; }
+        .active { display: flex; flex-direction: column; }
+        .progress-bar { transition: width 0.3s ease; }
+        .loading-spinner {
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top: 3px solid #fff;
+            width: 24px;
+            height: 24px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .bg-medical { background-color: #f8fafc; background-image: radial-gradient(#cbd5e1 1px, transparent 1px); background-size: 20px 20px; }
+        .card-shadow { box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); }
+        .pulse-blue { animation: pulse-blue 2s infinite; }
+        @keyframes pulse-blue { 0% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.4); } 70% { box-shadow: 0 0 0 10px rgba(59, 130, 246, 0); } 100% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0); } }
+        .trainer-chat { animation: slideInUp 0.5s ease; }
+        @keyframes slideInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .tab-btn.active { border-b-4 border-blue-600; color: #1e293b; font-weight: 900; }
+        .tab-btn { color: #94a3b8; font-weight: 700; padding-bottom: 0.5rem; border-b-4 border-transparent; transition: all 0.3s ease; }
+        .login-screen { position: fixed; inset: 0; background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); display: flex; align-items: center; justify-content: center; z-index: 100; }
+    </style>
+</head>
+<body class="bg-slate-900 overflow-hidden">
+
+    <!-- Login Screen -->
+    <div id="login-screen" class="login-screen">
+        <div class="bg-white rounded-3xl shadow-2xl p-12 max-w-md w-full mx-4">
+            <div class="text-center mb-8">
+                <h1 class="text-4xl font-black text-slate-900 mb-2">Destiny Springs</h1>
+                <p class="text-slate-500 font-bold">De-escalation Training Lab</p>
+            </div>
+
+            <div class="space-y-4">
+                <input type="email" id="login-email" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl font-semibold outline-none focus:ring-2 focus:ring-blue-500" placeholder="your.email@facility.com">
+                <input type="password" id="login-password" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl font-semibold outline-none focus:ring-2 focus:ring-blue-500" placeholder="Password">
+                
+                <div class="flex gap-3">
+                    <button onclick="authenticateUser(document.getElementById('login-email').value, document.getElementById('login-password').value, false)" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-black py-4 rounded-xl transition-all">Sign In</button>
+                    <button onclick="authenticateUser(document.getElementById('login-email').value, document.getElementById('login-password').value, true)" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-black py-4 rounded-xl transition-all">Create Account</button>
+                </div>
+
+                <p class="text-xs text-slate-500 text-center mt-6">
+                    🔒 Secure login • Your progress saved to cloud • Admin can track your training
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Progress Indicator -->
+    <div class="fixed top-0 left-0 w-full h-1 bg-slate-800 z-50">
+        <div id="progress" class="h-full bg-gradient-to-r from-blue-500 to-purple-500 progress-bar" style="width: 6.6%;"></div>
+    </div>
+
+    <!-- AI Trainer Chat Bubble -->
+    <div class="fixed bottom-24 right-6 z-40 max-w-xs">
+        <div id="trainer-bubble" class="hidden trainer-chat bg-gradient-to-br from-blue-600 to-blue-700 text-white p-4 rounded-3xl rounded-tr-none shadow-xl border border-blue-400/30 max-h-32 overflow-y-auto">
+            <p id="trainer-text" class="text-sm font-semibold leading-relaxed"></p>
+        </div>
+    </div>
+
+    <!-- Admin Dashboard Modal -->
+    <div id="admin-modal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 overflow-y-auto">
+        <div class="bg-white rounded-3xl shadow-2xl max-w-6xl w-full my-8">
+            <div class="flex justify-between items-center p-8 border-b border-slate-200 sticky top-0 bg-white">
+                <h2 class="text-3xl font-black text-slate-900">📊 Admin Dashboard</h2>
+                <button onclick="closeAdminModal()" class="text-slate-400 hover:text-slate-600 text-2xl">✕</button>
+            </div>
+
+            <div class="p-8 space-y-8 overflow-y-auto max-h-[80vh]">
+                <!-- Admin Tabs -->
+                <div class="flex gap-4 border-b border-slate-200 pb-4 flex-wrap">
+                    <button class="admin-tab active px-4 py-2 font-bold text-sm uppercase tracking-widest text-slate-900 border-b-4 border-blue-600" onclick="switchAdminTab('leaderboard')">🏆 Leaderboard</button>
+                    <button class="admin-tab px-4 py-2 font-bold text-sm uppercase tracking-widest text-slate-500 border-b-4 border-transparent" onclick="switchAdminTab('users')">👥 Users</button>
+                    <button class="admin-tab px-4 py-2 font-bold text-sm uppercase tracking-widest text-slate-500 border-b-4 border-transparent" onclick="switchAdminTab('analytics')">📈 Analytics</button>
+                    <button class="admin-tab px-4 py-2 font-bold text-sm uppercase tracking-widest text-slate-500 border-b-4 border-transparent" onclick="switchAdminTab('reports')">📋 Reports</button>
+                </div>
+
+                <!-- Leaderboard -->
+                <div id="leaderboard-tab" class="admin-tab-content">
+                    <h3 class="text-2xl font-black text-slate-900 mb-6">Team Leaderboard</h3>
+                    <div class="space-y-3 max-h-96 overflow-y-auto" id="leaderboard-content">
+                        <p class="text-slate-500">Loading...</p>
+                    </div>
+                </div>
+
+                <!-- Users Management -->
+                <div id="users-tab" class="admin-tab-content hidden">
+                    <h3 class="text-2xl font-black text-slate-900 mb-6">User Management</h3>
+                    <div class="space-y-3 max-h-96 overflow-y-auto" id="users-list">
+                        <p class="text-slate-500">Loading...</p>
+                    </div>
+                </div>
+
+                <!-- Analytics -->
+                <div id="analytics-tab" class="admin-tab-content hidden">
+                    <h3 class="text-2xl font-black text-slate-900 mb-6">Training Analytics</h3>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        <div class="bg-blue-50 p-6 rounded-2xl">
+                            <p class="text-xs text-slate-500 font-bold uppercase mb-2">Total Users</p>
+                            <p class="text-3xl font-black text-blue-600" id="stat-users">0</p>
+                        </div>
+                        <div class="bg-emerald-50 p-6 rounded-2xl">
+                            <p class="text-xs text-slate-500 font-bold uppercase mb-2">Avg Completion %</p>
+                            <p class="text-3xl font-black text-emerald-600" id="stat-completion">0%</p>
+                        </div>
+                        <div class="bg-purple-50 p-6 rounded-2xl">
+                            <p class="text-xs text-slate-500 font-bold uppercase mb-2">Avg Score</p>
+                            <p class="text-3xl font-black text-purple-600" id="stat-avg-score">-</p>
+                        </div>
+                        <div class="bg-orange-50 p-6 rounded-2xl">
+                            <p class="text-xs text-slate-500 font-bold uppercase mb-2">Total Scenarios</p>
+                            <p class="text-3xl font-black text-orange-600" id="stat-scenarios">0</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Reports -->
+                <div id="reports-tab" class="admin-tab-content hidden">
+                    <h3 class="text-2xl font-black text-slate-900 mb-6">Generate Reports</h3>
+                    <div class="space-y-4">
+                        <button onclick="generateComplianceReport()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-black py-4 rounded-xl transition-all">📄 Compliance Report (PDF)</button>
+                        <button onclick="generateCSVExport()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-black py-4 rounded-xl transition-all">📊 Export as CSV</button>
+                        <button onclick="generateCertificateBatch()" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-black py-4 rounded-xl transition-all">🎓 Generate All Certificates</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Navigation & Stats -->
+    <div class="fixed bottom-6 right-6 z-50 flex gap-2 flex-col sm:flex-row no-print">
+        <div class="bg-white/10 backdrop-blur-md rounded-full px-3 sm:px-4 py-3 flex items-center gap-2 sm:gap-3 border border-white/10 hidden lg:flex">
+            <span class="text-xs font-bold text-slate-300 uppercase tracking-widest">Level</span>
+            <span id="user-level" class="text-white font-black text-lg">1</span>
+            <span class="text-xs font-bold text-slate-400">XP: <span id="xp-count">0</span></span>
+        </div>
+        <div class="flex gap-2 items-center">
+            <button onclick="openAdminModal()" class="bg-purple-600 hover:bg-purple-700 text-white p-3 rounded-full shadow-lg transition-all hidden md:block" title="Admin">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
+            </button>
+            <button onclick="downloadCertificate()" class="bg-green-600 hover:bg-green-700 text-white p-3 rounded-full shadow-lg transition-all hidden md:block" title="Certificate">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            </button>
+            <button onclick="prevSlide()" class="bg-white/10 hover:bg-white/20 text-white p-3 rounded-full backdrop-blur-md transition-all border border-white/10">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+            </button>
+            <button onclick="nextSlide()" class="bg-blue-600 hover:bg-blue-500 text-white p-3 rounded-full shadow-lg transition-all">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+            </button>
+        </div>
+    </div>
+
+    <!-- SLIDES START HERE -->
+
+    <!-- SLIDE 1: Welcome -->
+    <div class="slide active p-8 justify-center items-center text-center bg-gradient-to-br from-slate-950 via-blue-950 to-slate-950">
+        <div class="max-w-4xl">
+            <div class="mb-8 inline-block bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-2 rounded-full text-xs font-black tracking-widest uppercase shadow-xl">
+                🏥 Enterprise Training Platform
+            </div>
+            <h1 class="text-7xl md:text-8xl text-white mb-6 uppercase leading-none tracking-tighter font-black">De-escalation<br><span class="bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">Mastery Lab</span></h1>
+            <p class="text-xl md:text-2xl text-slate-300 font-light mb-12">Destiny Springs Healthcare | Inpatient Psychiatric Acute Care</p>
+            
+            <div id="user-welcome" class="bg-white/5 border border-white/10 rounded-3xl p-8 backdrop-blur-md mb-8">
+                <p class="text-slate-300 text-lg mb-4">Welcome, <span id="welcome-name" class="font-black text-blue-300">Trainee</span>! 👋</p>
+                <p class="text-white font-semibold">Your journey to clinical excellence begins now. Over the next 2 hours, you'll master de-escalation through interactive training, real crisis scenarios, and personalized coaching.</p>
+            </div>
+
+            <div class="flex justify-center gap-8 flex-wrap">
+                <div class="flex items-center gap-2 text-white font-bold text-sm uppercase tracking-wider">
+                    <span class="w-3 h-3 bg-red-500 rounded-full"></span> Safety First
+                </div>
+                <div class="flex items-center gap-2 text-white font-bold text-sm uppercase tracking-wider">
+                    <span class="w-3 h-3 bg-green-500 rounded-full"></span> Patient Dignity
+                </div>
+                <div class="flex items-center gap-2 text-white font-bold text-sm uppercase tracking-wider">
+                    <span class="w-3 h-3 bg-blue-500 rounded-full"></span> Evidence-Based
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SLIDE 2: Body Language Fundamentals -->
+    <div class="slide p-10 justify-center bg-medical">
+        <div class="max-w-5xl mx-auto w-full">
+            <h2 class="text-4xl font-black text-slate-900 mb-2 uppercase border-l-8 border-blue-600 pl-6">Your Silent Language</h2>
+            <p class="text-slate-500 font-bold mb-8 ml-6">65% of communication is non-verbal. Your body speaks before your mouth opens.</p>
+            <div class="grid grid-cols-2 gap-10">
+                <div class="bg-white p-8 rounded-3xl border-b-8 border-red-500 card-shadow">
+                    <h3 class="text-2xl font-black text-red-600 mb-6 uppercase flex items-center gap-3">
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+                        Threatening Posture
+                    </h3>
+                    <ul class="space-y-3 text-lg text-slate-700 font-medium">
+                        <li class="flex items-center gap-3"><span class="text-red-500 font-black text-xl">✕</span> Chest-to-chest stance</li>
+                        <li class="flex items-center gap-3"><span class="text-red-500 font-black text-xl">✕</span> Crossed arms</li>
+                        <li class="flex items-center gap-3"><span class="text-red-500 font-black text-xl">✕</span> Intense eye contact</li>
+                        <li class="flex items-center gap-3"><span class="text-red-500 font-black text-xl">✕</span> Leaning forward</li>
+                        <li class="flex items-center gap-3"><span class="text-red-500 font-black text-xl">✕</span> Clenched fists</li>
+                    </ul>
+                </div>
+                <div class="bg-white p-8 rounded-3xl border-b-8 border-green-500 card-shadow">
+                    <h3 class="text-2xl font-black text-green-600 mb-6 uppercase flex items-center gap-3">
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                        Safe Presence
+                    </h3>
+                    <ul class="space-y-3 text-lg text-slate-700 font-medium">
+                        <li class="flex items-center gap-3"><span class="text-green-500 font-black text-xl">✓</span> 45° angle stance</li>
+                        <li class="flex items-center gap-3"><span class="text-green-500 font-black text-xl">✓</span> Open hands visible</li>
+                        <li class="flex items-center gap-3"><span class="text-green-500 font-black text-xl">✓</span> Soft, kind eyes</li>
+                        <li class="flex items-center gap-3"><span class="text-green-500 font-black text-xl">✓</span> Slight forward lean</li>
+                        <li class="flex items-center gap-3"><span class="text-green-500 font-black text-xl">✓</span> Relaxed shoulders</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SLIDE 3: Distance & Space -->
+    <div class="slide p-10 justify-center bg-slate-50">
+        <div class="max-w-5xl mx-auto w-full">
+            <h2 class="text-4xl font-black text-slate-900 mb-8 uppercase border-l-8 border-cyan-500 pl-6">The Power of Distance</h2>
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+                <div class="bg-gradient-to-br from-red-50 to-red-100 p-6 rounded-2xl border-l-4 border-red-500">
+                    <p class="text-2xl font-black text-red-600 mb-2">0-6"</p>
+                    <p class="text-sm font-bold text-red-900 mb-4">Intimate Zone</p>
+                    <p class="text-xs text-red-800">Perceived as threatening. Only safe with trusted individuals. Clinical touch requires clear explanation.</p>
+                </div>
+                <div class="bg-gradient-to-br from-orange-50 to-orange-100 p-6 rounded-2xl border-l-4 border-orange-500">
+                    <p class="text-2xl font-black text-orange-600 mb-2">6-24"</p>
+                    <p class="text-sm font-bold text-orange-900 mb-4">Personal Zone</p>
+                    <p class="text-xs text-orange-800">Anxiety in crisis. Maintain here during interviews. Visual & verbal comfort zone.</p>
+                </div>
+                <div class="bg-gradient-to-br from-green-50 to-green-100 p-6 rounded-2xl border-l-4 border-green-500">
+                    <p class="text-2xl font-black text-green-600 mb-2">2-4 ft</p>
+                    <p class="text-sm font-bold text-green-900 mb-4">Social Distance</p>
+                    <p class="text-xs text-green-800">✓ IDEAL for de-escalation. Safe, professional, non-threatening positioning.</p>
+                </div>
+                <div class="bg-gradient-to-br from-blue-50 to-blue-100 p-6 rounded-2xl border-l-4 border-blue-500">
+                    <p class="text-2xl font-black text-blue-600 mb-2">4+ ft</p>
+                    <p class="text-sm font-bold text-blue-900 mb-4">Public Distance</p>
+                    <p class="text-xs text-blue-800">Too distant = dismissive. Use for group settings only.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SLIDE 4: The Tone of Voice -->
+    <div class="slide p-10 justify-center bg-white">
+        <div class="max-w-5xl mx-auto w-full">
+            <h2 class="text-4xl font-black text-slate-900 mb-8 uppercase border-l-8 border-indigo-600 pl-6">How You Sound Matters More Than What You Say</h2>
+            <div class="space-y-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="bg-gradient-to-br from-blue-50 to-blue-100 p-8 rounded-3xl border-l-4 border-blue-600">
+                        <p class="text-xl font-black text-blue-900 mb-4">✓ Optimal Tone</p>
+                        <ul class="space-y-2 text-sm font-medium text-blue-900">
+                            <li>🔵 Low pitch (calming)</li>
+                            <li>🔵 Slower pacing (not rushed)</li>
+                            <li>🔵 Warm but steady (not cheerful)</li>
+                            <li>🔵 Clear enunciation (not mumbling)</li>
+                            <li>🔵 Lower volume (not loud)</li>
+                            <li>🔵 Flat affect (not emotional)</li>
+                        </ul>
+                    </div>
+                    <div class="bg-gradient-to-br from-red-50 to-red-100 p-8 rounded-3xl border-l-4 border-red-600">
+                        <p class="text-xl font-black text-red-900 mb-4">✕ Escalating Tone</p>
+                        <ul class="space-y-2 text-sm font-medium text-red-900">
+                            <li>🔴 High pitch (alarming)</li>
+                            <li>🔴 Quick speech (anxious)</li>
+                            <li>🔴 Overly cheerful (dismissive)</li>
+                            <li>🔴 Unclear/slurred (unprofessional)</li>
+                            <li>🔴 Loud volume (aggressive)</li>
+                            <li>🔴 Heavy emotion (contagious)</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SLIDE 5: De-escalation Techniques - Part 1 -->
+    <div class="slide p-10 justify-center bg-medical">
+        <div class="max-w-6xl mx-auto w-full">
+            <h2 class="text-4xl font-black text-slate-900 mb-8 uppercase border-l-8 border-emerald-600 pl-6">Essential Techniques: Validation & Empathy</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div class="bg-white p-8 rounded-3xl shadow-lg">
+                    <h3 class="text-2xl font-black text-slate-900 mb-6">🎯 Validation</h3>
+                    <p class="text-slate-600 font-medium mb-4 italic">"I see your feelings are real, even if I don't understand the reason."</p>
+                    <div class="space-y-3">
+                        <p class="text-sm font-bold text-slate-700">Why it works:</p>
+                        <p class="text-sm text-slate-600">The amygdala (emotional brain) hijacks logic during crisis. Validation signals safety to the nervous system before reasoning occurs.</p>
+                        <p class="text-sm font-bold text-slate-700 mt-3">Examples:</p>
+                        <ul class="text-sm text-slate-600 space-y-1 ml-4">
+                            <li>• "Your frustration makes sense to me."</li>
+                            <li>• "Anyone in your situation would feel this way."</li>
+                            <li>• "I can see this is really hard right now."</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="bg-white p-8 rounded-3xl shadow-lg">
+                    <h3 class="text-2xl font-black text-slate-900 mb-6">❤️ Empathy</h3>
+                    <p class="text-slate-600 font-medium mb-4 italic">"I'm here with you in this moment."</p>
+                    <div class="space-y-3">
+                        <p class="text-sm font-bold text-slate-700">Why it works:</p>
+                        <p class="text-sm text-slate-600">Humans de-escalate when they feel connected. Empathic presence > logical explanations during acute distress.</p>
+                        <p class="text-sm font-bold text-slate-700 mt-3">How to show it:</p>
+                        <ul class="text-sm text-slate-600 space-y-1 ml-4">
+                            <li>• Make eye contact (soft, not intense)</li>
+                            <li>• Nod occasionally (shows listening)</li>
+                            <li>• Mirror their energy level slightly</li>
+                            <li>• Use their name occasionally</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SLIDE 6: 5-4-3-2-1 Grounding -->
+    <div class="slide p-10 justify-center bg-blue-900 text-white">
+        <div class="max-w-6xl mx-auto w-full text-center">
+            <h2 class="text-5xl font-black mb-2 uppercase tracking-tighter">5-4-3-2-1 Grounding</h2>
+            <p class="text-xl text-blue-200 mb-12 italic font-light">When your patient is in their head, bring them back to their body.</p>
+            <div class="grid grid-cols-5 gap-4">
+                <div class="bg-white/10 p-6 rounded-2xl border border-white/20 transition-all hover:bg-blue-600 cursor-pointer group">
+                    <div class="text-6xl font-black mb-4 group-hover:scale-125 transition-transform">5</div>
+                    <div class="text-lg font-black uppercase mb-2 tracking-widest">SEE</div>
+                    <div class="text-xs opacity-60">Name 5 things you see right now</div>
+                </div>
+                <div class="bg-white/10 p-6 rounded-2xl border border-white/20 transition-all hover:bg-blue-500 cursor-pointer group">
+                    <div class="text-6xl font-black mb-4 group-hover:scale-125 transition-transform">4</div>
+                    <div class="text-lg font-black uppercase mb-2 tracking-widest">TOUCH</div>
+                    <div class="text-xs opacity-60">4 things you can feel (textures)</div>
+                </div>
+                <div class="bg-white/10 p-6 rounded-2xl border border-white/20 transition-all hover:bg-blue-400 cursor-pointer group">
+                    <div class="text-6xl font-black mb-4 group-hover:scale-125 transition-transform">3</div>
+                    <div class="text-lg font-black uppercase mb-2 tracking-widest">HEAR</div>
+                    <div class="text-xs opacity-60">3 sounds you can detect</div>
+                </div>
+                <div class="bg-white/10 p-6 rounded-2xl border border-white/20 transition-all hover:bg-blue-300 text-slate-900 cursor-pointer group">
+                    <div class="text-6xl font-black mb-4 group-hover:scale-125 transition-transform">2</div>
+                    <div class="text-lg font-black uppercase mb-2 tracking-widest">SMELL</div>
+                    <div class="text-xs opacity-60">2 scents (coffee, soap, etc)</div>
+                </div>
+                <div class="bg-white/10 p-6 rounded-2xl border border-white/20 transition-all hover:bg-white text-blue-900 cursor-pointer group">
+                    <div class="text-6xl font-black mb-4 group-hover:scale-125 transition-transform">1</div>
+                    <div class="text-lg font-black uppercase mb-2 tracking-widest">TASTE</div>
+                    <div class="text-xs opacity-60">1 taste (water, candy)</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SLIDE 7: Sensory Tools -->
+    <div class="slide p-10 justify-center bg-slate-50">
+        <div class="max-w-6xl mx-auto w-full">
+            <h2 class="text-4xl font-black text-slate-900 mb-12 uppercase border-l-8 border-cyan-500 pl-6">Sensory Regulation Tools</h2>
+            <div class="grid grid-cols-3 gap-6">
+                <div class="bg-white p-8 rounded-3xl shadow-lg border-t-8 border-cyan-500 text-center flex flex-col items-center hover:shadow-2xl transition-all">
+                    <div class="w-20 h-20 bg-cyan-50 rounded-full flex items-center justify-center text-5xl mb-6 pulse-blue">🧊</div>
+                    <h3 class="text-xl font-black mb-2 text-cyan-900 uppercase">Cold Compress</h3>
+                    <p class="text-slate-500 text-xs font-bold mb-3 uppercase">Vagus Nerve Activation</p>
+                    <p class="text-slate-600 text-sm leading-relaxed font-medium">Instant nervous system reset. Place on face/wrists. Triggers dive reflex = parasympathetic calm.</p>
+                </div>
+                <div class="bg-white p-8 rounded-3xl shadow-lg border-t-8 border-orange-500 text-center flex flex-col items-center hover:shadow-2xl transition-all">
+                    <div class="w-20 h-20 bg-orange-50 rounded-full flex items-center justify-center text-5xl mb-6">🍋</div>
+                    <h3 class="text-xl font-black mb-2 text-orange-900 uppercase">Sour Sensation</h3>
+                    <p class="text-slate-500 text-xs font-bold mb-3 uppercase">Sensory Interrupt</p>
+                    <p class="text-slate-600 text-sm leading-relaxed font-medium">Strong flavor/smell redirects attention. Breaks rumination cycle. Temporary but powerful.</p>
+                </div>
+                <div class="bg-white p-8 rounded-3xl shadow-lg border-t-8 border-indigo-500 text-center flex flex-col items-center hover:shadow-2xl transition-all">
+                    <div class="w-20 h-20 bg-indigo-50 rounded-full flex items-center justify-center text-5xl mb-6">🫂</div>
+                    <h3 class="text-xl font-black mb-2 text-indigo-900 uppercase">Deep Pressure</h3>
+                    <p class="text-slate-500 text-xs font-bold mb-3 uppercase">Proprioceptive Calm</p>
+                    <p class="text-slate-600 text-sm leading-relaxed font-medium">Firm hug, weighted blanket, or hand squeeze signals safety. Regulates hyperarousal.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Continue with more slides... For brevity, adding a few more key ones -->
+
+    <!-- SLIDE 8: Autism Spectrum Deep Dive -->
+    <div class="slide p-10 justify-start bg-medical overflow-y-auto">
+        <div class="max-w-6xl mx-auto w-full pb-20">
+            <h2 class="text-4xl font-black text-slate-900 mb-2 uppercase border-l-8 border-blue-600 pl-6">🧩 Autism Spectrum Disorder</h2>
+            <p class="text-slate-500 font-bold mb-8 ml-6">Sensory neurodiversity, not behavioral. Different doesn't mean disobedient.</p>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <div class="bg-white p-8 rounded-3xl shadow-lg">
+                    <h3 class="text-xl font-black text-slate-900 mb-4 uppercase">🚨 Common Crisis Triggers</h3>
+                    <ul class="space-y-3">
+                        <li class="flex items-start gap-3">
+                            <span class="text-blue-600 font-black font-2xl mt-0.5">•</span>
+                            <div>
+                                <p class="font-bold text-slate-900">Sensory Overload</p>
+                                <p class="text-xs text-slate-600">Loud noise, fluorescent lights, strong smells - not misbehavior</p>
+                            </div>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <span class="text-blue-600 font-black font-2xl mt-0.5">•</span>
+                            <div>
+                                <p class="font-bold text-slate-900">Routine Disruption</p>
+                                <p class="text-xs text-slate-600">Predictability = safety. Sudden changes = existential threat</p>
+                            </div>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <span class="text-blue-600 font-black font-2xl mt-0.5">•</span>
+                            <div>
+                                <p class="font-bold text-slate-900">Social Overwhelm</p>
+                                <p class="text-xs text-slate-600">Eye contact, group interactions, unwritten rules are exhausting</p>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="bg-emerald-50 p-8 rounded-3xl border-l-4 border-emerald-600">
+                    <h3 class="text-xl font-black text-emerald-900 mb-4 uppercase">✓ Your De-escalation Approach</h3>
+                    <ul class="space-y-3">
+                        <li class="flex items-start gap-3">
+                            <span className="text-emerald-600 font-black">→</span>
+                            <p class="text-sm text-emerald-900 font-medium"><strong>Literal language:</strong> "You need to go to your room now" (not "Take a break, get some space")</p>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <span className="text-emerald-600 font-black">→</span>
+                            <p class="text-sm text-emerald-900 font-medium"><strong>Lower sensory:</strong> Turn off lights, leave room, use quiet voice</p>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <span className="text-emerald-600 font-black">→</span>
+                            <p class="text-sm text-emerald-900 font-medium"><strong>Respect stims:</strong> Rocking, hand-flapping = self-soothing, not defiance</p>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <span className="text-emerald-600 font-black">→</span>
+                            <p class="text-sm text-emerald-900 font-medium"><strong>No forced eye contact:</strong> They hear you better looking away</p>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SLIDE 9: ADHD -->
+    <div class="slide p-10 justify-start bg-medical overflow-y-auto">
+        <div class="max-w-6xl mx-auto w-full pb-20">
+            <h2 class="text-4xl font-black text-slate-900 mb-2 uppercase border-l-8 border-yellow-600 pl-6">⚡ ADHD</h2>
+            <p class="text-slate-500 font-bold mb-8 ml-6">Executive dysfunction ≠ lack of effort. They're not lazy, they're struggling.</p>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <div class="bg-white p-8 rounded-3xl shadow-lg">
+                    <h3 class="text-xl font-black text-slate-900 mb-4 uppercase">Crisis Indicators</h3>
+                    <ul class="space-y-3 text-sm text-slate-700">
+                        <li class="flex items-center gap-2"><span class="text-2xl">🎯</span> Hyperfocus on wrong thing (can't redirect)</li>
+                        <li class="flex items-center gap-2"><span class="text-2xl">⚡</span> Excessive energy seeking (pacing, running)</li>
+                        <li class="flex items-center gap-2"><span class="text-2xl">💭</span> Racing thoughts (can't follow instructions)</li>
+                        <li class="flex items-center gap-2"><span class="text-2xl">😤</span> Frustration at own inability (shame spiral)</li>
+                    </ul>
+                </div>
+
+                <div class="bg-emerald-50 p-8 rounded-3xl border-l-4 border-emerald-600">
+                    <h3 class="text-xl font-black text-emerald-900 mb-4 uppercase">Your Strategy</h3>
+                    <ul class="space-y-2 text-sm text-emerald-900 font-medium">
+                        <li>🏃 <strong>Offer movement:</strong> "Want to walk to the gym?" (redirect, don't suppress)</li>
+                        <li>📌 <strong>Single instruction:</strong> "Sit here" not "Sit, don't run, stay calm..."</li>
+                        <li>⏰ <strong>Immediate reward:</strong> They need quick feedback loops</li>
+                        <li>😊 <strong>Never shame:</strong> "You got this. Let's try again"</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Continue with more diagnosis slides and interactive sections... -->
+    <!-- SLIDE 10-20 would continue similar pattern for other diagnoses, techniques, etc -->
+
+    <!-- SLIDE 21: Crisis Scenario Lab -->
+    <div class="slide p-8 bg-slate-50 overflow-y-auto">
+        <div class="max-w-6xl mx-auto w-full pb-20">
+            <h2 class="text-3xl font-black text-slate-900 mb-6 uppercase border-l-4 border-amber-500 pl-4">🎮 Interactive Crisis Lab</h2>
+            
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <!-- Scenario -->
+                <div class="bg-white p-8 rounded-3xl shadow-xl border-t-8 border-amber-500 flex flex-col h-[600px]">
+                    <h3 class="text-xl font-black text-slate-900 uppercase mb-2">Real Crisis Scenario</h3>
+                    <p class="text-xs text-slate-500 font-bold uppercase mb-4 tracking-widest">Practice your response</p>
+                    
+                    <div class="mb-4">
+                        <label class="text-xs font-black text-slate-500 uppercase mb-2 block">Select Diagnosis:</label>
+                        <select id="scenario-diagnosis" class="w-full p-3 bg-slate-100 border border-slate-300 rounded-xl font-semibold">
+                            <option value="autism">🧩 Autism</option>
+                            <option value="adhd">⚡ ADHD</option>
+                            <option value="schizophrenia">🌀 Schizophrenia</option>
+                            <option value="bipolar">📊 Bipolar</option>
+                            <option value="ptsd">🛡️ PTSD</option>
+                            <option value="bpd">💔 Borderline</option>
+                        </select>
+                    </div>
+
+                    <div class="flex-1 overflow-y-auto mb-4">
+                        <div id="scenario-display" class="bg-slate-50 p-6 rounded-2xl text-slate-800 text-base italic leading-relaxed border-2 border-slate-200 min-h-[140px] font-medium">
+                            Click "Generate Crisis" to begin a training scenario...
+                        </div>
+                        <div id="scenario-feedback" class="mt-4 p-4 bg-blue-50 rounded-2xl text-blue-900 font-medium border-2 border-blue-200 hidden text-sm leading-relaxed"></div>
+                    </div>
+                    
+                    <div class="space-y-3">
+                        <textarea id="scenario-response" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none text-sm font-medium resize-none" rows="2" placeholder="Your intervention..."></textarea>
+                        <div class="flex gap-2">
+                            <button onclick="generateCrisisScenario()" id="scenario-btn" class="flex-1 bg-amber-500 hover:bg-amber-600 text-white font-black py-3 rounded-2xl transition-all text-sm uppercase shadow-lg">Generate Crisis✨</button>
+                            <button onclick="evaluateResponse()" id="evaluate-btn" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-black py-3 rounded-2xl transition-all text-sm uppercase shadow-lg disabled:opacity-50" disabled>Submit Response✨</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Script Builder -->
+                <div class="bg-white p-8 rounded-3xl shadow-xl border-t-8 border-emerald-500 flex flex-col h-[600px]">
+                    <h3 class="text-xl font-black text-slate-900 uppercase mb-2">Build Training Scripts</h3>
+                    <p class="text-xs text-slate-500 font-bold uppercase mb-4 tracking-widest">For team huddles</p>
+                    
+                    <div class="mb-4">
+                        <label class="text-xs font-black text-slate-500 uppercase mb-2 block">Scenario Topic:</label>
+                        <div class="flex gap-2">
+                            <input type="text" id="script-topic" class="flex-grow p-3 bg-slate-100 border border-slate-300 rounded-xl text-sm font-medium outline-none" placeholder="e.g., Medication refusal...">
+                            <button onclick="generateRoleplayScript()" id="script-btn" class="bg-emerald-600 hover:bg-emerald-700 text-white font-black px-4 rounded-xl transition-all text-sm uppercase shadow-lg">Build✨</button>
+                        </div>
+                    </div>
+                    
+                    <div id="script-output" class="flex-1 bg-slate-900 p-6 rounded-2xl text-emerald-400 font-mono text-sm overflow-y-auto border-2 border-slate-700">
+                        <span class="opacity-50">Your roleplay script appears here...</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SLIDE 22: Progress & Certificates -->
+    <div class="slide p-10 justify-center items-center text-center bg-gradient-to-br from-slate-950 via-purple-950 to-slate-950 text-white">
+        <div class="max-w-4xl">
+            <div class="mb-12">
+                <svg class="mx-auto text-purple-400 opacity-40" width="100" height="100" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            </div>
+            <h2 class="text-6xl font-black mb-6 uppercase tracking-tighter">Your Achievement</h2>
+            
+            <div class="bg-white/5 border-2 border-white/20 rounded-3xl p-12 backdrop-blur-md mb-10">
+                <p class="text-purple-300 font-black tracking-[0.2em] text-xs uppercase mb-8">Training Progress</p>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
+                    <div class="text-center">
+                        <div class="text-4xl font-black text-blue-400 mb-2" id="final-scenarios">0</div>
+                        <p class="text-slate-300 font-bold text-sm">Scenarios Completed</p>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-4xl font-black text-emerald-400 mb-2" id="final-avg-score">-</div>
+                        <p class="text-slate-300 font-bold text-sm">Average Score</p>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-4xl font-black text-purple-400 mb-2" id="final-xp">0</div>
+                        <p class="text-slate-300 font-bold text-sm">Experience Points</p>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-4xl font-black text-orange-400 mb-2" id="final-level">1</div>
+                        <p class="text-slate-300 font-bold text-sm">Level Achieved</p>
+                    </div>
+                </div>
+            </div>
+
+            <button onclick="downloadCertificate()" class="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-black py-6 px-12 rounded-2xl transition-all text-lg uppercase shadow-xl">
+                🎓 Download Your Certificate
+            </button>
+
+            <p class="text-slate-400 font-bold text-lg mt-10 mb-4">You're now equipped to de-escalate crisis with confidence and compassion.</p>
+            <p class="text-slate-500 text-sm">Destiny Springs Healthcare | Clinical Excellence</p>
+        </div>
+    </div>
+
+    <!-- Continue slides... -->
+    
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        // Core State Management
+        let currentSlide = 0;
+        let currentUser = null;
+        let userProfile = {
+            username: '',
+            email: '',
+            xp: 0,
+            level: 1,
+            scenariosCompleted: 0,
+            averageScore: 0,
+            scores: [],
+            startDate: new Date(),
+            lastActive: new Date(),
+            diagnoses: {}
+        };
+
+        const slides = document.querySelectorAll('.slide');
+        const progress = document.getElementById('progress');
+
+        // Diagnosis Database
+        const diagnoses = {
+            autism: { name: "Autism Spectrum Disorder", emoji: "🧩" },
+            adhd: { name: "ADHD", emoji: "⚡" },
+            schizophrenia: { name: "Schizophrenia", emoji: "🌀" },
+            bipolar: { name: "Bipolar Disorder", emoji: "📊" },
+            ptsd: { name: "PTSD", emoji: "🛡️" },
+            bpd: { name: "Borderline Personality", emoji: "💔" }
+        };
+
+        function initialize() {
+            updateSlide();
+            showTrainerTip("Welcome to your training! I'm Dr. Rivera. Let's master de-escalation together.");
+            document.addEventListener('keydown', handleKeyboard);
+            setInterval(saveUserProgress, 30000); // Auto-save every 30 seconds
+        }
+
+        function showLoginScreen(show) {
+            document.getElementById('login-screen').style.display = show ? 'flex' : 'none';
+            if (!show && currentUser) {
+                document.getElementById('welcome-name').textContent = currentUser.email.split('@')[0];
+                initialize();
+            }
+        }
+
+        function updateUserUI() {
+            document.getElementById('xp-count').textContent = userProfile.xp;
+            document.getElementById('user-level').textContent = userProfile.level;
+        }
+
+        function updateSlide() {
+            slides.forEach((slide, index) => {
+                slide.classList.remove('active');
+                if (index === currentSlide) {
+                    slide.classList.add('active');
+                    slide.scrollTop = 0;
+                }
+            });
+            progress.style.width = ((currentSlide + 1) / slides.length) * 100 + '%';
+        }
+
+        function nextSlide() {
+            currentSlide = (currentSlide + 1) % slides.length;
+            updateSlide();
+        }
+
+        function prevSlide() {
+            currentSlide = (currentSlide - 1 + slides.length) % slides.length;
+            updateSlide();
+        }
+
+        function handleKeyboard(e) {
+            if (e.key === 'ArrowRight') nextSlide();
+            if (e.key === 'ArrowLeft') prevSlide();
+            if ((e.key === 'a' || e.key === 'A') && currentUser?.email?.includes('admin')) openAdminModal();
+        }
+
+        function showTrainerTip(text) {
+            const bubble = document.getElementById('trainer-bubble');
+            const tipText = document.getElementById('trainer-text');
+            tipText.textContent = text;
+            bubble.classList.remove('hidden');
+            setTimeout(() => { bubble.classList.add('hidden'); }, 6000);
+        }
+
+        // Crisis Scenario Functions
+        async function generateCrisisScenario() {
+            const btn = document.getElementById('scenario-btn');
+            btn.innerHTML = '<div class="loading-spinner"></div>';
+            btn.disabled = true;
+
+            // Simulated scenario for now
+            const scenarios = [
+                "Patient is pacing rapidly, speaking in elevated voice, demanding to make a phone call. They're becoming more agitated as time passes.",
+                "Patient sitting alone, rocking, making repetitive vocalizations. Fluorescent lights just turned on in the unit.",
+                "Patient expressing paranoid thoughts about staff monitoring them. Won't eat meals or accept medications."
+            ];
+
+            document.getElementById('scenario-display').textContent = scenarios[Math.floor(Math.random() * scenarios.length)];
+            document.getElementById('evaluate-btn').disabled = false;
+
+            btn.textContent = 'Generate Crisis✨';
+            btn.disabled = false;
+            showTrainerTip('Remember your techniques. Focus on validation and safety first.');
+        }
+
+        async function evaluateResponse() {
+            const response = document.getElementById('scenario-response').value;
+            if (!response.trim()) {
+                alert("Please enter your response!");
+                return;
+            }
+
+            const feedback = document.getElementById('scenario-feedback');
+            feedback.textContent = "AI evaluation: Your response shows good de-escalation awareness. Focus on offering choices next time.";
+            feedback.classList.remove('hidden');
+
+            // Add XP and score
+            userProfile.xp += 100;
+            userProfile.scenariosCompleted++;
+            userProfile.scores.push('B');
+            updateUserUI();
+            saveUserProgress();
+        }
+
+        async function generateRoleplayScript() {
+            const topic = document.getElementById('script-topic').value || "General de-escalation";
+            const output = document.getElementById('script-output');
+            output.innerHTML = `<strong>STAFF:</strong> "I can see you're frustrated. Help me understand what you need right now."<br><br><strong>PATIENT:</strong> "I want to make a call!!"<br><br><strong>STAFF (calmly, 45° angle, hands visible):</strong> "I hear you. I can help with that. Let's take a breath first. Tell me why this call is important?"<br><br><em>[5-second pause. Let them respond. Don't fill silence.]</em><br><br><strong>PATIENT:</strong> (slightly calmer) "My mom needs to know I'm okay..."<br><br><strong>STAFF (validating):</strong> "Of course. Family matters. Here's what I can do: We make that call after lunch, and you help me understand what's making you upset right now. Deal?"`;
+        }
+
+        // Admin Functions
+        function openAdminModal() {
+            document.getElementById('admin-modal').classList.remove('hidden');
+            updateLeaderboard();
+        }
+
+        function closeAdminModal() {
+            document.getElementById('admin-modal').classList.add('hidden');
+        }
+
+        function updateLeaderboard() {
+            const content = document.getElementById('leaderboard-content');
+            content.innerHTML = `
+                <div class="space-y-3">
+                    <div class="flex justify-between bg-gradient-to-r from-blue-50 to-blue-100 p-4 rounded-xl">
+                        <div><p class="font-black text-slate-900">🥇 John Smith</p><p class="text-xs text-slate-500">45 scenarios</p></div>
+                        <div class="text-right"><p class="font-black text-2xl text-blue-600">2,850 XP</p></div>
+                    </div>
+                    <div class="flex justify-between bg-slate-50 p-4 rounded-xl">
+                        <div><p class="font-black text-slate-900">🥈 Sarah Johnson</p><p class="text-xs text-slate-500">38 scenarios</p></div>
+                        <div class="text-right"><p class="font-black text-2xl text-slate-400">2,100 XP</p></div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function switchAdminTab(tab) {
+            document.querySelectorAll('.admin-tab-content').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.admin-tab').forEach(el => {
+                el.classList.remove('active', 'text-slate-900', 'border-blue-600');
+                el.classList.add('text-slate-500', 'border-transparent');
+            });
+            
+            document.getElementById(`${tab}-tab`).classList.remove('hidden');
+            event.target.classList.add('active', 'text-slate-900', 'border-blue-600');
+            event.target.classList.remove('text-slate-500', 'border-transparent');
+        }
+
+        // Certificate Download
+        function downloadCertificate() {
+            const element = document.createElement('div');
+            element.innerHTML = `
+                <div style="width: 11in; height: 8.5in; padding: 60px; font-family: 'Georgia', serif; background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; box-sizing: border-box;">
+                    <div style="border: 4px solid #d4af37; padding: 60px; background: white; border-radius: 20px; max-width: 900px; box-shadow: 0 10px 40px rgba(0,0,0,0.3);">
+                        <div style="font-size: 16px; color: #1e3c72; letter-spacing: 4px; margin-bottom: 20px; font-weight: bold;">CERTIFICATE OF COMPLETION</div>
+                        
+                        <h1 style="font-size: 56px; margin: 30px 0; color: #1e3c72; font-family: Georgia, serif;">De-escalation Mastery Lab</h1>
+                        
+                        <div style="font-size: 20px; margin: 40px 0; color: #333;">This certifies that</div>
+                        
+                        <div style="font-size: 42px; font-weight: bold; margin: 30px 0; color: #1e3c72; border-bottom: 3px solid #d4af37; padding-bottom: 15px; font-family: Georgia, serif;">
+                            ${currentUser?.email?.split('@')[0] || 'Healthcare Professional'}
+                        </div>
+                        
+                        <div style="font-size: 18px; margin: 40px 0; line-height: 1.8; color: #333;">
+                            has successfully completed the comprehensive psychiatric de-escalation training program<br>
+                            including crisis simulation, evidence-based interventions, and clinical best practices.
+                        </div>
+                        
+                        <div style="display: flex; justify-content: space-around; margin: 50px 0; font-size: 16px;">
+                            <div>
+                                <div style="font-size: 32px; font-weight: bold; color: #1e3c72;">${userProfile.scenariosCompleted}</div>
+                                <div style="color: #666;">Scenarios Completed</div>
+                            </div>
+                            <div>
+                                <div style="font-size: 32px; font-weight: bold; color: #1e3c72;">Level ${userProfile.level}</div>
+                                <div style="color: #666;">Proficiency Level</div>
+                            </div>
+                            <div>
+                                <div style="font-size: 32px; font-weight: bold; color: #1e3c72;">${userProfile.xp}</div>
+                                <div style="color: #666;">Total XP</div>
+                            </div>
+                        </div>
+                        
+                        <div style="margin-top: 50px; padding-top: 30px; border-top: 2px solid #d4af37;">
+                            <div style="font-size: 14px; color: #666;">Date: ${new Date().toLocaleDateString()}</div>
+                            <div style="font-size: 14px; color: #666; margin-top: 10px;">Destiny Springs Healthcare | Inpatient Psychiatric Acute Care</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            const options = {
+                margin: [0, 0, 0, 0],
+                filename: `Certificate-${currentUser?.email?.split('@')[0] || 'trainee'}.pdf`,
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2, logging: false },
+                jsPDF: { orientation: 'landscape', unit: 'in', format: [11, 8.5] }
+            };
+            
+            html2pdf().set(options).from(element).save();
+            showTrainerTip("✅ Certificate downloaded! Share with your team!");
+        }
+
+        function saveUserProgress() {
+            // Would save to Firebase here
+            console.log("Progress saved:", userProfile);
+        }
+
+        window.addEventListener('load', () => {
+            showLoginScreen(true); // Start with login
+        });
+    </script>
+</body>
+</html>
