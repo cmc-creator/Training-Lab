@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Destiny Springs Healthcare - Clinical De-escalation Trainer</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Montserrat:wght@900&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Inter', sans-serif; }
@@ -100,19 +101,101 @@
         </div>
     </div>
 
+    <!-- Admin Dashboard Modal -->
+    <div id="admin-modal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 overflow-y-auto">
+        <div class="bg-white rounded-3xl shadow-2xl max-w-4xl w-full my-8">
+            <div class="flex justify-between items-center p-8 border-b border-slate-200">
+                <h2 class="text-3xl font-black text-slate-900">📊 Admin Dashboard</h2>
+                <button onclick="closeAdminModal()" class="text-slate-400 hover:text-slate-600 text-2xl">✕</button>
+            </div>
+
+            <div class="p-8 space-y-8 overflow-y-auto max-h-[80vh]">
+                <!-- Tabs -->
+                <div class="flex gap-4 border-b border-slate-200 pb-4">
+                    <button class="admin-tab active px-4 py-2 font-bold text-sm uppercase tracking-widest text-slate-900 border-b-4 border-blue-600" onclick="switchAdminTab('leaderboard')">🏆 Leaderboard</button>
+                    <button class="admin-tab px-4 py-2 font-bold text-sm uppercase tracking-widest text-slate-500 border-b-4 border-transparent" onclick="switchAdminTab('data')">💾 Data Manager</button>
+                    <button class="admin-tab px-4 py-2 font-bold text-sm uppercase tracking-widest text-slate-500 border-b-4 border-transparent" onclick="switchAdminTab('settings')">⚙️ Settings</button>
+                </div>
+
+                <!-- Leaderboard Tab -->
+                <div id="leaderboard-tab" class="admin-tab-content">
+                    <h3 class="text-2xl font-black text-slate-900 mb-6">Team Performance Leaderboard</h3>
+                    <div class="space-y-3 max-h-96 overflow-y-auto">
+                        <div id="leaderboard-content">
+                            <p class="text-slate-500 font-medium">No training data yet. Start training to see results!</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Data Manager Tab -->
+                <div id="data-tab" class="admin-tab-content hidden">
+                    <h3 class="text-2xl font-black text-slate-900 mb-6">Data Management</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="bg-blue-50 p-6 rounded-2xl border border-blue-200">
+                            <h4 class="font-black text-slate-900 mb-4">📥 Import Team Data</h4>
+                            <p class="text-sm text-slate-600 mb-4">Load JSON file from previous export</p>
+                            <input type="file" id="data-import" accept=".json" class="block w-full mb-4 text-sm">
+                            <button onclick="importData()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-black py-3 rounded-xl transition-all">Import Data</button>
+                        </div>
+                        <div class="bg-emerald-50 p-6 rounded-2xl border border-emerald-200">
+                            <h4 class="font-black text-slate-900 mb-4">📤 Export Team Data</h4>
+                            <p class="text-sm text-slate-600 mb-4">Download all staff progress as JSON</p>
+                            <button onclick="exportData()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-black py-3 rounded-xl transition-all">Export as JSON</button>
+                        </div>
+                    </div>
+                    <div class="mt-6 bg-red-50 p-6 rounded-2xl border border-red-200">
+                        <h4 class="font-black text-red-900 mb-2">⚠️ Clear All Data</h4>
+                        <p class="text-sm text-red-700 mb-4">This cannot be undone. Make sure you have a backup!</p>
+                        <button onclick="clearAllData()" class="w-full bg-red-600 hover:bg-red-700 text-white font-black py-3 rounded-xl transition-all">Clear Local Data</button>
+                    </div>
+                </div>
+
+                <!-- Settings Tab -->
+                <div id="settings-tab" class="admin-tab-content hidden">
+                    <h3 class="text-2xl font-black text-slate-900 mb-6">Settings & Info</h3>
+                    <div class="space-y-6">
+                        <div class="bg-slate-50 p-6 rounded-2xl border border-slate-200">
+                            <label class="text-sm font-black text-slate-500 uppercase mb-2 block">Training Facility Name</label>
+                            <input type="text" id="facility-name" class="w-full p-3 bg-white border border-slate-200 rounded-xl font-semibold" value="Destiny Springs Healthcare">
+                        </div>
+                        <div class="bg-slate-50 p-6 rounded-2xl border border-slate-200">
+                            <label class="text-sm font-black text-slate-500 uppercase mb-2 block">Trainer Name (Your Name)</label>
+                            <input type="text" id="trainer-name" class="w-full p-3 bg-white border border-slate-200 rounded-xl font-semibold" placeholder="Your name...">
+                        </div>
+                        <button onclick="saveCertificateSettings()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-black py-3 rounded-xl transition-all">Save Settings</button>
+                        <div class="mt-8 p-6 bg-blue-50 rounded-2xl border border-blue-200 text-sm text-slate-700 font-medium">
+                            <p class="font-black text-blue-900 mb-2">📊 Statistics</p>
+                            <p>Total Scenarios: <span id="stat-scenarios" class="font-black">0</span></p>
+                            <p>Total Trainees: <span id="stat-trainees" class="font-black">0</span></p>
+                            <p>Avg XP per Trainee: <span id="stat-avg-xp" class="font-black">0</span></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Navigation & Stats -->
-    <div class="fixed bottom-6 right-6 z-50 flex gap-3 no-print">
-        <div class="bg-white/10 backdrop-blur-md rounded-full px-4 py-3 flex items-center gap-3 border border-white/10 hidden lg:flex">
+    <div class="fixed bottom-6 right-6 z-50 flex gap-2 flex-col sm:flex-row no-print">
+        <div class="bg-white/10 backdrop-blur-md rounded-full px-3 sm:px-4 py-3 flex items-center gap-2 sm:gap-3 border border-white/10 hidden lg:flex">
             <span class="text-xs font-bold text-slate-300 uppercase tracking-widest">XP</span>
             <span id="xp-count" class="text-white font-black text-lg">0</span>
             <span class="text-xs font-bold text-slate-400">/500</span>
         </div>
-        <button onclick="prevSlide()" class="bg-white/10 hover:bg-white/20 text-white p-3 rounded-full backdrop-blur-md transition-all border border-white/10">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
-        </button>
-        <button onclick="nextSlide()" class="bg-blue-600 hover:bg-blue-500 text-white p-3 rounded-full shadow-lg transition-all">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
-        </button>
+        <div class="flex gap-2 items-center">
+            <button onclick="openAdminModal()" class="bg-purple-600 hover:bg-purple-700 text-white p-3 rounded-full shadow-lg transition-all hidden md:block" title="Admin Dashboard">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2v20M2 12h20"/></svg>
+            </button>
+            <button onclick="showDownloadMenu()" class="bg-green-600 hover:bg-green-700 text-white p-3 rounded-full shadow-lg transition-all hidden md:block" title="Download Certificate">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            </button>
+            <button onclick="prevSlide()" class="bg-white/10 hover:bg-white/20 text-white p-3 rounded-full backdrop-blur-md transition-all border border-white/10">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+            </button>
+            <button onclick="nextSlide()" class="bg-blue-600 hover:bg-blue-500 text-white p-3 rounded-full shadow-lg transition-all">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+            </button>
+        </div>
     </div>
 
     <!-- SLIDE 1: Welcome -->
@@ -476,17 +559,718 @@
     </div>
 
     <script>
-        // Global state
+        // ===== GLOBAL STATE & PERSISTENCE =====
         let apiKey = "";
         let currentSlide = 0;
         let xpCount = 0;
         let scenariosCompleted = 0;
         let scores = [];
+        let currentUserName = localStorage.getItem('userName') || `Trainee_${Date.now()}`;
+        let trainingData = {};
+        
         const slides = document.querySelectorAll('.slide');
         const progress = document.getElementById('progress');
 
         // Diagnosis database
         const diagnoses = {
+            autism: {
+                name: "Autism Spectrum Disorder",
+                emoji: "🧩",
+                triggers: "Sensory overload, sudden changes, social overwhelm, loud environments",
+                presentations: "Repetitive movements, intense focus on details, meltdowns (not tantrums), echolalia, avoidance behaviors",
+                deEscalation: [
+                    "Use clear, literal language. Avoid idioms and sarcasm.",
+                    "Offer sensory breaks or quiet spaces proactively.",
+                    "Respect their need for predictability—give warnings before changes.",
+                    "Don't force eye contact.",
+                    "Acknowledge special interests as connection points.",
+                    "Respect physical boundaries and personal space."
+                ],
+                avoidScenarios: [
+                    "Sudden transitions without warning",
+                    "Forced social interaction",
+                    "Unexpected touching or physical guidance"
+                ]
+            },
+            adhd: {
+                name: "ADHD (Attention-Deficit/Hyperactivity Disorder)",
+                emoji: "⚡",
+                triggers: "Inactivity, waiting, lack of stimulation, time pressure, rigid rules",
+                presentations: "Fidgeting, interruptions, hyperfocus on interesting tasks, difficulty with transitions, impulsive decisions, restlessness",
+                deEscalation: [
+                    "Offer movement breaks or physical activity.",
+                    "Use short, engaging explanations—capture attention quickly.",
+                    "Redirect energy rather than suppress it.",
+                    "Create accountability with specific timelines.",
+                    "Use positive reinforcement generously.",
+                    "Break instructions into single steps."
+                ],
+                avoidScenarios: [
+                    "Prolonged sitting or waiting",
+                    "Complex multi-step instructions",
+                    "Criticism without praise"
+                ]
+            },
+            schizophrenia: {
+                name: "Schizophrenia / Psychotic Disorders",
+                emoji: "🌀",
+                triggers: "Stress, perceived threats, confusion between internal/external stimuli, lack of routine",
+                presentations: "Paranoia, hallucinations, disorganized speech, withdrawal, inappropriate affect, bizarre behavior",
+                deEscalation: [
+                    "Don't challenge the delusion—validate their experience of distress.",
+                    "Speak calmly and simply. Avoid sudden movements.",
+                    "Help them ground in reality without confrontation: 'I don't see that, but I believe it's scary for you.'",
+                    "Remove perceived threats (other people, items) if safe.",
+                    "Maintain routine and consistency.",
+                    "Respect their space—they may fear contamination or proximity."
+                ],
+                avoidScenarios: [
+                    "Crowding or physical proximity",
+                    "Multiple staff members talking at once",
+                    "Arguing about what's 'real'"
+                ]
+            },
+            bipolar: {
+                name: "Bipolar Disorder",
+                emoji: "📊",
+                triggers: "Sleep disruption, activation (during mania), hopelessness (during depression), medication changes",
+                presentations: "Mania: rapid speech, grandiosity, poor judgment | Depression: low energy, guilt, suicidal ideation | Irritability across both states",
+                deEscalation: [
+                    "During manic: Avoid power struggles. Set calm, firm boundaries.",
+                    "During depression: Offer concrete hope and validate pain without enabling hopelessness.",
+                    "Monitor sleep closely—it's a leading indicator.",
+                    "Use humor carefully (they may misinterpret during mania).",
+                    "Celebrate small wins without triggering grandiosity.",
+                    "Be consistent and predictable."
+                ],
+                avoidScenarios: [
+                    "Overstimulation during mania (parties, excitement)",
+                    "Isolation during depression",
+                    "Inconsistent care or broken promises"
+                ]
+            },
+            ptsd: {
+                name: "PTSD (Post-Traumatic Stress Disorder)",
+                emoji: "🛡️",
+                triggers: "Reminders of trauma, loss of control, physical restraint, loud noises, unexpected touch",
+                presentations: "Hypervigilance, flashbacks, avoidance, emotional numbness, anger outbursts, dissociation, nightmares",
+                deEscalation: [
+                    "Announce yourself and your intentions clearly.",
+                    "Never approach from behind or use surprise.",
+                    "Always ask before touching. Respect 'no.'",
+                    "Offer control: 'Would you prefer to sit or stand?' 'Do you want me here or should I step back?'",
+                    "Grounding techniques work well: 5-4-3-2-1 method.",
+                    "Acknowledge their trauma without judgment."
+                ],
+                avoidScenarios: [
+                    "Physical restraint or physical control",
+                    "Isolation or locked doors (triggers captivity)",
+                    "Anything resembling the original trauma"
+                ]
+            },
+            depression: {
+                name: "Major Depressive Disorder",
+                emoji: "☁️",
+                triggers: "Hopelessness, isolation, lack of structure, anniversary of losses, medication side effects",
+                presentations: "Low energy, flat affect, suicidal ideation, difficulty with self-care, anhedonia, guilt, concentration issues",
+                deEscalation: [
+                    "Meet them where they are. Avoid toxic positivity.",
+                    "Offer gentle structure: activities, meal times, routines.",
+                    "Use behavioral activation: 'Can you sit up?' 'Want to take a short walk?'",
+                    "Validate that their pain is real, while offering hope.",
+                    "Monitor suicidal ideation closely—ask directly.",
+                    "Small acts of care matter (a blanket, a cup of tea)."
+                ],
+                avoidScenarios: [
+                    "Forcing positivity or minimizing their experience",
+                    "Leaving them isolated",
+                    "Dismissing suicidal thoughts as 'attention-seeking'"
+                ]
+            },
+            anxiety: {
+                name: "Anxiety Disorders",
+                emoji: "😰",
+                triggers: "Uncertainty, crowds, performance demands, control loss, physical sensations (racing heart)",
+                presentations: "Worry spirals, muscle tension, avoidance, panic attacks, catastrophizing, perfectionism, reassurance-seeking",
+                deEscalation: [
+                    "Provide clear, factual information to combat uncertainty.",
+                    "Offer coping tools immediately: breathing, grounding, distraction.",
+                    "Don't reassure endlessly—it reinforces the anxiety cycle.",
+                    "Normalize their anxiety: 'This is your body's protection response. It's okay.'",
+                    "Offer gentle exposure: 'Could you try this small step?'",
+                    "Control what you can—schedules, predictability, clear expectations."
+                ],
+                avoidScenarios: [
+                    "Vague or uncertain information",
+                    "Sudden surprises or schedule changes",
+                    "Dismissing their worries as 'irrational'"
+                ]
+            },
+            bpd: {
+                name: "Borderline Personality Disorder",
+                emoji: "💔",
+                triggers: "Perceived abandonment, rejection, feeling invalidated, lack of attention, boundary changes",
+                presentations: "Intense mood swings, splitting (all-good/all-bad thinking), self-harm, isolation, rage, relationship instability, identity disturbance",
+                deEscalation: [
+                    "Validate their emotions first: 'Your pain is real.' (without validating the action)",
+                    "Be consistent and transparent. Hiding things triggers betrayal fears.",
+                    "Set clear, compassionate boundaries. Don't rescue.",
+                    "Avoid splitting: stay the 'good guy' by being honest about limitations.",
+                    "Use their interests and relationships as stabilizers.",
+                    "De-escalate self-harm discussions by acknowledging urges without judgment: 'I see you're in pain. Let's find another way.'"
+                ],
+                avoidScenarios: [
+                    "Sudden unavailability or perceived abandonment",
+                    "Dismissing emotions as 'manipulation'",
+                    "Inconsistent or deceptive communication"
+                ]
+            }
+        };
+
+        // ===== INITIALIZATION =====
+        function initialize() {
+            loadFromLocalStorage();
+            updateSlide();
+            showDiagnosis('autism');
+            updateXPDisplay();
+            // Shortcut: Press 'A' for admin
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'a' || e.key === 'A') openAdminModal();
+            });
+        }
+
+        // ===== LOCAL STORAGE FUNCTIONS =====
+        function saveToLocalStorage() {
+            trainingData = {
+                userName: currentUserName,
+                xp: xpCount,
+                scenariosCompleted: scenariosCompleted,
+                scores: scores,
+                timestamp: new Date().toISOString(),
+                completedSlides: currentSlide
+            };
+            localStorage.setItem(`trainee_${currentUserName}`, JSON.stringify(trainingData));
+            localStorage.setItem('lastTrainee', currentUserName);
+        }
+
+        function loadFromLocalStorage() {
+            const saved = localStorage.getItem(`trainee_${currentUserName}`);
+            if (saved) {
+                trainingData = JSON.parse(saved);
+                xpCount = trainingData.xp || 0;
+                scenariosCompleted = trainingData.scenariosCompleted || 0;
+                scores = trainingData.scores || [];
+                updateXPDisplay();
+            }
+        }
+
+        // ===== ADMIN FUNCTIONS =====
+        function openAdminModal() {
+            document.getElementById('admin-modal').classList.remove('hidden');
+            updateLeaderboard();
+            updateStatistics();
+        }
+
+        function closeAdminModal() {
+            document.getElementById('admin-modal').classList.add('hidden');
+        }
+
+        function switchAdminTab(tab) {
+            document.querySelectorAll('.admin-tab-content').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.admin-tab').forEach(el => {
+                el.classList.remove('active', 'text-slate-900', 'border-blue-600');
+                el.classList.add('text-slate-500', 'border-transparent');
+            });
+            
+            document.getElementById(`${tab}-tab`).classList.remove('hidden');
+            event.target.classList.add('active', 'text-slate-900', 'border-blue-600');
+            event.target.classList.remove('text-slate-500', 'border-transparent');
+        }
+
+        function updateLeaderboard() {
+            const leaderboard = [];
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                if (key.startsWith('trainee_')) {
+                    const data = JSON.parse(localStorage.getItem(key));
+                    leaderboard.push({
+                        name: data.userName,
+                        xp: data.xp,
+                        scenarios: data.scenariosCompleted,
+                        avgScore: getAverageLetterScore(data.scores)
+                    });
+                }
+            }
+            
+            leaderboard.sort((a, b) => b.xp - a.xp);
+            
+            let html = '';
+            leaderboard.forEach((trainee, idx) => {
+                const medal = idx === 0 ? '🥇' : idx === 1 ? '🥈' : idx === 2 ? '🥉' : '  ';
+                html += `
+                    <div class="flex items-center justify-between bg-slate-50 p-4 rounded-xl border border-slate-200">
+                        <div class="flex items-center gap-4">
+                            <span class="text-2xl">${medal}</span>
+                            <div>
+                                <p class="font-black text-slate-900">${trainee.name}</p>
+                                <p class="text-xs text-slate-500">${trainee.scenarios} scenarios | Avg: ${trainee.avgScore}</p>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <p class="font-black text-2xl text-blue-600">${trainee.xp}</p>
+                            <p class="text-xs text-slate-500">XP</p>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            document.getElementById('leaderboard-content').innerHTML = html || '<p class="text-slate-500">No training data yet.</p>';
+        }
+
+        function updateStatistics() {
+            let totalScenarios = 0;
+            let totalTrainees = 0;
+            let totalXP = 0;
+
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                if (key.startsWith('trainee_')) {
+                    totalTrainees++;
+                    const data = JSON.parse(localStorage.getItem(key));
+                    totalScenarios += data.scenariosCompleted || 0;
+                    totalXP += data.xp || 0;
+                }
+            }
+
+            document.getElementById('stat-scenarios').innerText = totalScenarios;
+            document.getElementById('stat-trainees').innerText = totalTrainees;
+            document.getElementById('stat-avg-xp').innerText = totalTrainees > 0 ? Math.round(totalXP / totalTrainees) : 0;
+        }
+
+        // ===== DATA IMPORT/EXPORT =====
+        function exportData() {
+            const allData = {};
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                if (key.startsWith('trainee_')) {
+                    allData[key] = JSON.parse(localStorage.getItem(key));
+                }
+            }
+            
+            const dataStr = JSON.stringify(allData, null, 2);
+            const dataBlob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(dataBlob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `training-lab-export-${new Date().toISOString().split('T')[0]}.json`;
+            link.click();
+            
+            showTrainerTip("✅ Data exported! Keep this file safe.");
+        }
+
+        function importData() {
+            const file = document.getElementById('data-import').files[0];
+            if (!file) {
+                alert('Please select a file');
+                return;
+            }
+            
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    const imported = JSON.parse(e.target.result);
+                    for (const [key, data] of Object.entries(imported)) {
+                        localStorage.setItem(key, JSON.stringify(data));
+                    }
+                    updateLeaderboard();
+                    updateStatistics();
+                    showTrainerTip("✅ Data imported successfully!");
+                } catch (error) {
+                    alert('Error importing data: ' + error.message);
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        function clearAllData() {
+            if (confirm('⚠️ This will permanently delete ALL training data. Are you sure?')) {
+                for (let i = localStorage.length - 1; i >= 0; i--) {
+                    const key = localStorage.key(i);
+                    if (key.startsWith('trainee_')) {
+                        localStorage.removeItem(key);
+                    }
+                }
+                alert('All data cleared.');
+                updateLeaderboard();
+            }
+        }
+
+        // ===== CERTIFICATE FUNCTIONS =====
+        function showDownloadMenu() {
+            if (confirm('🎓 Generate your training certificate?\n\nThis certifies that you have completed the De-escalation Training Lab.')) {
+                generateCertificate();
+            }
+        }
+
+        function generateCertificate() {
+            const element = document.createElement('div');
+            element.innerHTML = `
+                <div style="width: 11in; height: 8.5in; padding: 40px; font-family: 'Georgia', serif; background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); color: #1a1a1a; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; box-sizing: border-box;">
+                    <div style="border: 4px solid #d4af37; padding: 40px; background: white; border-radius: 20px; max-width: 900px;">
+                        <div style="font-size: 14px; color: #666; letter-spacing: 3px; margin-bottom: 20px;">CERTIFICATE OF COMPLETION</div>
+                        
+                        <h1 style="font-size: 48px; margin: 20px 0; color: #1e3c72;">De-escalation Training Lab</h1>
+                        
+                        <div style="font-size: 18px; margin: 30px 0; color: #333;">This certifies that</div>
+                        
+                        <div style="font-size: 36px; font-weight: bold; margin: 20px 0; color: #1e3c72; border-bottom: 2px solid #d4af37; padding-bottom: 10px;">
+                            ${currentUserName}
+                        </div>
+                        
+                        <div style="font-size: 16px; margin: 30px 0; line-height: 1.6; color: #333;">
+                            has successfully completed the comprehensive psychiatric de-escalation training program<br>
+                            including crisis simulation, diagnosis-specific interventions, and clinical best practices.
+                        </div>
+                        
+                        <div style="display: flex; justify-content: space-around; margin: 40px 0; font-size: 14px;">
+                            <div>
+                                <div style="font-size: 24px; font-weight: bold; color: #1e3c72;">${scenariosCompleted}</div>
+                                <div style="color: #666;">Scenarios Completed</div>
+                            </div>
+                            <div>
+                                <div style="font-size: 24px; font-weight: bold; color: #1e3c72;">${getAverageLetterScore(scores)}</div>
+                                <div style="color: #666;">Average Score</div>
+                            </div>
+                            <div>
+                                <div style="font-size: 24px; font-weight: bold; color: #1e3c72;">${xpCount}</div>
+                                <div style="color: #666;">Experience Points</div>
+                            </div>
+                        </div>
+                        
+                        <div style="margin-top: 40px; padding-top: 20px; border-top: 2px solid #d4af37;">
+                            <div style="font-size: 12px; color: #666;">Date of Completion: ${new Date().toLocaleDateString()}</div>
+                            <div style="font-size: 12px; color: #666; margin-top: 10px;">Destiny Springs Healthcare | Inpatient Psychiatric Acute Care</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            const options = {
+                margin: [0, 0, 0, 0],
+                filename: `Certificate-${currentUserName}-${new Date().toISOString().split('T')[0]}.pdf`,
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2, logging: false },
+                jsPDF: { orientation: 'landscape', unit: 'in', format: [11, 8.5] }
+            };
+            
+            html2pdf().set(options).from(element).save();
+            showTrainerTip("✅ Certificate generated! Check your downloads.");
+        }
+
+        // ===== UI FUNCTIONS =====
+        function updateKey(val) {
+            apiKey = val;
+        }
+
+        function updateSlide() {
+            slides.forEach((slide, index) => {
+                slide.classList.remove('active');
+                if (index === currentSlide) slide.classList.add('active');
+            });
+            progress.style.width = ((currentSlide + 1) / slides.length) * 100 + '%';
+            saveToLocalStorage();
+            
+            const tips = {
+                0: "Welcome! I'm Dr. Rivera. We'll work through real scenarios today. Ready to become a de-escalation expert?",
+                1: "Your body language is your most powerful tool. Master this, and you've already won half the battle.",
+                6: "Every patient is different. Understanding their diagnosis helps us meet them where they are.",
+                7: "This is where you practice under pressure. Don't worry about being perfect—strive to be better.",
+                10: "Remember: you've learned something today that will change how you care for patients in crisis."
+            };
+            
+            if (tips[currentSlide]) {
+                showTrainerTip(tips[currentSlide]);
+            }
+        }
+
+        function nextSlide() {
+            currentSlide = (currentSlide + 1) % slides.length;
+            updateSlide();
+        }
+
+        function prevSlide() {
+            currentSlide = (currentSlide - 1 + slides.length) % slides.length;
+            updateSlide();
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight') nextSlide();
+            if (e.key === 'ArrowLeft') prevSlide();
+        });
+
+        function showTrainerTip(text) {
+            const bubble = document.getElementById('trainer-bubble');
+            const tipText = document.getElementById('trainer-text');
+            tipText.innerText = text;
+            bubble.classList.remove('hidden');
+            setTimeout(() => {
+                bubble.classList.add('hidden');
+            }, 6000);
+        }
+
+        function showDiagnosis(key) {
+            const diagnosis = diagnoses[key];
+            const content = document.getElementById('diagnosis-content');
+            
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+
+            content.innerHTML = `
+                <div class="bg-white p-8 rounded-3xl shadow-xl border-t-8 border-blue-600">
+                    <h3 class="text-2xl font-black text-slate-900 mb-4">${diagnosis.emoji} ${diagnosis.name}</h3>
+                    <div class="space-y-4">
+                        <div>
+                            <p class="text-xs font-black text-slate-500 uppercase mb-2">Common Triggers</p>
+                            <p class="text-sm text-slate-700 font-medium">${diagnosis.triggers}</p>
+                        </div>
+                        <div>
+                            <p class="text-xs font-black text-slate-500 uppercase mb-2">How It Shows Up</p>
+                            <p class="text-sm text-slate-700 font-medium">${diagnosis.presentations}</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-white p-8 rounded-3xl shadow-xl border-t-8 border-emerald-600 lg:col-span-2">
+                    <h3 class="text-2xl font-black text-slate-900 mb-4">✓ Your De-escalation Playbook</h3>
+                    <div class="space-y-3">
+                        ${diagnosis.deEscalation.map(tip => `
+                            <div class="flex gap-3 items-start">
+                                <span class="text-emerald-600 font-black text-lg mt-0.5">→</span>
+                                <p class="text-sm text-slate-700 font-medium">${tip}</p>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+                <div class="bg-red-50 p-8 rounded-3xl shadow-xl border-t-8 border-red-600">
+                    <h3 class="text-2xl font-black text-red-900 mb-4">✕ Avoid These</h3>
+                    <div class="space-y-2">
+                        ${diagnosis.avoidScenarios.map(avoid => `
+                            <div class="flex gap-2 items-start">
+                                <span class="text-red-600 font-black">•</span>
+                                <p class="text-sm text-red-800 font-medium">${avoid}</p>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+        }
+
+        // ===== AI INTEGRATION =====
+        async function callGemini(prompt, systemInstruction = "") {
+            const activeKey = apiKey || "";
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${activeKey}`;
+            
+            const payload = {
+                contents: [{ parts: [{ text: prompt }] }],
+                systemInstruction: { parts: [{ text: systemInstruction }] }
+            };
+
+            let delay = 1000;
+            for (let i = 0; i < 5; i++) {
+                try {
+                    const response = await fetch(url, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                    if (!response.ok) {
+                        if (response.status === 400 && !activeKey) throw new Error("API Key Missing");
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    const data = await response.json();
+                    return data.candidates?.[0]?.content?.parts?.[0]?.text || "No response.";
+                } catch (error) {
+                    if (i === 4 || error.message === "API Key Missing") throw error;
+                    await new Promise(resolve => setTimeout(resolve, delay));
+                    delay *= 2;
+                }
+            }
+        }
+
+        async function generateScenario() {
+            const btn = document.getElementById('scenario-btn');
+            const display = document.getElementById('scenario-display');
+            const submitBtn = document.getElementById('submit-btn');
+            const feedback = document.getElementById('ai-feedback');
+            const diagnosis = document.getElementById('diagnosis-select').value;
+            const diagnosisName = diagnoses[diagnosis].name;
+            
+            btn.innerHTML = '<div class="loading-spinner"></div>';
+            btn.disabled = true;
+            feedback.classList.add('hidden');
+            
+            const system = `You are a psychiatric clinical trainer for Destiny Springs Healthcare creating training scenarios.
+Generate a realistic 2-3 sentence behavioral health crisis scenario featuring a patient with ${diagnosisName} showing significant agitation on an inpatient unit.
+Include specific behaviors, speech patterns, or triggers relevant to their diagnosis.
+Avoid graphic violence. Focus on realistic behavioral health presentations.
+Keep it brief so the trainee can respond quickly.`;
+            
+            const prompt = "Generate a new training scenario.";
+            
+            try {
+                const result = await callGemini(prompt, system);
+                display.innerText = result;
+                display.classList.remove('border-red-500');
+                display.classList.add('border-blue-200');
+                submitBtn.disabled = false;
+                showTrainerTip(`You're facing a patient with ${diagnosisName}. Remember their triggers and use your toolkit.`);
+            } catch (err) {
+                display.innerText = "⚠️ API Error. Paste your Gemini API key in the field at the top.";
+                display.classList.add('border-red-500');
+            } finally {
+                btn.innerText = "New Crisis✨";
+                btn.disabled = false;
+            }
+        }
+
+        async function submitResponse() {
+            const btn = document.getElementById('submit-btn');
+            const responseText = document.getElementById('staff-response').value;
+            const scenarioText = document.getElementById('scenario-display').innerText;
+            const diagnosis = document.getElementById('diagnosis-select').value;
+            const diagnosisName = diagnoses[diagnosis].name;
+            const feedback = document.getElementById('ai-feedback');
+            
+            if (!responseText.trim()) {
+                alert("Write a response first!");
+                return;
+            }
+            
+            btn.innerHTML = '<div class="loading-spinner"></div>';
+            btn.disabled = true;
+
+            const system = `You are Dr. Rivera, a clinical de-escalation coach at Destiny Springs Healthcare.
+Evaluate this staff response to a behavioral health crisis with a ${diagnosisName} patient.
+Score A-F based on: 1) De-escalation effectiveness, 2) Diagnosis-awareness, 3) Safety, 4) Validation, 5) Clarity.
+Format your response as: SCORE: [A/B/C/D/F] | FEEDBACK: [2-3 sentence critique] | BETTER OPTION: [1 alternative response]
+Be encouraging but honest. Focus on learning.`;
+            
+            const prompt = `Crisis Scenario: ${scenarioText}\n\nStaff Response: "${responseText}"\n\nEvaluate this response:`;
+
+            try {
+                const result = await callGemini(prompt, system);
+                feedback.innerText = result;
+                feedback.classList.remove('hidden');
+                
+                const scoreMatch = result.match(/SCORE:\s*([A-F])/);
+                if (scoreMatch) {
+                    const score = scoreMatch[1];
+                    addScore(score);
+                    scenariosCompleted++;
+                    addXP(getXPForScore(score));
+                    showTrainerTip(`Great effort! ${score === 'A' ? 'Excellent!' : score === 'B' ? 'Really good!' : 'Keep practicing. You\'re getting better.'}`);
+                    saveToLocalStorage();
+                }
+            } catch (err) {
+                feedback.innerText = "⚠️ Analysis error. Check your API key.";
+                feedback.classList.remove('hidden');
+            } finally {
+                btn.innerText = "Submit✨";
+                btn.disabled = false;
+            }
+        }
+
+        async function generateScript() {
+            const btn = document.getElementById('script-btn');
+            const topic = document.getElementById('script-topic').value || "Medication refusal";
+            const output = document.getElementById('script-output');
+
+            btn.innerHTML = '<div class="loading-spinner"></div>';
+            btn.disabled = true;
+
+            const system = `You are a clinical trainer writing roleplay scripts for psychiatric staff training.
+Write a 1-2 minute realistic roleplay script between a staff member and a patient in a psychiatric unit.
+Include: Patient dialogue, Staff dialogue, and [Directions] for body language.
+Demonstrate: The Choice Method, the Wait 5 Rule, and de-escalation principles.
+Be realistic and practical—something they can do in a 5-minute huddle practice.`;
+            
+            const prompt = `Create a training script for this scenario: ${topic}`;
+
+            try {
+                const result = await callGemini(prompt, system);
+                output.innerHTML = result.replace(/\n/g, '<br>').replace(/\[([^\]]+)\]/g, '[<em>$1</em>]');
+                addXP(50);
+                saveToLocalStorage();
+            } catch (err) {
+                output.innerText = "⚠️ Script generation failed. Verify your API key.";
+            } finally {
+                btn.innerText = "Build✨";
+                btn.disabled = false;
+            }
+        }
+
+        async function getDebrief() {
+            const btn = document.getElementById('debrief-btn');
+            const input = document.getElementById('debrief-input').value;
+            const output = document.getElementById('debrief-output');
+
+            if (!input.trim()) {
+                alert("Describe an incident first!");
+                return;
+            }
+            
+            btn.innerHTML = '<div class="loading-spinner"></div>';
+            btn.disabled = true;
+
+            const system = `You are Dr. Rivera, clinical supervisor at Destiny Springs Healthcare.
+Review this real incident and provide structured clinical feedback.
+Format: WHAT WENT WELL | MISSED OPPORTUNITIES | NEXT TIME TRY | COMPETENCY LEVEL
+Be supportive and growth-focused. This is about learning, not judgment.`;
+            
+            const prompt = `Incident Debrief:\n${input}`;
+
+            try {
+                const result = await callGemini(prompt, system);
+                output.innerText = result;
+                addXP(100);
+                showTrainerTip("Debriefs are where real learning happens. Use this feedback.");
+                saveToLocalStorage();
+            } catch (err) {
+                output.innerText = "⚠️ Debrief error. Verify your API key.";
+            } finally {
+                btn.innerText = "Get Clinical Feedback✨";
+                btn.disabled = false;
+            }
+        }
+
+        // ===== SCORING/XP =====
+        function addXP(amount) {
+            xpCount += amount;
+            updateXPDisplay();
+        }
+
+        function addScore(letter) {
+            scores.push(letter);
+        }
+
+        function getXPForScore(score) {
+            const xpMap = { 'A': 250, 'B': 175, 'C': 100, 'D': 50, 'F': 25 };
+            return xpMap[score] || 0;
+        }
+
+        function getAverageLetterScore(scoreArray) {
+            if (scoreArray.length === 0) return '-';
+            const scoreValues = { 'A': 4, 'B': 3, 'C': 2, 'D': 1, 'F': 0 };
+            const avg = scoreArray.reduce((sum, s) => sum + scoreValues[s], 0) / scoreArray.length;
+            return ['F', 'D', 'C', 'B', 'A'][Math.round(avg)] || '-';
+        }
+
+        function updateXPDisplay() {
+            document.getElementById('xp-count').innerText = xpCount;
+        }
+
+        // ===== INITIALIZATION ON LOAD =====
+        window.addEventListener('load', initialize);
+    </script>
             autism: {
                 name: "Autism Spectrum Disorder",
                 emoji: "🧩",
