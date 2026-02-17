@@ -1,0 +1,963 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Destiny Springs Healthcare - Clinical De-escalation Trainer</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Montserrat:wght@900&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        h1 { font-family: 'Montserrat', sans-serif; }
+        .slide { display: none; height: 100vh; width: 100vw; overflow-y: auto; }
+        .active { display: flex; flex-direction: column; }
+        .progress-bar { transition: width 0.3s ease; }
+        .loading-spinner {
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top: 3px solid #fff;
+            width: 24px;
+            height: 24px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        
+        .bg-medical { background-color: #f8fafc; background-image: radial-gradient(#cbd5e1 1px, transparent 1px); background-size: 20px 20px; }
+        .card-shadow { box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); }
+        .pulse-blue { animation: pulse-blue 2s infinite; }
+        @keyframes pulse-blue { 0% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.4); } 70% { box-shadow: 0 0 0 10px rgba(59, 130, 246, 0); } 100% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0); } }
+        
+        .trainer-chat {
+            animation: slideInUp 0.5s ease;
+        }
+        @keyframes slideInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .score-badge {
+            font-size: 2.5rem;
+            font-weight: 900;
+            padding: 1rem;
+            border-radius: 1rem;
+            min-width: 80px;
+            text-align: center;
+        }
+        
+        .score-a { background: linear-gradient(135deg, #10b981, #059669); color: white; }
+        .score-b { background: linear-gradient(135deg, #3b82f6, #2563eb); color: white; }
+        .score-c { background: linear-gradient(135deg, #f59e0b, #d97706); color: white; }
+        .score-f { background: linear-gradient(135deg, #ef4444, #dc2626); color: white; }
+        
+        .diagnosis-card {
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        .diagnosis-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2);
+        }
+        
+        .xp-bar {
+            background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+            border-radius: 9999px;
+            height: 8px;
+            transition: width 0.5s ease;
+        }
+        
+        .tab-btn.active {
+            border-b-4 border-blue-600;
+            color: #1e293b;
+            font-weight: 900;
+        }
+        
+        .tab-btn {
+            color: #94a3b8;
+            font-weight: 700;
+            padding-bottom: 0.5rem;
+            border-b-4 border-transparent;
+            transition: all 0.3s ease;
+        }
+    </style>
+</head>
+<body class="bg-slate-900 overflow-hidden">
+
+    <!-- Progress Indicator -->
+    <div class="fixed top-0 left-0 w-full h-1 bg-slate-800 z-50">
+        <div id="progress" class="h-full bg-gradient-to-r from-blue-500 to-purple-500 progress-bar" style="width: 6.6%;"></div>
+    </div>
+
+    <!-- AI Trainer Chat Bubble (Fixed) -->
+    <div class="fixed bottom-24 right-6 z-40 max-w-xs">
+        <div id="trainer-bubble" class="hidden trainer-chat bg-gradient-to-br from-blue-600 to-blue-700 text-white p-4 rounded-3xl rounded-tr-none shadow-xl border border-blue-400/30 max-h-32 overflow-y-auto">
+            <p id="trainer-text" class="text-sm font-semibold leading-relaxed"></p>
+        </div>
+    </div>
+
+    <!-- Navigation & Stats -->
+    <div class="fixed bottom-6 right-6 z-50 flex gap-3 no-print">
+        <div class="bg-white/10 backdrop-blur-md rounded-full px-4 py-3 flex items-center gap-3 border border-white/10 hidden lg:flex">
+            <span class="text-xs font-bold text-slate-300 uppercase tracking-widest">XP</span>
+            <span id="xp-count" class="text-white font-black text-lg">0</span>
+            <span class="text-xs font-bold text-slate-400">/500</span>
+        </div>
+        <button onclick="prevSlide()" class="bg-white/10 hover:bg-white/20 text-white p-3 rounded-full backdrop-blur-md transition-all border border-white/10">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+        </button>
+        <button onclick="nextSlide()" class="bg-blue-600 hover:bg-blue-500 text-white p-3 rounded-full shadow-lg transition-all">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+        </button>
+    </div>
+
+    <!-- SLIDE 1: Welcome -->
+    <div class="slide active p-8 justify-center items-center text-center bg-gradient-to-br from-slate-950 via-blue-950 to-slate-950">
+        <div class="max-w-4xl">
+            <div class="mb-8">
+                <div class="inline-block bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-2 rounded-full text-xs font-black tracking-widest uppercase shadow-xl">
+                    🏥 Hospital Training Lab
+                </div>
+            </div>
+            <h1 class="text-7xl md:text-8xl text-white mb-6 uppercase leading-none tracking-tighter font-black">De-escalation<br><span class="bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">Mastery</span></h1>
+            <p class="text-xl md:text-2xl text-slate-300 font-light mb-12">Destiny Springs Healthcare | Inpatient Psychiatric Acute Care</p>
+            <div class="bg-white/5 border border-white/10 rounded-3xl p-8 backdrop-blur-md mb-8">
+                <p class="text-slate-300 text-lg mb-4">👋 I'm Dr. Rivera, your Clinical Training Mentor</p>
+                <p class="text-white font-semibold italic">Let's transform how you work with patients in crisis. This isn't just training—it's your superpower.</p>
+            </div>
+            <div class="flex justify-center gap-8 flex-wrap">
+                <div class="flex items-center gap-2 text-white font-bold text-sm uppercase tracking-wider">
+                    <span class="w-3 h-3 bg-red-500 rounded-full"></span> Safety First
+                </div>
+                <div class="flex items-center gap-2 text-white font-bold text-sm uppercase tracking-wider">
+                    <span class="w-3 h-3 bg-green-500 rounded-full"></span> Clinical Respect
+                </div>
+                <div class="flex items-center gap-2 text-white font-bold text-sm uppercase tracking-wider">
+                    <span class="w-3 h-3 bg-blue-500 rounded-full"></span> Evidence-Based
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SLIDE 2: Body Language -->
+    <div class="slide p-10 justify-center bg-medical">
+        <div class="max-w-5xl mx-auto w-full">
+            <h2 class="text-4xl font-black text-slate-900 mb-2 uppercase border-l-8 border-blue-600 pl-6 leading-none">The Silent Message</h2>
+            <p class="text-slate-500 font-bold mb-8 ml-6">Body language speaks louder than your words. Master this first.</p>
+            <div class="grid grid-cols-2 gap-10">
+                <div class="bg-white p-8 rounded-3xl border-b-8 border-red-500 card-shadow">
+                    <h3 class="text-2xl font-black text-red-600 mb-6 uppercase flex items-center gap-3">
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+                        Do Not
+                    </h3>
+                    <ul class="space-y-4 text-lg text-slate-700 font-medium">
+                        <li class="flex items-center gap-3"><span class="text-red-500 font-black text-xl">✕</span> Stand "Toe-to-Toe"</li>
+                        <li class="flex items-center gap-3"><span class="text-red-500 font-black text-xl">✕</span> Cross your arms</li>
+                        <li class="flex items-center gap-3"><span class="text-red-500 font-black text-xl">✕</span> Stare intently</li>
+                        <li class="flex items-center gap-3"><span class="text-red-500 font-black text-xl">✕</span> Hide your hands</li>
+                    </ul>
+                </div>
+                <div class="bg-white p-8 rounded-3xl border-b-8 border-green-500 card-shadow">
+                    <h3 class="text-2xl font-black text-green-600 mb-6 uppercase flex items-center gap-3">
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                        Do
+                    </h3>
+                    <ul class="space-y-4 text-lg text-slate-700 font-medium">
+                        <li class="flex items-center gap-3"><span class="text-green-500 font-black text-xl">✓</span> Stand at 45° Angle</li>
+                        <li class="flex items-center gap-3"><span class="text-green-500 font-black text-xl">✓</span> Keep hands visible</li>
+                        <li class="flex items-center gap-3"><span class="text-green-500 font-black text-xl">✓</span> Maintain a "Soft Gaze"</li>
+                        <li class="flex items-center gap-3"><span class="text-green-500 font-black text-xl">✓</span> Give the 3ft Bubble</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SLIDE 3: 5-4-3-2-1 Grounding -->
+    <div class="slide p-10 justify-center bg-blue-900 text-white">
+        <div class="max-w-6xl mx-auto w-full text-center">
+            <h2 class="text-5xl font-black mb-2 uppercase tracking-tighter">5-4-3-2-1 Grounding</h2>
+            <p class="text-xl text-blue-200 mb-12 italic font-light">Interrupting agitation with immediate physical orientation.</p>
+            <div class="grid grid-cols-5 gap-4">
+                <div class="bg-white/10 p-6 rounded-2xl border border-white/20 transition-all hover:bg-blue-600 cursor-pointer group">
+                    <div class="text-6xl font-black mb-4 group-hover:scale-125 transition-transform">5</div>
+                    <div class="text-lg font-black uppercase mb-2 tracking-widest">SEE</div>
+                    <div class="text-xs opacity-60">Physical objects</div>
+                </div>
+                <div class="bg-white/10 p-6 rounded-2xl border border-white/20 transition-all hover:bg-blue-500 cursor-pointer group">
+                    <div class="text-6xl font-black mb-4 group-hover:scale-125 transition-transform">4</div>
+                    <div class="text-lg font-black uppercase mb-2 tracking-widest">TOUCH</div>
+                    <div class="text-xs opacity-60">Identify textures</div>
+                </div>
+                <div class="bg-white/10 p-6 rounded-2xl border border-white/20 transition-all hover:bg-blue-400 cursor-pointer group">
+                    <div class="text-6xl font-black mb-4 group-hover:scale-125 transition-transform">3</div>
+                    <div class="text-lg font-black uppercase mb-2 tracking-widest">HEAR</div>
+                    <div class="text-xs opacity-60">Ambient sounds</div>
+                </div>
+                <div class="bg-white/10 p-6 rounded-2xl border border-white/20 transition-all hover:bg-blue-300 text-slate-900 cursor-pointer group">
+                    <div class="text-6xl font-black mb-4 group-hover:scale-125 transition-transform">2</div>
+                    <div class="text-lg font-black uppercase mb-2 tracking-widest">SMELL</div>
+                    <div class="text-xs opacity-60">Scents in air</div>
+                </div>
+                <div class="bg-white/10 p-6 rounded-2xl border border-white/20 transition-all hover:bg-white text-blue-900 cursor-pointer group">
+                    <div class="text-6xl font-black mb-4 group-hover:scale-125 transition-transform">1</div>
+                    <div class="text-lg font-black uppercase mb-2 tracking-widest">TASTE</div>
+                    <div class="text-xs opacity-60">Water or candy</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SLIDE 4: Sensory Shocks -->
+    <div class="slide p-10 justify-center bg-slate-50">
+        <div class="max-w-6xl mx-auto w-full">
+            <h2 class="text-4xl font-black text-slate-900 mb-12 uppercase border-l-8 border-cyan-500 pl-6">Sensory "System Shocks"</h2>
+            <div class="grid grid-cols-3 gap-6">
+                <div class="bg-white p-8 rounded-3xl shadow-lg border-t-8 border-cyan-500 text-center flex flex-col items-center hover:shadow-2xl transition-all">
+                    <div class="w-20 h-20 bg-cyan-50 rounded-full flex items-center justify-center text-4xl mb-6 pulse-blue">🧊</div>
+                    <h3 class="text-xl font-black mb-2 text-cyan-900 uppercase">Ice / Cold</h3>
+                    <p class="text-slate-500 text-sm mb-3 italic">Vagus Nerve Reset</p>
+                    <p class="text-slate-600 text-sm leading-relaxed font-medium">Direct Vagus Nerve activation. A biological "Emergency Brake" for high heart rates.</p>
+                </div>
+                <div class="bg-white p-8 rounded-3xl shadow-lg border-t-8 border-orange-500 text-center flex flex-col items-center hover:shadow-2xl transition-all">
+                    <div class="w-20 h-20 bg-orange-50 rounded-full flex items-center justify-center text-4xl mb-6">🍋</div>
+                    <h3 class="text-xl font-black mb-2 text-orange-900 uppercase">Sour / Strong</h3>
+                    <p class="text-slate-500 text-sm mb-3 italic">Sensation Override</p>
+                    <p class="text-slate-600 text-sm leading-relaxed font-medium">Intense inputs force the brain to move from emotion to raw sensation.</p>
+                </div>
+                <div class="bg-white p-8 rounded-3xl shadow-lg border-t-8 border-indigo-500 text-center flex flex-col items-center hover:shadow-2xl transition-all">
+                    <div class="w-20 h-20 bg-indigo-50 rounded-full flex items-center justify-center text-4xl mb-6">🫂</div>
+                    <h3 class="text-xl font-black mb-2 text-indigo-900 uppercase">Deep Pressure</h3>
+                    <p class="text-slate-500 text-sm mb-3 italic">Parasympathetic Calm</p>
+                    <p class="text-slate-600 text-sm leading-relaxed font-medium">Firm pressure tells the nervous system it is physically safe, lowering arousal.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SLIDE 5: Verbal Swaps -->
+    <div class="slide p-10 justify-center bg-white">
+        <div class="max-w-5xl mx-auto w-full">
+            <h2 class="text-4xl font-black text-slate-900 mb-2 uppercase border-l-8 border-blue-600 pl-6">The Verbal Swap</h2>
+            <p class="text-slate-500 font-bold mb-10 ml-6">What you say matters less than how it lands. Your words are tools.</p>
+            <div class="space-y-6">
+                <div class="flex items-center gap-6 bg-slate-50 p-6 rounded-2xl border border-slate-200">
+                    <div class="text-red-500 font-black text-xs uppercase w-40 text-center">Stop Saying</div>
+                    <div class="text-xl text-slate-400 italic line-through flex-1">"You need to calm down right now."</div>
+                </div>
+                <div class="flex items-center gap-6 bg-blue-600 p-8 rounded-2xl shadow-xl transform translate-x-4">
+                    <div class="text-white font-black text-xs uppercase w-40 text-center">Try This</div>
+                    <div class="text-lg text-white font-bold italic flex-1">"I can see you're struggling. How can I help you stay safe?"</div>
+                </div>
+                <div class="flex items-center gap-6 bg-slate-50 p-6 rounded-2xl border border-slate-200 mt-8">
+                    <div class="text-red-500 font-black text-xs uppercase w-40 text-center">Stop Saying</div>
+                    <div class="text-xl text-slate-400 italic line-through flex-1">"Stop yelling, it's against the rules."</div>
+                </div>
+                <div class="flex items-center gap-6 bg-blue-600 p-8 rounded-2xl shadow-xl transform translate-x-4">
+                    <div class="text-white font-black text-xs uppercase w-40 text-center">Try This</div>
+                    <div class="text-lg text-white font-bold italic flex-1">"It's hard for me to hear what you need. Can we try a lower voice together?"</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SLIDE 6: Wait 5 Rule -->
+    <div class="slide p-10 justify-center bg-slate-900 text-white">
+        <div class="max-w-5xl mx-auto w-full flex items-center gap-16">
+            <div class="flex-1">
+                <h2 class="text-7xl font-black mb-8 uppercase leading-none text-blue-400">The<br>"Wait 5"<br>Rule</h2>
+                <p class="text-xl text-slate-300 leading-relaxed font-light mb-8">
+                    Escalated brains are <strong>low-bandwidth</strong>. They cannot process your words while their internal "buffer" is full.
+                </p>
+                <div class="bg-blue-600/20 border-l-4 border-blue-400 p-6 rounded-r-xl">
+                    <p class="text-lg font-bold italic text-blue-100">"Silence is a vital therapeutic intervention."</p>
+                </div>
+            </div>
+            <div class="w-64 h-64 flex items-center justify-center relative">
+                <div class="absolute inset-0 border-8 border-blue-500/20 rounded-full"></div>
+                <div class="absolute inset-0 border-8 border-blue-400 rounded-full pulse-blue"></div>
+                <div class="text-6xl font-black text-blue-300">5s</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SLIDE 7: Diagnoses Library -->
+    <div class="slide p-8 justify-start bg-slate-50 overflow-y-auto">
+        <div class="max-w-7xl mx-auto w-full pb-20">
+            <h2 class="text-4xl font-black text-slate-900 mb-2 uppercase border-l-8 border-purple-600 pl-6">Diagnosis-Specific Insights</h2>
+            <p class="text-slate-500 font-bold mb-8 ml-6">Every diagnosis has a unique presentation. Learn what drives behavior for the patients in your unit.</p>
+            
+            <div id="diagnosis-tabs" class="flex gap-2 mb-8 border-b border-slate-300 pb-4 overflow-x-auto">
+                <button class="tab-btn active" onclick="showDiagnosis('autism')">🧩 Autism</button>
+                <button class="tab-btn" onclick="showDiagnosis('adhd')">⚡ ADHD</button>
+                <button class="tab-btn" onclick="showDiagnosis('schizophrenia')">🌀 Schizophrenia</button>
+                <button class="tab-btn" onclick="showDiagnosis('bipolar')">📊 Bipolar</button>
+                <button class="tab-btn" onclick="showDiagnosis('ptsd')">🛡️ PTSD</button>
+                <button class="tab-btn" onclick="showDiagnosis('depression')">☁️ Depression</button>
+                <button class="tab-btn" onclick="showDiagnosis('anxiety')">😰 Anxiety</button>
+                <button class="tab-btn" onclick="showDiagnosis('bpd')">💔 BPD</button>
+            </div>
+
+            <div id="diagnosis-content" class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <!-- Content loaded by JavaScript -->
+            </div>
+        </div>
+    </div>
+
+    <!-- SLIDE 8: Training Lab - Scenarios -->
+    <div class="slide p-8 bg-slate-50 overflow-y-auto">
+        <div class="max-w-6xl mx-auto w-full pb-20">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-3xl font-black text-slate-900 uppercase border-l-4 border-amber-500 pl-4">Interactive Crisis Lab</h2>
+                <div class="flex items-center gap-2 bg-white p-2 rounded-xl shadow-sm border border-slate-200 no-print">
+                    <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">API Key:</span>
+                    <input type="password" id="local-api-key" onchange="updateKey(this.value)" class="bg-slate-100 p-1.5 rounded text-[10px] outline-none focus:ring-2 focus:ring-amber-500 w-40" placeholder="Gemini API key...">
+                </div>
+            </div>
+            
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <!-- Scenario Simulator -->
+                <div class="bg-white p-8 rounded-3xl shadow-xl border-t-8 border-amber-500 flex flex-col h-[600px]">
+                    <h3 class="text-xl font-black text-slate-900 uppercase mb-2">Your Crisis Response</h3>
+                    <p class="text-xs text-slate-500 font-bold uppercase mb-4 tracking-widest">Pick a diagnosis scenario, then respond</p>
+                    
+                    <div class="mb-4">
+                        <label class="text-xs font-black text-slate-500 uppercase mb-2 block">Patient Diagnosis:</label>
+                        <select id="diagnosis-select" class="w-full p-3 bg-slate-100 border border-slate-300 rounded-xl font-semibold">
+                            <option value="autism">🧩 Autism Spectrum</option>
+                            <option value="adhd">⚡ ADHD</option>
+                            <option value="schizophrenia">🌀 Schizophrenia</option>
+                            <option value="bipolar">📊 Bipolar Disorder</option>
+                            <option value="ptsd">🛡️ PTSD</option>
+                            <option value="bpd">💔 Borderline Personality</option>
+                        </select>
+                    </div>
+
+                    <div class="flex-1 overflow-y-auto mb-4">
+                        <div id="scenario-display" class="bg-slate-50 p-6 rounded-2xl text-slate-800 text-base italic leading-relaxed border-2 border-slate-200 min-h-[140px] font-medium">
+                            Select a diagnosis and click "New Crisis" to begin...
+                        </div>
+                        <div id="ai-feedback" class="mt-4 p-4 bg-blue-50 rounded-2xl text-blue-900 font-bold border-2 border-blue-200 hidden text-sm leading-relaxed"></div>
+                    </div>
+                    
+                    <div class="space-y-3">
+                        <textarea id="staff-response" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none text-sm font-medium resize-none" rows="2" placeholder="Your intervention..."></textarea>
+                        <div class="flex gap-2">
+                            <button onclick="generateScenario()" id="scenario-btn" class="flex-1 bg-amber-500 hover:bg-amber-600 text-white font-black py-3 rounded-2xl transition-all text-sm uppercase shadow-lg">New Crisis✨</button>
+                            <button onclick="submitResponse()" id="submit-btn" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-black py-3 rounded-2xl transition-all text-sm uppercase shadow-lg disabled:opacity-50" disabled>Submit✨</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Script Generator -->
+                <div class="bg-white p-8 rounded-3xl shadow-xl border-t-8 border-emerald-500 flex flex-col h-[600px]">
+                    <h3 class="text-xl font-black text-slate-900 uppercase mb-2">Roleplay Script Builder</h3>
+                    <p class="text-xs text-slate-500 font-bold uppercase mb-4 tracking-widest">Generate training scripts for team huddles</p>
+                    
+                    <div class="mb-4">
+                        <label class="text-xs font-black text-slate-500 uppercase mb-2 block">Scenario Topic:</label>
+                        <div class="flex gap-2">
+                            <input type="text" id="script-topic" class="flex-grow p-3 bg-slate-100 border border-slate-300 rounded-xl text-sm font-medium outline-none" placeholder="e.g. Medication refusal...">
+                            <button onclick="generateScript()" id="script-btn" class="bg-emerald-600 hover:bg-emerald-700 text-white font-black px-4 rounded-xl transition-all text-sm uppercase shadow-lg">Build✨</button>
+                        </div>
+                    </div>
+                    
+                    <div id="script-output" class="flex-1 bg-slate-900 p-6 rounded-2xl text-emerald-400 font-mono text-sm overflow-y-auto border-2 border-slate-700">
+                        <span class="opacity-50">Roleplay script appears here...</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SLIDE 9: Debrief Assistant -->
+    <div class="slide p-8 bg-slate-50 overflow-y-auto">
+        <div class="max-w-6xl mx-auto w-full pb-20">
+            <h2 class="text-3xl font-black text-slate-900 mb-2 uppercase border-l-4 border-indigo-600 pl-4">Clinical Debrief Assistant</h2>
+            <p class="text-slate-500 font-bold mb-8 ml-4">Reflect on real incidents with AI coaching. This is how you learn.</p>
+            
+            <div class="bg-white p-8 rounded-3xl shadow-xl border-t-8 border-indigo-600">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div class="flex flex-col">
+                        <label class="text-xs font-black text-slate-500 mb-3 uppercase tracking-widest">📝 Describe What Happened</label>
+                        <textarea id="debrief-input" class="w-full p-6 bg-slate-50 border-2 border-slate-200 rounded-2xl h-[350px] outline-none text-base font-medium resize-none" placeholder="What was the incident? What did you try? How did it go? Be specific..."></textarea>
+                    </div>
+                    <div class="flex flex-col">
+                        <label class="text-xs font-black text-slate-500 mb-3 uppercase tracking-widest">🎓 Clinical Mentor Analysis</label>
+                        <div id="debrief-output" class="bg-gradient-to-br from-indigo-950 to-indigo-900 p-6 rounded-2xl text-indigo-100 text-sm leading-relaxed h-[350px] overflow-y-auto font-medium border-2 border-indigo-700">
+                            <span class="opacity-50">Your mentor's feedback will appear here...</span>
+                        </div>
+                    </div>
+                </div>
+                <button onclick="getDebrief()" id="debrief-btn" class="mt-8 w-full bg-indigo-600 hover:bg-indigo-700 text-white font-black py-5 rounded-2xl transition-all text-lg uppercase shadow-lg">Get Clinical Feedback✨</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- SLIDE 10: Quick Reference -->
+    <div class="slide p-10 justify-center bg-white">
+        <div class="max-w-5xl mx-auto w-full">
+            <h2 class="text-4xl font-black text-slate-900 mb-10 uppercase border-l-8 border-slate-900 pl-6 leading-none">De-escalation Checklist</h2>
+            <div class="grid grid-cols-2 gap-8">
+                <div class="space-y-4">
+                    <div class="flex items-center gap-4 text-green-700 text-lg font-black bg-green-50 p-6 rounded-2xl border-l-4 border-green-500 shadow-md">
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4"><polyline points="20 6 9 17 4 12"/></svg>
+                        <span>Calm & Monotone Voice</span>
+                    </div>
+                    <div class="flex items-center gap-4 text-green-700 text-lg font-black bg-green-50 p-6 rounded-2xl border-l-4 border-green-500 shadow-md">
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4"><polyline points="20 6 9 17 4 12"/></svg>
+                        <span>Use Sensory Tools</span>
+                    </div>
+                    <div class="flex items-center gap-4 text-green-700 text-lg font-black bg-green-50 p-6 rounded-2xl border-l-4 border-green-500 shadow-md">
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4"><polyline points="20 6 9 17 4 12"/></svg>
+                        <span>Offer Choices</span>
+                    </div>
+                    <div class="flex items-center gap-4 text-green-700 text-lg font-black bg-green-50 p-6 rounded-2xl border-l-4 border-green-500 shadow-md">
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4"><polyline points="20 6 9 17 4 12"/></svg>
+                        <span>Validate Feelings</span>
+                    </div>
+                </div>
+                <div class="space-y-4">
+                    <div class="flex items-center gap-4 text-red-700 text-lg font-black bg-red-50 p-6 rounded-2xl border-l-4 border-red-500 shadow-md">
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                        <span>Corner or Surround</span>
+                    </div>
+                    <div class="flex items-center gap-4 text-red-700 text-lg font-black bg-red-50 p-6 rounded-2xl border-l-4 border-red-500 shadow-md">
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                        <span>Take It Personally</span>
+                    </div>
+                    <div class="flex items-center gap-4 text-red-700 text-lg font-black bg-red-50 p-6 rounded-2xl border-l-4 border-red-500 shadow-md">
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                        <span>Debate the Rules</span>
+                    </div>
+                    <div class="flex items-center gap-4 text-red-700 text-lg font-black bg-red-50 p-6 rounded-2xl border-l-4 border-red-500 shadow-md">
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                        <span>Rush Your Response</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SLIDE 11: Certificate -->
+    <div class="slide p-10 justify-center items-center text-center bg-gradient-to-br from-slate-950 via-purple-950 to-slate-950 text-white">
+        <div class="max-w-4xl">
+            <div class="mb-12">
+                <svg class="mx-auto text-blue-400 opacity-40" width="100" height="100" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            </div>
+            <h2 class="text-6xl font-black mb-6 uppercase tracking-tighter">Safety is a Skill</h2>
+            <p class="text-2xl text-slate-300 font-light mb-10">"Tools for the professional, dignity for the patient."</p>
+            
+            <div class="bg-white/5 border-2 border-white/20 rounded-3xl p-10 backdrop-blur-md mb-10">
+                <p class="text-indigo-300 font-black tracking-[0.2em] text-xs uppercase mb-4">Your Progress Summary</p>
+                <div class="grid grid-cols-3 gap-6">
+                    <div class="text-center">
+                        <div class="text-4xl font-black text-blue-400 mb-2" id="final-scenarios">0</div>
+                        <p class="text-slate-300 font-bold text-sm">Scenarios Completed</p>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-4xl font-black text-emerald-400 mb-2" id="final-avg-score">-</div>
+                        <p class="text-slate-300 font-bold text-sm">Avg. Response Score</p>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-4xl font-black text-purple-400 mb-2" id="final-xp">0</div>
+                        <p class="text-slate-300 font-bold text-sm">Total XP Earned</p>
+                    </div>
+                </div>
+            </div>
+            
+            <p class="text-slate-400 font-bold text-lg mb-8">Keep practicing. Real confidence comes from repetition.</p>
+            <p class="text-slate-500 text-sm">Destiny Springs Healthcare | Clinical de-escalation lab v2.0</p>
+        </div>
+    </div>
+
+    <script>
+        // Global state
+        let apiKey = "";
+        let currentSlide = 0;
+        let xpCount = 0;
+        let scenariosCompleted = 0;
+        let scores = [];
+        const slides = document.querySelectorAll('.slide');
+        const progress = document.getElementById('progress');
+
+        // Diagnosis database
+        const diagnoses = {
+            autism: {
+                name: "Autism Spectrum Disorder",
+                emoji: "🧩",
+                triggers: "Sensory overload, sudden changes, social overwhelm, loud environments",
+                presentations: "Repetitive movements, intense focus on details, meltdowns (not tantrums), echolalia, avoidance behaviors",
+                deEscalation: [
+                    "Use clear, literal language. Avoid idioms and sarcasm.",
+                    "Offer sensory breaks or quiet spaces proactively.",
+                    "Respect their need for predictability—give warnings before changes.",
+                    "Don't force eye contact.",
+                    "Acknowledge special interests as connection points.",
+                    "Respect physical boundaries and personal space."
+                ],
+                avoidScenarios: [
+                    "Sudden transitions without warning",
+                    "Forced social interaction",
+                    "Unexpected touching or physical guidance"
+                ]
+            },
+            adhd: {
+                name: "ADHD (Attention-Deficit/Hyperactivity Disorder)",
+                emoji: "⚡",
+                triggers: "Inactivity, waiting, lack of stimulation, time pressure, rigid rules",
+                presentations: "Fidgeting, interruptions, hyperfocus on interesting tasks, difficulty with transitions, impulsive decisions, restlessness",
+                deEscalation: [
+                    "Offer movement breaks or physical activity.",
+                    "Use short, engaging explanations—capture attention quickly.",
+                    "Redirect energy rather than suppress it.",
+                    "Create accountability with specific timelines.",
+                    "Use positive reinforcement generously.",
+                    "Break instructions into single steps."
+                ],
+                avoidScenarios: [
+                    "Prolonged sitting or waiting",
+                    "Complex multi-step instructions",
+                    "Criticism without praise"
+                ]
+            },
+            schizophrenia: {
+                name: "Schizophrenia / Psychotic Disorders",
+                emoji: "🌀",
+                triggers: "Stress, perceived threats, confusion between internal/external stimuli, lack of routine",
+                presentations: "Paranoia, hallucinations, disorganized speech, withdrawal, inappropriate affect, bizarre behavior",
+                deEscalation: [
+                    "Don't challenge the delusion—validate their experience of distress.",
+                    "Speak calmly and simply. Avoid sudden movements.",
+                    "Help them ground in reality without confrontation: 'I don't see that, but I believe it's scary for you.'",
+                    "Remove perceived threats (other people, items) if safe.",
+                    "Maintain routine and consistency.",
+                    "Respect their space—they may fear contamination or proximity."
+                ],
+                avoidScenarios: [
+                    "Crowding or physical proximity",
+                    "Multiple staff members talking at once",
+                    "Arguing about what's 'real'"
+                ]
+            },
+            bipolar: {
+                name: "Bipolar Disorder",
+                emoji: "📊",
+                triggers: "Sleep disruption, activation (during mania), hopelessness (during depression), medication changes",
+                presentations: "Mania: rapid speech, grandiosity, poor judgment | Depression: low energy, guilt, suicidal ideation | Irritability across both states",
+                deEscalation: [
+                    "During manic: Avoid power struggles. Set calm, firm boundaries.",
+                    "During depression: Offer concrete hope and validate pain without enabling hopelessness.",
+                    "Monitor sleep closely—it's a leading indicator.",
+                    "Use humor carefully (they may misinterpret during mania).",
+                    "Celebrate small wins without triggering grandiosity.",
+                    "Be consistent and predictable."
+                ],
+                avoidScenarios: [
+                    "Overstimulation during mania (parties, excitement)",
+                    "Isolation during depression",
+                    "Inconsistent care or broken promises"
+                ]
+            },
+            ptsd: {
+                name: "PTSD (Post-Traumatic Stress Disorder)",
+                emoji: "🛡️",
+                triggers: "Reminders of trauma, loss of control, physical restraint, loud noises, unexpected touch",
+                presentations: "Hypervigilance, flashbacks, avoidance, emotional numbness, anger outbursts, dissociation, nightmares",
+                deEscalation: [
+                    "Announce yourself and your intentions clearly.",
+                    "Never approach from behind or use surprise.",
+                    "Always ask before touching. Respect 'no.'",
+                    "Offer control: 'Would you prefer to sit or stand?' 'Do you want me here or should I step back?'",
+                    "Grounding techniques work well: 5-4-3-2-1 method.",
+                    "Acknowledge their trauma without judgment."
+                ],
+                avoidScenarios: [
+                    "Physical restraint or physical control",
+                    "Isolation or locked doors (triggers captivity)",
+                    "Anything resembling the original trauma"
+                ]
+            },
+            depression: {
+                name: "Major Depressive Disorder",
+                emoji: "☁️",
+                triggers: "Hopelessness, isolation, lack of structure, anniversary of losses, medication side effects",
+                presentations: "Low energy, flat affect, suicidal ideation, difficulty with self-care, anhedonia, guilt, concentration issues",
+                deEscalation: [
+                    "Meet them where they are. Avoid toxic positivity.",
+                    "Offer gentle structure: activities, meal times, routines.",
+                    "Use behavioral activation: 'Can you sit up?' 'Want to take a short walk?'",
+                    "Validate that their pain is real, while offering hope.",
+                    "Monitor suicidal ideation closely—ask directly.",
+                    "Small acts of care matter (a blanket, a cup of tea)."
+                ],
+                avoidScenarios: [
+                    "Forcing positivity or minimizing their experience",
+                    "Leaving them isolated",
+                    "Dismissing suicidal thoughts as 'attention-seeking'"
+                ]
+            },
+            anxiety: {
+                name: "Anxiety Disorders",
+                emoji: "😰",
+                triggers: "Uncertainty, crowds, performance demands, control loss, physical sensations (racing heart)",
+                presentations: "Worry spirals, muscle tension, avoidance, panic attacks, catastrophizing, perfectionism, reassurance-seeking",
+                deEscalation: [
+                    "Provide clear, factual information to combat uncertainty.",
+                    "Offer coping tools immediately: breathing, grounding, distraction.",
+                    "Don't reassure endlessly—it reinforces the anxiety cycle.",
+                    "Normalize their anxiety: 'This is your body's protection response. It's okay.'",
+                    "Offer gentle exposure: 'Could you try this small step?'",
+                    "Control what you can—schedules, predictability, clear expectations."
+                ],
+                avoidScenarios: [
+                    "Vague or uncertain information",
+                    "Sudden surprises or schedule changes",
+                    "Dismissing their worries as 'irrational'"
+                ]
+            },
+            bpd: {
+                name: "Borderline Personality Disorder",
+                emoji: "💔",
+                triggers: "Perceived abandonment, rejection, feeling invalidated, lack of attention, boundary changes",
+                presentations: "Intense mood swings, splitting (all-good/all-bad thinking), self-harm, isolation, rage, relationship instability, identity disturbance",
+                deEscalation: [
+                    "Validate their emotions first: 'Your pain is real.' (without validating the action)",
+                    "Be consistent and transparent. Hiding things triggers betrayal fears.",
+                    "Set clear, compassionate boundaries. Don't rescue.",
+                    "Avoid splitting: stay the 'good guy' by being honest about limitations.",
+                    "Use their interests and relationships as stabilizers.",
+                    "De-escalate self-harm discussions by acknowledging urges without judgment: 'I see you're in pain. Let's find another way.'"
+                ],
+                avoidScenarios: [
+                    "Sudden unavailability or perceived abandonment",
+                    "Dismissing emotions as 'manipulation'",
+                    "Inconsistent or deceptive communication"
+                ]
+            }
+        };
+
+        // Initialize
+        function initialize() {
+            updateSlide();
+            showDiagnosis('autism');
+            updateXPDisplay();
+        }
+
+        function updateKey(val) {
+            apiKey = val;
+        }
+
+        function updateSlide() {
+            slides.forEach((slide, index) => {
+                slide.classList.remove('active');
+                if (index === currentSlide) slide.classList.add('active');
+            });
+            progress.style.width = ((currentSlide + 1) / slides.length) * 100 + '%';
+            
+            // Show trainer tips at key slides
+            const tips = {
+                0: "Welcome! I'm Dr. Rivera. We'll work through real scenarios today. Ready to become a de-escalation expert?",
+                1: "Your body language is your most powerful tool. Master this, and you've already won half the battle.",
+                6: "Every patient is different. Understanding their diagnosis helps us meet them where they are.",
+                7: "This is where you practice under pressure. Don't worry about being perfect—strive to be better.",
+                10: "Remember: you've learned something today that will change how you care for patients in crisis."
+            };
+            
+            if (tips[currentSlide]) {
+                showTrainerTip(tips[currentSlide]);
+            }
+        }
+
+        function nextSlide() {
+            currentSlide = (currentSlide + 1) % slides.length;
+            updateSlide();
+        }
+
+        function prevSlide() {
+            currentSlide = (currentSlide - 1 + slides.length) % slides.length;
+            updateSlide();
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight') nextSlide();
+            if (e.key === 'ArrowLeft') prevSlide();
+        });
+
+        function showTrainerTip(text) {
+            const bubble = document.getElementById('trainer-bubble');
+            const tipText = document.getElementById('trainer-text');
+            tipText.innerText = text;
+            bubble.classList.remove('hidden');
+            setTimeout(() => {
+                bubble.classList.add('hidden');
+            }, 6000);
+        }
+
+        function showDiagnosis(key) {
+            const diagnosis = diagnoses[key];
+            const content = document.getElementById('diagnosis-content');
+            
+            // Update active tab
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+
+            content.innerHTML = `
+                <div class="bg-white p-8 rounded-3xl shadow-xl border-t-8 border-blue-600">
+                    <h3 class="text-2xl font-black text-slate-900 mb-4">${diagnosis.emoji} ${diagnosis.name}</h3>
+                    <div class="space-y-4">
+                        <div>
+                            <p class="text-xs font-black text-slate-500 uppercase mb-2">Common Triggers</p>
+                            <p class="text-sm text-slate-700 font-medium">${diagnosis.triggers}</p>
+                        </div>
+                        <div>
+                            <p class="text-xs font-black text-slate-500 uppercase mb-2">How It Shows Up</p>
+                            <p class="text-sm text-slate-700 font-medium">${diagnosis.presentations}</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-white p-8 rounded-3xl shadow-xl border-t-8 border-emerald-600 lg:col-span-2">
+                    <h3 class="text-2xl font-black text-slate-900 mb-4">✓ Your De-escalation Playbook</h3>
+                    <div class="space-y-3">
+                        ${diagnosis.deEscalation.map(tip => `
+                            <div class="flex gap-3 items-start">
+                                <span class="text-emerald-600 font-black text-lg mt-0.5">→</span>
+                                <p class="text-sm text-slate-700 font-medium">${tip}</p>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+                <div class="bg-red-50 p-8 rounded-3xl shadow-xl border-t-8 border-red-600">
+                    <h3 class="text-2xl font-black text-red-900 mb-4">✕ Avoid These</h3>
+                    <div class="space-y-2">
+                        ${diagnosis.avoidScenarios.map(avoid => `
+                            <div class="flex gap-2 items-start">
+                                <span class="text-red-600 font-black">•</span>
+                                <p class="text-sm text-red-800 font-medium">${avoid}</p>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+        }
+
+        // AI Integration
+        async function callGemini(prompt, systemInstruction = "") {
+            const activeKey = apiKey || "";
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${activeKey}`;
+            
+            const payload = {
+                contents: [{ parts: [{ text: prompt }] }],
+                systemInstruction: { parts: [{ text: systemInstruction }] }
+            };
+
+            let delay = 1000;
+            for (let i = 0; i < 5; i++) {
+                try {
+                    const response = await fetch(url, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                    if (!response.ok) {
+                        if (response.status === 400 && !activeKey) throw new Error("API Key Missing");
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    const data = await response.json();
+                    return data.candidates?.[0]?.content?.parts?.[0]?.text || "No response.";
+                } catch (error) {
+                    if (i === 4 || error.message === "API Key Missing") throw error;
+                    await new Promise(resolve => setTimeout(resolve, delay));
+                    delay *= 2;
+                }
+            }
+        }
+
+        async function generateScenario() {
+            const btn = document.getElementById('scenario-btn');
+            const display = document.getElementById('scenario-display');
+            const submitBtn = document.getElementById('submit-btn');
+            const feedback = document.getElementById('ai-feedback');
+            const diagnosis = document.getElementById('diagnosis-select').value;
+            const diagnosisName = diagnoses[diagnosis].name;
+            
+            btn.innerHTML = '<div class="loading-spinner"></div>';
+            btn.disabled = true;
+            feedback.classList.add('hidden');
+            
+            const system = `You are a psychiatric clinical trainer for Destiny Springs Healthcare creating training scenarios.
+Generate a realistic 2-3 sentence behavioral health crisis scenario featuring a patient with ${diagnosisName} showing significant agitation on an inpatient unit.
+Include specific behaviors, speech patterns, or triggers relevant to their diagnosis.
+Avoid graphic violence. Focus on realistic behavioral health presentations.
+Keep it brief so the trainee can respond quickly.`;
+            
+            const prompt = "Generate a new training scenario.";
+            
+            try {
+                const result = await callGemini(prompt, system);
+                display.innerText = result;
+                display.classList.remove('border-red-500');
+                display.classList.add('border-blue-200');
+                submitBtn.disabled = false;
+                showTrainerTip(`You're facing a patient with ${diagnosisName}. Remember their triggers and use your toolkit.`);
+            } catch (err) {
+                display.innerText = "⚠️ API Error. Paste your Gemini API key in the field at the top.";
+                display.classList.add('border-red-500');
+            } finally {
+                btn.innerText = "New Crisis✨";
+                btn.disabled = false;
+            }
+        }
+
+        async function submitResponse() {
+            const btn = document.getElementById('submit-btn');
+            const responseText = document.getElementById('staff-response').value;
+            const scenarioText = document.getElementById('scenario-display').innerText;
+            const diagnosis = document.getElementById('diagnosis-select').value;
+            const diagnosisName = diagnoses[diagnosis].name;
+            const feedback = document.getElementById('ai-feedback');
+            
+            if (!responseText.trim()) {
+                alert("Write a response first!");
+                return;
+            }
+            
+            btn.innerHTML = '<div class="loading-spinner"></div>';
+            btn.disabled = true;
+
+            const system = `You are Dr. Rivera, a clinical de-escalation coach at Destiny Springs Healthcare.
+Evaluate this staff response to a behavioral health crisis with a ${diagnosisName} patient.
+Score A-F based on: 1) De-escalation effectiveness, 2) Diagnosis-awareness, 3) Safety, 4) Validation, 5) Clarity.
+Format your response as: SCORE: [A/B/C/D/F] | FEEDBACK: [2-3 sentence critique] | BETTER OPTION: [1 alternative response]
+Be encouraging but honest. Focus on learning.`;
+            
+            const prompt = `Crisis Scenario: ${scenarioText}\n\nStaff Response: "${responseText}"\n\nEvaluate this response:`;
+
+            try {
+                const result = await callGemini(prompt, system);
+                feedback.innerText = result;
+                feedback.classList.remove('hidden');
+                
+                // Extract score
+                const scoreMatch = result.match(/SCORE:\s*([A-F])/);
+                if (scoreMatch) {
+                    const score = scoreMatch[1];
+                    addScore(score);
+                    scenariosCompleted++;
+                    addXP(getXPForScore(score));
+                    showTrainerTip(`Great effort! ${score === 'A' ? 'Excellent!' : score === 'B' ? 'Really good!' : 'Keep practicing. You\'re getting better.'}`);
+                }
+            } catch (err) {
+                feedback.innerText = "⚠️ Analysis error. Check your API key.";
+                feedback.classList.remove('hidden');
+            } finally {
+                btn.innerText = "Submit✨";
+                btn.disabled = false;
+            }
+        }
+
+        async function generateScript() {
+            const btn = document.getElementById('script-btn');
+            const topic = document.getElementById('script-topic').value || "Medication refusal";
+            const output = document.getElementById('script-output');
+
+            btn.innerHTML = '<div class="loading-spinner"></div>';
+            btn.disabled = true;
+
+            const system = `You are a clinical trainer writing roleplay scripts for psychiatric staff training.
+Write a 1-2 minute realistic roleplay script between a staff member and a patient in a psychiatric unit.
+Include: Patient dialogue, Staff dialogue, and [Directions] for body language.
+Demonstrate: The Choice Method, the Wait 5 Rule, and de-escalation principles.
+Be realistic and practical—something they can do in a 5-minute huddle practice.`;
+            
+            const prompt = `Create a training script for this scenario: ${topic}`;
+
+            try {
+                const result = await callGemini(prompt, system);
+                output.innerHTML = result.replace(/\n/g, '<br>').replace(/\[([^\]]+)\]/g, '[<em>$1</em>]');
+                addXP(50);
+            } catch (err) {
+                output.innerText = "⚠️ Script generation failed. Verify your API key.";
+            } finally {
+                btn.innerText = "Build✨";
+                btn.disabled = false;
+            }
+        }
+
+        async function getDebrief() {
+            const btn = document.getElementById('debrief-btn');
+            const input = document.getElementById('debrief-input').value;
+            const output = document.getElementById('debrief-output');
+
+            if (!input.trim()) {
+                alert("Describe an incident first!");
+                return;
+            }
+            
+            btn.innerHTML = '<div class="loading-spinner"></div>';
+            btn.disabled = true;
+
+            const system = `You are Dr. Rivera, clinical supervisor at Destiny Springs Healthcare.
+Review this real incident and provide structured clinical feedback.
+Format: WHAT WENT WELL | MISSED OPPORTUNITIES | NEXT TIME TRY | COMPETENCY LEVEL
+Be supportive and growth-focused. This is about learning, not judgment.`;
+            
+            const prompt = `Incident Debrief:\n${input}`;
+
+            try {
+                const result = await callGemini(prompt, system);
+                output.innerText = result;
+                addXP(100);
+                showTrainerTip("Debriefs are where real learning happens. Use this feedback.");
+            } catch (err) {
+                output.innerText = "⚠️ Debrief error. Verify your API key.";
+            } finally {
+                btn.innerText = "Get Clinical Feedback✨";
+                btn.disabled = false;
+            }
+        }
+
+        // XP & Scoring
+        function addXP(amount) {
+            xpCount += amount;
+            updateXPDisplay();
+        }
+
+        function addScore(letter) {
+            scores.push(letter);
+        }
+
+        function getXPForScore(score) {
+            const xpMap = { 'A': 250, 'B': 175, 'C': 100, 'D': 50, 'F': 25 };
+            return xpMap[score] || 0;
+        }
+
+        function updateXPDisplay() {
+            document.getElementById('xp-count').innerText = xpCount;
+        }
+
+        function getAverageScore() {
+            if (scores.length === 0) return '-';
+            const scoreValues = { 'A': 4, 'B': 3, 'C': 2, 'D': 1, 'F': 0 };
+            const avg = scores.reduce((sum, s) => sum + scoreValues[s], 0) / scores.length;
+            return ['F', 'D', 'C', 'B', 'A'][Math.round(avg)] || '-';
+        }
+
+        // Update final slide on completion
+        document.addEventListener('click', () => {
+            if (currentSlide === slides.length - 1) {
+                document.getElementById('final-scenarios').innerText = scenariosCompleted;
+                document.getElementById('final-avg-score').innerText = getAverageScore();
+                document.getElementById('final-xp').innerText = xpCount;
+            }
+        });
+
+        // Initialize on load
+        window.addEventListener('load', initialize);
+    </script>
+</body>
+</html>
