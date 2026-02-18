@@ -239,7 +239,7 @@ h1,h2,.font-display{font-family:'Montserrat',sans-serif}
   <div class="card w-full max-w-lg" style="max-height:92vh;overflow-y:auto">
     <div style="padding:1.5rem 1.5rem 0;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #f1f5f9;padding-bottom:1rem">
       <div style="display:flex;align-items:center;gap:.875rem">
-        <div id="acct-avatar-circle" style="width:52px;height:52px;background:linear-gradient(135deg,#2563eb,#7c3aed);border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:900;color:white;font-size:1.1rem">?</div>
+        <div id="acct-avatar-circle" style="width:52px;height:52px;background:linear-gradient(135deg,#2563eb,#7c3aed);border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:900;color:white;font-size:1.1rem"></div>
         <div>
           <h2 style="font-size:1.1rem;font-weight:900;color:#0f172a;font-family:Montserrat,sans-serif" id="acct-header-name">My Account</h2>
           <p style="font-size:.7rem;color:#94a3b8;font-weight:600" id="acct-header-sub">Destiny Springs Healthcare</p>
@@ -342,24 +342,48 @@ h1,h2,.font-display{font-family:'Montserrat',sans-serif}
 <!-- ═══════════════════════════════════════════════ NAV BAR ══ -->
 <div id="app" style="display:none">
 
-<!-- AI Guide bubble (floats lower-left when active) -->
+<!-- Professor Pax guide (floats lower-left when active) -->
 <div id="avatar-container" style="position:fixed;bottom:5.5rem;left:1.25rem;z-index:90;display:none;flex-direction:column;align-items:flex-start">
+  <!-- Speech bubble -->
+  <div id="avatar-speech" style="position:relative;background:#fff;border-radius:1.1rem;border-bottom-left-radius:.3rem;padding:1rem 1.1rem;width:270px;box-shadow:0 8px 32px rgba(0,0,0,.2);font-size:.82rem;font-weight:500;color:#1e293b;display:none;line-height:1.65;margin-bottom:.6rem">
+    <div style="font-size:.65rem;font-weight:900;color:#2563eb;text-transform:uppercase;letter-spacing:.08em;margin-bottom:.35rem">Prof. Pax</div>
+    <span id="avatar-speech-text"></span>
+    <div style="position:absolute;bottom:-8px;left:16px;width:0;height:0;border-left:8px solid transparent;border-right:8px solid transparent;border-top:8px solid #fff"></div>
+  </div>
+  <!-- Avatar face -->
   <div style="position:relative;width:72px;height:72px">
-    <svg width="72" height="72" viewBox="0 0 72 72" style="filter:drop-shadow(0 4px 12px rgba(0,0,0,.35));cursor:pointer" onclick="toggleAvatar()">
-      <circle cx="36" cy="36" r="36" fill="#2563eb"/>
-      <circle cx="36" cy="28" r="14" fill="#bfdbfe"/>
-      <circle cx="30" cy="25" r="3" fill="#1e40af"/>
-      <circle cx="42" cy="25" r="3" fill="#1e40af"/>
-      <circle cx="31" cy="24" r="1" fill="white"/>
-      <circle cx="43" cy="24" r="1" fill="white"/>
-      <ellipse id="avatar-mouth" cx="36" cy="33" rx="5" ry="2.5" fill="#1e40af"/>
-      <circle cx="36" cy="50" r="13" fill="#3b82f6"/>
+    <svg width="72" height="72" viewBox="0 0 72 72" style="filter:drop-shadow(0 4px 14px rgba(37,99,235,.45));cursor:pointer" onclick="toggleAvatar()">
+      <!-- Body -->
+      <circle cx="36" cy="36" r="36" fill="#1d4ed8"/>
+      <!-- Head -->
+      <circle cx="36" cy="27" r="15" fill="#dbeafe"/>
+      <!-- Hair / mortarboard cap -->
+      <rect x="21" y="17" width="30" height="5" rx="2" fill="#1e3a8a"/>
+      <rect x="30" y="12" width="12" height="5" rx="1" fill="#1e3a8a"/>
+      <line x1="36" y1="12" x2="43" y2="15" stroke="#facc15" stroke-width="1.5" stroke-linecap="round"/>
+      <circle cx="43" cy="15" r="2" fill="#facc15"/>
+      <!-- Glasses -->
+      <circle cx="31" cy="27" r="4.5" fill="none" stroke="#1e40af" stroke-width="1.5"/>
+      <circle cx="41" cy="27" r="4.5" fill="none" stroke="#1e40af" stroke-width="1.5"/>
+      <line x1="35.5" y1="27" x2="36.5" y2="27" stroke="#1e40af" stroke-width="1.5"/>
+      <line x1="26.5" y1="27" x2="24" y2="26" stroke="#1e40af" stroke-width="1.2"/>
+      <line x1="45.5" y1="27" x2="48" y2="26" stroke="#1e40af" stroke-width="1.2"/>
+      <!-- Eyes -->
+      <circle cx="31" cy="27" r="1.8" fill="#1e40af"/>
+      <circle cx="41" cy="27" r="1.8" fill="#1e40af"/>
+      <circle cx="31.7" cy="26.3" r="0.7" fill="white"/>
+      <circle cx="41.7" cy="26.3" r="0.7" fill="white"/>
+      <!-- Mouth -->
+      <ellipse id="avatar-mouth" cx="36" cy="34" rx="4.5" ry="2" fill="#1e40af"/>
+      <!-- Shoulders / shirt -->
+      <ellipse cx="36" cy="54" rx="14" ry="10" fill="#1e40af"/>
+      <!-- Tie -->
+      <polygon points="34,44 38,44 37,56 35,56" fill="#facc15"/>
     </svg>
-    <button onclick="toggleAvatar()" style="position:absolute;top:-6px;right:-6px;width:20px;height:20px;background:#ef4444;color:white;border-radius:50%;border:none;font-size:10px;cursor:pointer;font-weight:900;line-height:1" title="Dismiss guide">✕</button>
+    <button onclick="toggleAvatar()" style="position:absolute;top:-6px;right:-6px;width:20px;height:20px;background:#ef4444;color:white;border-radius:50%;border:none;font-size:10px;cursor:pointer;font-weight:900;line-height:1" title="Dismiss Professor Pax">✕</button>
   </div>
-  <div id="avatar-speech" style="position:absolute;bottom:82px;left:0;background:#fff;border-radius:1rem;border-bottom-left-radius:.25rem;padding:.875rem 1rem;width:240px;box-shadow:0 8px 32px rgba(0,0,0,.18);font-size:.8rem;font-weight:600;color:#1e293b;display:none;line-height:1.6">
-    <div style="position:absolute;bottom:-8px;left:12px;width:0;height:0;border-left:8px solid transparent;border-right:8px solid transparent;border-top:8px solid #fff"></div>
-  </div>
+  <!-- Name label -->
+  <div style="font-size:.62rem;font-weight:900;color:#93c5fd;text-align:center;width:72px;margin-top:.3rem;letter-spacing:.04em;text-shadow:0 1px 4px rgba(0,0,0,.5)">PROF. PAX</div>
 </div>
 
 <div style="position:fixed;top:0;left:0;right:0;height:4px;background:#1e293b;z-index:100">
@@ -378,13 +402,13 @@ h1,h2,.font-display{font-family:'Montserrat',sans-serif}
 
   <!-- Right controls -->
   <div style="display:flex;gap:.4rem;align-items:center">
-    <button onclick="showGuide()" title="Ask your AI guide for a tip on this slide" style="background:rgba(96,165,250,.15);border:1px solid rgba(96,165,250,.3);color:#93c5fd;padding:.45rem .7rem;border-radius:.75rem;font-size:.75rem;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:.35rem;white-space:nowrap" onmouseover="this.style.background='rgba(96,165,250,.25)'" onmouseout="this.style.background='rgba(96,165,250,.15)'">🎙️ <span style="font-size:.7rem">Guide</span></button>
+    <button onclick="showGuide()" title="Ask Professor Pax for a tip on this slide" style="background:rgba(96,165,250,.15);border:1px solid rgba(96,165,250,.3);color:#93c5fd;padding:.45rem .7rem;border-radius:.75rem;font-size:.75rem;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:.35rem;white-space:nowrap" onmouseover="this.style.background='rgba(96,165,250,.25)'" onmouseout="this.style.background='rgba(96,165,250,.15)'">🎓 <span style="font-size:.7rem">Prof. Pax</span></button>
     <button onclick="openAdminPrompt()" title="Admin Dashboard" style="background:rgba(124,58,237,.18);border:1px solid rgba(124,58,237,.35);color:#c4b5fd;padding:.45rem .65rem;border-radius:.75rem;font-size:.75rem;font-weight:700;cursor:pointer" onmouseover="this.style.background='rgba(124,58,237,.3)'" onmouseout="this.style.background='rgba(124,58,237,.18)'">⚙️</button>
     <button onclick="prevSlide()" title="Previous slide" style="background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);color:white;width:36px;height:36px;border-radius:.75rem;font-size:1.1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0" onmouseover="this.style.background='rgba(255,255,255,.15)'" onmouseout="this.style.background='rgba(255,255,255,.07)'">‹</button>
     <button onclick="nextSlide()" title="Next slide" style="background:#2563eb;color:white;width:36px;height:36px;border-radius:.75rem;font-size:1.1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 4px 14px rgba(37,99,235,.5)" onmouseover="this.style.background='#1d4ed8'" onmouseout="this.style.background='#2563eb'">›</button>
     <!-- My Account button -->
     <button onclick="openAccountModal()" title="My Account" style="display:flex;align-items:center;gap:.45rem;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);cursor:pointer;padding:.3rem .6rem .3rem .35rem;border-radius:.875rem;flex-shrink:0" onmouseover="this.style.background='rgba(255,255,255,.14)'" onmouseout="this.style.background='rgba(255,255,255,.07)'">
-      <div style="width:28px;height:28px;background:linear-gradient(135deg,#2563eb,#7c3aed);border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:900;color:white;font-size:.7rem;flex-shrink:0" id="nav-avatar-initials">?</div>
+      <div style="width:28px;height:28px;background:linear-gradient(135deg,#2563eb,#7c3aed);border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:900;color:white;font-size:.7rem;flex-shrink:0" id="nav-avatar-initials"></div>
       <span style="color:white;font-weight:700;font-size:.72rem;white-space:nowrap"><span id="nav-name">My Account</span></span>
     </button>
     <button onclick="doSignOut()" title="Sign out" style="background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.25);color:#fca5a5;padding:.45rem .65rem;border-radius:.75rem;font-size:.75rem;font-weight:700;cursor:pointer" onmouseover="this.style.background='rgba(239,68,68,.25)'" onmouseout="this.style.background='rgba(239,68,68,.12)'">Sign Out</button>
@@ -1671,7 +1695,7 @@ function saveProgress() {
 // ─── Avatar & Voice ──────────────────────────────────────
 // Per-slide tips (0-indexed slide number)
 const slideTips = [
-  n=>`Welcome, ${n}! I'm your AI training guide. Click me any time for tips on the current slide. Let's build your de-escalation confidence!`,
+  n=>`Welcome, ${n}. I'm Professor Pax, your training guide here at Destiny Springs. I'll be with you through all twenty-seven slides. Tap me any time you want a pointer on what we're covering. Let's get started.`,
   ()=>'De-escalation is a skill, not a personality trait. Every technique you learn here can be practiced until it becomes instinct.',
   ()=>'The CPI model has 4 key pillars: Care, Welfare, Safety, and Security. Keep all four in mind for every patient interaction.',
   ()=>'Remember: behavior is communication. Ask yourself — what is this patient trying to tell me with this behavior?',
@@ -1736,7 +1760,9 @@ function showAvatarAndSpeak(context, name, directText) {
   bubble.style.display  = 'block';
   bubble.style.opacity  = '0';
   bubble.style.transform = 'translateY(10px)';
-  bubble.textContent = text;
+  const speechText = document.getElementById('avatar-speech-text');
+  if(speechText) speechText.textContent = text;
+  else bubble.textContent = text;
   requestAnimationFrame(()=>{
     requestAnimationFrame(()=>{
       bubble.style.transition = 'opacity .35s ease, transform .35s ease';
@@ -1745,19 +1771,28 @@ function showAvatarAndSpeak(context, name, directText) {
     });
   });
 
-  // Web Speech API
+  // Web Speech API — Professor Pax voice
   if(window.speechSynthesis) {
     window.speechSynthesis.cancel();
     const utt = new SpeechSynthesisUtterance(text);
-    utt.rate = 0.92; utt.pitch = 1.05; utt.volume = 0.9;
-    // Wait for voices to load on first call
+    utt.rate   = 0.87;   // measured professorial pace
+    utt.pitch  = 0.88;   // slightly lower = authoritative warmth
+    utt.volume = 1.0;
     const trySpeak = () => {
       const voices = window.speechSynthesis.getVoices();
-      const preferred = voices.find(v=>v.lang==='en-US' && (v.name.includes('Samantha')||v.name.includes('Female')||v.name.includes('Zira'))) ||
-                        voices.find(v=>v.lang.startsWith('en')) || voices[0];
-      if(preferred) utt.voice = preferred;
-      utt.onstart = ()=>{ if(mouth) mouth.setAttribute('ry','4'); };
-      utt.onend   = ()=>{ if(mouth) mouth.setAttribute('ry','2.5'); };
+      // Priority: best natural male voices available in Chrome on Windows
+      const pick =
+        voices.find(v => v.name === 'Google US English') ||
+        voices.find(v => v.name.includes('Microsoft David') && v.lang.startsWith('en')) ||
+        voices.find(v => v.name.includes('Microsoft Mark')  && v.lang.startsWith('en')) ||
+        voices.find(v => v.name.includes('Microsoft Guy')   && v.lang.startsWith('en')) ||
+        voices.find(v => /\b(male|man|david|mark|guy|james|daniel|aaron|fred|alex|tom|oliver)\b/i.test(v.name) && v.lang.startsWith('en')) ||
+        voices.find(v => v.lang === 'en-US') ||
+        voices.find(v => v.lang.startsWith('en')) ||
+        voices[0];
+      if(pick) utt.voice = pick;
+      utt.onstart = () => { if(mouth) { mouth.setAttribute('ry','3.5'); mouth.style.animation='talking .18s ease infinite'; } };
+      utt.onend   = () => { if(mouth) { mouth.setAttribute('ry','2'); mouth.style.animation='none'; } };
       window.speechSynthesis.speak(utt);
     };
     if(window.speechSynthesis.getVoices().length) { trySpeak(); }
