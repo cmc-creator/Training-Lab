@@ -2491,7 +2491,7 @@ async function revokeAdmin(uid, name) {
 }
 
 function confirmResetTraining() {
-  if(!confirm('⚠️ This will reset all users\\' slide progress to 0 for the new training year. This CANNOT be undone. Are you absolutely sure?')) return;
+  if(!confirm("⚠️ This will reset all users' slide progress to 0 for the new training year. This CANNOT be undone. Are you absolutely sure?")) return;
   if(!confirm('Final confirmation: Reset all training progress?')) return;
   resetAllTraining();
 }
