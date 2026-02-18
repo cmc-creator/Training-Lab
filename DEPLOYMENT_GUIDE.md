@@ -10,7 +10,7 @@ You now have a **complete, enterprise-grade training platform** ready to deploy 
 - Real-time data persistence (cloud-based, survives browser refreshes and device changes)
 - Admin dashboard with leaderboard, user management, analytics, and reporting
 - PDF certificate generation for completed training
-- Mobile-responsive design (works on phones, tablets, desktops)
+- Desktop-first design optimized for computers/laptops, accessible on tablets and mobile devices
 - Gamification (XP, levels, scores) to motivate staff engagement
 
 **Architecture:**
@@ -388,15 +388,21 @@ const ADMIN_UIDS = ["abc123xyz...", "def456uvw..."];
 3. Check GitHub repo → Settings → Pages that deployment completed (green checkmark)
 4. GitHub deploys happen within 1-2 minutes
 
-### Staff Can't Access from Mobile
-**Symptom**: Platform works on desktop but not on phone
+### Staff Accessing from Mobile Devices
+**Note**: The platform uses a desktop-first design optimized for desktop/laptop computers.
 
-**Solution**:
-1. Try different mobile browser (Chrome, Safari, Firefox)
-2. Check phone internet connection
-3. Try incognito/private browsing mode
-4. Firebase sometimes blocks unusual traffic - wait 1 hour and retry
-5. If issue persists, contact Firebase support
+**Mobile Access**:
+1. Platform is accessible on mobile devices but displays the desktop layout
+2. Mobile users can pinch-to-zoom and scroll to navigate
+3. For best experience, recommend tablets (10"+ screens) or desktop computers
+4. If mobile access is critical, users should use landscape orientation and zoom as needed
+
+**Troubleshooting Mobile Access**:
+- Try different mobile browser (Chrome, Safari, Firefox)
+- Check phone internet connection
+- Clear browser cache and try again
+- Use landscape orientation for better viewing
+- Enable "Request Desktop Site" in browser settings if needed
 
 ---
 

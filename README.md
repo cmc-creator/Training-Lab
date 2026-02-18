@@ -11,7 +11,7 @@ An interactive, AI-powered clinical training platform for psychiatric healthcare
 🏆 **Achievement System** - XP, certificates, performance tracking
 🤖 **Roleplay Script Generator** - Create huddle training materials instantly
 📝 **Clinical Debrief Assistant** - AI supervisor feedback on real incidents
-📱 **Mobile-Optimized** - Train on tablets, phones, or desktops
+💻 **Desktop Application with Mobile Support** - Optimized for desktop/laptop use, also accessible on tablets and phones
 🎓 **PDF Certificates** - Print professional training completion documents
 
 ## 🚀 Production Platform
@@ -22,7 +22,7 @@ Staff can access the platform directly from any device with internet connection.
 - Secure user authentication (email/password)
 - Cloud-based data persistence via Firebase
 - Real-time admin dashboard with team analytics
-- Mobile-responsive design for phones, tablets, and desktops
+- Desktop-first design with mobile adaptation for phones, tablets, and portable devices
 
 ### For Staff
 1. Visit the live platform URL above
