@@ -152,14 +152,156 @@ h1,h2,.font-display{font-family:'Montserrat',sans-serif}
 @keyframes spin{to{transform:rotate(360deg)}}
 @keyframes talking{0%,100%{transform:scaleY(1)}50%{transform:scaleY(0.3)}}
 @keyframes orbFloat{0%,100%{transform:translate(0,0) scale(1)}33%{transform:translate(18px,-22px) scale(1.04)}66%{transform:translate(-12px,14px) scale(.97)}}
-/* Responsive: stack on small screens */
-@media(max-width:700px){
+/* ═══════════════════════════════════════════════════════════════
+   RESPONSIVE MOBILE ADAPTIVE STYLES
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Mobile: < 640px */
+@media(max-width:640px){
+  /* Auth screen mobile layout */
   #auth-screen{flex-direction:column!important}
-  #auth-screen>div:first-child{flex:none!important;min-height:200px;padding:1.75rem 1.5rem 1.25rem!important}
-  #auth-screen>div:first-child h1{font-size:1.5rem!important}
-  #auth-screen>div:last-child{width:100%!important;padding:1.75rem 1.5rem!important}
+  #auth-screen>div:first-child{flex:none!important;min-height:180px;padding:1.5rem 1.25rem 1rem!important}
+  #auth-screen>div:first-child h1{font-size:1.35rem!important;line-height:1.15!important}
+  #auth-screen>div:last-child{width:100%!important;padding:1.5rem 1.25rem!important}
   #mobile-logo-block{display:block!important}
+  
+  /* Hide decorative orbs on mobile to improve performance */
+  #auth-screen>div:first-child>div:nth-child(2),
+  #auth-screen>div:first-child>div:nth-child(3),
+  #auth-screen>div:first-child>div:nth-child(4){display:none!important}
+  
+  /* Slides: prevent horizontal overflow */
+  .slide{width:100%!important;padding:1rem 1rem 4rem!important}
+  
+  /* Reduce font sizes for mobile */
+  body{font-size:14px}
+  h1{font-size:1.5rem!important}
+  h2{font-size:1.25rem!important}
+  h3{font-size:1.1rem!important}
+  
+  /* Buttons and controls */
+  .btn{padding:.65rem 1.25rem;font-size:.8rem}
+  .btn-primary,.btn-success,.btn-danger,.btn-purple,.btn-amber{padding:.75rem 1.25rem}
+  
+  /* Input fields */
+  .input-field{padding:.75rem .875rem;font-size:.85rem}
+  
+  /* Navigation buttons positioning */
+  .slide-header{padding:.5rem .75rem;font-size:.85rem}
+  
+  /* Stats bar - stack on mobile */
+  #auth-screen div[style*="display:flex;gap:2rem"]{gap:1rem!important}
+  
+  /* Footer on auth screen */
+  #auth-screen div[style*="border-top:1px solid"]{flex-direction:column;text-align:center;gap:.5rem!important}
+  
+  /* Certificate and print preview */
+  #certificate-preview{padding:1rem!important;font-size:.85rem!important}
+  
+  /* Admin modal - full screen on mobile */
+  #admin-modal>div{max-width:100%;width:100%;margin:0;border-radius:0;max-height:100vh}
+  
+  /* Grid layouts - stack on mobile */
+  .grid-cols-2{grid-template-columns:1fr!important}
+  [style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
+  
+  /* Diagnosis pills - wrap properly */
+  .diagnosis-pill{font-size:.7rem;padding:.4rem 1rem}
+  
+  /* XP bar and level display */
+  .xp-bar{height:6px}
+  
+  /* Trainer chat bubble - adjust position */
+  #trainer-bubble{bottom:4rem;right:1rem;left:1rem;max-width:none!important}
+  
+  /* Score badge */
+  .score-badge{font-size:1.8rem;padding:.75rem;min-width:60px}
+  
+  /* Navigation bar - more compact on mobile */
+  nav[style*="position:fixed;bottom:0"]{padding:.5rem .75rem!important;gap:.35rem!important}
+  nav[style*="position:fixed;bottom:0"] button{padding:.4rem .5rem!important;font-size:.7rem!important}
+  nav[style*="position:fixed;bottom:0"] button[style*="width:36px"]{width:32px!important;height:32px!important}
+  
+  /* Hide "Sign Out" text on mobile, keep button - using visibility for accessibility */
+  nav button[onclick="doSignOut()"]{
+    padding:.45rem!important;
+    overflow:hidden;
+    text-indent:-9999px;
+  }
+  nav button[onclick="doSignOut()"]::before{
+    content:"×";
+    font-size:1.2rem;
+    position:absolute;
+    left:50%;
+    top:50%;
+    transform:translate(-50%,-50%);
+    text-indent:0;
+  }
+  
+  /* Hide Prof. Pax text on mobile - keep for screen readers */
+  nav button[onclick="showGuide()"] span{
+    position:absolute;
+    width:1px;
+    height:1px;
+    padding:0;
+    margin:-1px;
+    overflow:hidden;
+    clip:rect(0,0,0,0);
+    white-space:nowrap;
+    border:0;
+  }
+  
+  /* My Account - hide name on mobile but keep for screen readers */
+  #nav-name{
+    position:absolute;
+    width:1px;
+    height:1px;
+    padding:0;
+    margin:-1px;
+    overflow:hidden;
+    clip:rect(0,0,0,0);
+    white-space:nowrap;
+    border:0;
+  }
+  
+  /* Avatar container - hide on mobile */
+  #avatar-container{display:none!important}
+  
+  /* Welcome card on first slide */
+  #welcome-card{padding:1.5rem!important;max-width:100%!important}
+  
+  /* Slide content padding */
+  .slide>div[style*="padding:2.5rem"]{padding:1.5rem 1rem!important}
+  .slide>div[style*="padding:3rem"]{padding:1.75rem 1rem!important}
+  
+  /* Card max widths */
+  .card[style*="max-w"]{max-width:100%!important;margin:0 auto}
+  
+  /* Modal cards on mobile - full width */
+  #admin-modal .card,#account-modal .card,#admin-pin-modal .card{border-radius:1rem!important}
 }
+
+/* Tablet: 641px - 1024px */
+@media(min-width:641px) and (max-width:1024px){
+  /* Auth screen - adjust proportions */
+  #auth-screen>div:first-child{padding:2rem 2.25rem!important}
+  #auth-screen>div:last-child{width:420px!important;padding:2rem 2.25rem!important}
+  
+  /* Slides */
+  .slide{padding:1.5rem 1.5rem 4rem!important}
+  
+  /* Reduce spacing slightly */
+  body{font-size:15px}
+  .btn{padding:.7rem 1.35rem}
+  
+  /* Grid layouts - 2 columns on tablet */
+  .grid-cols-2{grid-template-columns:repeat(2,1fr)!important}
+  
+  /* Admin modal */
+  #admin-modal>div{max-width:90%;margin:1rem}
+}
+
+/* Desktop: > 1024px uses original inline styles */
 .anim-slideup{animation:slideUp .5s ease both}
 .anim-bounce{animation:bounce 1s ease infinite}
 .anim-wiggle{animation:wiggle .5s ease}
