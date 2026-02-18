@@ -9,7 +9,7 @@ You now have a **complete, enterprise-grade AI-powered training platform** ready
 ✅ **Cloud Data Persistence** - All training data stored securely on Google Firebase  
 ✅ **Real-Time Admin Dashboard** - Facility directors see leaderboard, user metrics, and compliance reports  
 ✅ **Gamification System** - XP, levels, scores, certificates to motivate staff  
-✅ **Mobile-Ready Design** - Works on phones, tablets, desktops  
+✅ **Desktop-First Design with Mobile Support** - Optimized for desktop/laptop use, accessible on tablets and mobile devices  
 ✅ **Zero Server Infrastructure** - Fully hosted on free GitHub Pages + Firebase
 
 ---
@@ -166,7 +166,7 @@ All of these are in your GitHub repo:
 **A:** Create second Firebase project and second GitHub Pages branch. Full multi-facility support ready if needed.
 
 ### Q: Can staff access from their phones?
-**A:** Yes! The platform is fully responsive. Works on iPhone, Android, any mobile browser.
+**A:** Yes! The platform uses a desktop-first design optimized for computers/laptops, but is accessible on mobile devices. Mobile users can zoom and scroll to navigate the full desktop interface. For best experience, recommend using tablets (10"+ screens) or desktop computers.
 
 ### Q: What if Firebase goes down?
 **A:** Extremely rare (99.99% uptime). But you have automatic backups. Export JSON weekly as shown in `OPERATIONS_CHECKLIST.md`.
