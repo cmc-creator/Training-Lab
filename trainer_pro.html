@@ -49,15 +49,11 @@ async function loadUserData(user) {
   initApp();
 }
 window._signUp = async function(name, email, pass) {
-  try {
-    const cred = await createUserWithEmailAndPassword(auth, email, pass);
-    await updateProfile(cred.user, { displayName: name });
-    return null;
-  } catch(e) { return e.message; }
+  const cred = await createUserWithEmailAndPassword(auth, email, pass);
+  await updateProfile(cred.user, { displayName: name });
 };
 window._signIn = async function(email, pass) {
-  try { await signInWithEmailAndPassword(auth, email, pass); return null; }
-  catch(e) { return e.message; }
+  await signInWithEmailAndPassword(auth, email, pass);
 };
 window._signOut = () => signOut(auth);
 window._saveUserData = async function(data) {
@@ -1375,13 +1371,22 @@ async function doSignUp() {
   const pass  = document.getElementById('su-pass').value;
   const conf  = document.getElementById('su-conf').value;
   const err   = document.getElementById('auth-error');
+  const btn   = document.querySelector('#signup-form .btn-success');
   err.style.display='none';
   if (!name){err.textContent='Please enter your full name.';err.style.display='block';return;}
   if (!email||!pass){err.textContent='Please fill in all fields.';err.style.display='block';return;}
   if (pass!==conf){err.textContent='Passwords do not match.';err.style.display='block';return;}
   if (pass.length<6){err.textContent='Password must be at least 6 characters.';err.style.display='block';return;}
-  try { await window._signUp(name,email,pass); }
-  catch(e){ err.textContent = e.message.replace('Firebase: ',''); err.style.display='block'; }
+  if(btn){btn.disabled=true;btn.textContent='Creating account...';}
+  try {
+    await window._signUp(name,email,pass);
+  } catch(e){
+    const msg = e.message.replace('Firebase: ','');
+    err.textContent = msg.includes('email-already-in-use') ? 'That email is already registered. Try signing in.' :
+                      msg.includes('invalid-email') ? 'Please enter a valid email address.' : msg;
+    err.style.display='block';
+    if(btn){btn.disabled=false;btn.textContent='Create Account →';}
+  }
 }
 
 // ─── App Init ────────────────────────────────────────────
