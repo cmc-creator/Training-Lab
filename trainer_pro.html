@@ -132,22 +132,23 @@ h1,h2,.font-display{font-family:'Montserrat',sans-serif}
       <button onclick="showAuthTab('login')" id="tab-login" class="flex-1 py-2 rounded-lg text-sm font-800 font-black transition-all bg-white shadow text-slate-900">Sign In</button>
       <button onclick="showAuthTab('signup')" id="tab-signup" class="flex-1 py-2 rounded-lg text-sm font-black transition-all text-slate-500">Create Account</button>
     </div>
-    <div id="auth-login">
+    <div id="login-form">
       <div class="space-y-3">
         <input id="li-email" class="input-field" type="email" placeholder="your.email@destinysprings.com">
         <input id="li-pass" class="input-field" type="password" placeholder="Password">
         <button class="btn btn-primary w-full text-base py-4" onclick="doSignIn()">Sign In →</button>
       </div>
     </div>
-    <div id="auth-signup" style="display:none">
+    <div id="signup-form" style="display:none">
       <div class="space-y-3">
         <input id="su-name" class="input-field" type="text" placeholder="Your Full Name">
         <input id="su-email" class="input-field" type="email" placeholder="your.email@destinysprings.com">
         <input id="su-pass" class="input-field" type="password" placeholder="Create Password (min 6 chars)">
+        <input id="su-conf" class="input-field" type="password" placeholder="Confirm Password">
         <button class="btn btn-success w-full text-base py-4" onclick="doSignUp()">Create Account →</button>
       </div>
     </div>
-    <div id="auth-error" class="mt-3 text-red-600 text-sm font-semibold text-center hidden"></div>
+    <div id="auth-error" class="mt-3 text-red-600 text-sm font-semibold text-center" style="display:none"></div>
   </div>
 </div>
 
@@ -1349,10 +1350,12 @@ const ADMIN_PIN  = 'DSH2026';
 
 // ─── Auth UI ─────────────────────────────────────────────
 function showAuthTab(tab) {
-  document.getElementById('login-form').style.display  = tab==='login'  ? 'flex' : 'none';
-  document.getElementById('signup-form').style.display = tab==='signup' ? 'flex' : 'none';
-  document.querySelectorAll('.auth-tab').forEach(t=>t.classList.remove('active','text-blue-600','border-b-2','border-blue-600'));
-  document.querySelectorAll('.auth-tab')[tab==='login'?0:1].classList.add('active');
+  document.getElementById('login-form').style.display  = tab==='login'  ? 'block' : 'none';
+  document.getElementById('signup-form').style.display = tab==='signup' ? 'block' : 'none';
+  const loginBtn  = document.getElementById('tab-login');
+  const signupBtn = document.getElementById('tab-signup');
+  if(loginBtn)  { loginBtn.className  = 'flex-1 py-2 rounded-lg text-sm font-black transition-all ' + (tab==='login'  ? 'bg-white shadow text-slate-900' : 'text-slate-500'); }
+  if(signupBtn) { signupBtn.className = 'flex-1 py-2 rounded-lg text-sm font-black transition-all ' + (tab==='signup' ? 'bg-white shadow text-slate-900' : 'text-slate-500'); }
 }
 
 async function doSignIn() {
