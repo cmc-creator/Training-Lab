@@ -879,10 +879,9 @@ h1,h2,.font-display{font-family:'Montserrat',sans-serif}
 
   <!-- Right controls -->
   <div style="display:flex;gap:.4rem;align-items:center;flex-wrap:wrap;justify-content:flex-end">
-    <button onclick="toggleAmbience()" id="ambience-btn" title="Toggle background ambience" style="background:rgba(59,130,246,.12);border:1px solid rgba(59,130,246,.25);color:#bfdbfe;padding:.5rem .78rem;border-radius:.8rem;font-size:.85rem;font-weight:800;cursor:pointer" onmouseover="this.style.background='rgba(59,130,246,.2)'" onmouseout="this.style.background='rgba(59,130,246,.12)'">🎵 Ambience Off</button>
-    <button onclick="openChat()" title="Chat with Prof. Pax" style="background:rgba(244,114,182,.14);border:1px solid rgba(244,114,182,.3);color:#f9a8d4;padding:.5rem .78rem;border-radius:.8rem;font-size:.85rem;font-weight:800;cursor:pointer" onmouseover="this.style.background='rgba(244,114,182,.24)'" onmouseout="this.style.background='rgba(244,114,182,.14)'">💬 Chat</button>
+    <button onclick="toggleAmbience()" id="ambience-btn" title="Toggle background ambience" style="background:rgba(59,130,246,.12);border:1px solid rgba(59,130,246,.25);color:#bfdbfe;padding:.5rem .78rem;border-radius:.8rem;font-size:.85rem;font-weight:800;cursor:pointer" onmouseover="this.style.background='rgba(59,130,246,.2)'" onmouseout="this.style.background='rgba(59,130,246,.12)'">🎵 Ambience (tap to play)</button>
+    <button onclick="openChat()" title="Prof. Pax & chat" style="background:rgba(96,165,250,.18);border:1px solid rgba(96,165,250,.3);color:#bfdbfe;padding:.5rem .78rem;border-radius:.8rem;font-size:.85rem;font-weight:800;cursor:pointer;display:flex;align-items:center;gap:.4rem" onmouseover="this.style.background='rgba(96,165,250,.26)'" onmouseout="this.style.background='rgba(96,165,250,.18)'">🎓 <span style="font-size:.8rem">Pax & Chat</span></button>
     <button onclick="openVideoModal()" title="Example videos" style="background:rgba(251,191,36,.16);border:1px solid rgba(251,191,36,.35);color:#facc15;padding:.5rem .78rem;border-radius:.8rem;font-size:.85rem;font-weight:800;cursor:pointer" onmouseover="this.style.background='rgba(251,191,36,.24)'" onmouseout="this.style.background='rgba(251,191,36,.16)'">🎬 Videos</button>
-    <button onclick="showGuide()" title="Ask Professor Pax for a tip on this slide" style="background:rgba(96,165,250,.15);border:1px solid rgba(96,165,250,.3);color:#93c5fd;padding:.5rem .78rem;border-radius:.8rem;font-size:.85rem;font-weight:800;cursor:pointer;display:flex;align-items:center;gap:.4rem;white-space:nowrap" onmouseover="this.style.background='rgba(96,165,250,.25)'" onmouseout="this.style.background='rgba(96,165,250,.15)'">🎓 <span style="font-size:.78rem">Prof. Pax</span></button>
     <button onclick="openLabRoom()" title="Laboratory Room" style="background:rgba(16,185,129,.14);border:1px solid rgba(16,185,129,.3);color:#a7f3d0;padding:.5rem .78rem;border-radius:.8rem;font-size:.85rem;font-weight:800;cursor:pointer;display:flex;align-items:center;gap:.4rem;white-space:nowrap" onmouseover="this.style.background='rgba(16,185,129,.22)'" onmouseout="this.style.background='rgba(16,185,129,.14)'">🧪 Lab Room</button>
     <button onclick="openAdminPrompt()" title="Admin Dashboard" style="background:rgba(124,58,237,.18);border:1px solid rgba(124,58,237,.35);color:#c4b5fd;padding:.5rem .7rem;border-radius:.8rem;font-size:.85rem;font-weight:800;cursor:pointer" onmouseover="this.style.background='rgba(124,58,237,.3)'" onmouseout="this.style.background='rgba(124,58,237,.18)'">⚙️</button>
     <button onclick="prevSlide()" title="Previous slide" style="background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);color:white;width:36px;height:36px;border-radius:.75rem;font-size:1.1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0" onmouseover="this.style.background='rgba(255,255,255,.15)'" onmouseout="this.style.background='rgba(255,255,255,.07)'">‹</button>
@@ -2243,7 +2242,6 @@ function initApp() {
   updateNavUI();
   updateFinalStats();
   initPaxDrag();
-  toggleAmbience(true);
   renderFinalQuiz();
   renderInlineLogos();
   showHomeGateway();
@@ -2441,13 +2439,18 @@ async function toggleAmbience(auto=false) {
   const btn = document.getElementById('ambience-btn');
   const audio = ensureAmbienceAudio();
   try {
-    if(audio.paused) { await audio.play(); ambienceEnabled = true; }
-    else { audio.pause(); ambienceEnabled = false; }
+    if(audio.paused) {
+      await audio.play();
+      ambienceEnabled = true;
+    } else {
+      audio.pause();
+      ambienceEnabled = false;
+    }
   } catch(e) {
     if(!auto) alert('Could not start audio (browser blocked autoplay). Try clicking again.');
     ambienceEnabled = false;
   }
-  if(btn) btn.textContent = ambienceEnabled ? '🎵 Ambience On' : '🎵 Ambience Off';
+  if(btn) btn.textContent = ambienceEnabled ? '🎵 Ambience On' : '🎵 Ambience (tap to play)';
 }
 
 // ─── Final Quiz (Certificate Gate) ───────────────────────
@@ -2566,7 +2569,11 @@ function openChat() {
   if(mini) mini.style.display = 'none';
   if(typeof restorePax === 'function') restorePax();
   if(!chatMessages.length) {
-    chatMessages.push({role:'assistant', content:"Hi! I'm Prof. Pax. Ask me any training question. If I don't know, I'll suggest asking your supervisor or leadership."});
+    const mode = sessionMode || 'training';
+    const intro = mode === 'lab'
+      ? "I'm here for quick hints and tips while you practice scenarios. Ask for a nudge if you get stuck."
+      : "Hi! I'm Prof. Pax. Ask me any training question. If I don't know, I'll suggest asking your supervisor or leadership.";
+    chatMessages.push({role:'assistant', content:intro});
   }
   renderChatMessages();
   const input = document.getElementById('chat-input');
@@ -2594,7 +2601,10 @@ async function sendChatMessage() {
   chatLoading = true;
   const sendBtn = document.getElementById('chat-send-btn');
   if(sendBtn) { sendBtn.disabled=true; sendBtn.textContent='Sending...'; }
-  const sys = "You are Professor Pax, a calm psychiatric training coach for Destiny Springs Healthcare staff. Keep replies under 120 words. If unsure or the question is outside training scope, say you may not have the answer and recommend they ask their supervisor or leadership. Avoid PHI. Tone: supportive, concise.";
+  const mode = sessionMode || 'training';
+  const sys = mode === 'lab'
+    ? "You are Professor Pax, a calm psychiatric training coach for Destiny Springs Healthcare staff. The user is practicing scenarios in Lab mode. Provide short hints, tips, and nudges (under 80 words). Do not roleplay the patient. If they ask for answers, guide with principles and safety reminders. Avoid PHI and avoid definitive clinical orders."
+    : "You are Professor Pax, a calm psychiatric training coach for Destiny Springs Healthcare staff. Keep replies under 120 words. If unsure or the question is outside training scope, say you may not have the answer and recommend they ask their supervisor or leadership. Avoid PHI. Tone: supportive, concise.";
   const body = { system: sys, messages: chatMessages.slice(-8) };
   let reply = '';
   try {
