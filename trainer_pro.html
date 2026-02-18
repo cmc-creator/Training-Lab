@@ -93,6 +93,34 @@ window._loadAllUsers = async function() {
 window._deleteUser = async function(uid) {
   await remove(ref(db, 'users/' + uid));
 };
+// ─── Admin role system ───────────────────────────────────
+window._getAdminRole = async function(uid) {
+  const snap = await get(ref(db, 'admins/' + uid));
+  return snap.exists() ? snap.val().role : null; // 'owner' | 'admin' | null
+};
+window._setAdminRole = async function(uid, role) {
+  if(role) await set(ref(db, 'admins/' + uid), { role, grantedAt: Date.now() });
+  else await remove(ref(db, 'admins/' + uid));
+};
+window._loadAllAdmins = async function() {
+  const snap = await get(ref(db, 'admins'));
+  return snap.exists() ? snap.val() : {};
+};
+window._getSettings = async function() {
+  const snap = await get(ref(db, 'settings'));
+  return snap.exists() ? snap.val() : {};
+};
+window._saveSettings = async function(data) {
+  await update(ref(db, 'settings'), data);
+};
+window._resetAllProgress = async function() {
+  const snap = await get(ref(db, 'users'));
+  if(!snap.exists()) return;
+  const kids = snap.val();
+  await Promise.all(Object.keys(kids).map(uid =>
+    update(ref(db, 'users/' + uid), { currentSlide:0, xp:0, level:1, scenariosCompleted:0 })
+  ));
+};
 </script>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800;900&family=Montserrat:wght@700;800;900&display=swap" rel="stylesheet">
 <style>
@@ -203,22 +231,6 @@ h1,h2,.font-display{font-family:'Montserrat',sans-serif}
       <div id="at-analytics" style="display:none"></div>
       <div id="at-reports" style="display:none"></div>
     </div>
-  </div>
-</div>
-
-<!-- ═══════════════════════════════════════ ADMIN PIN MODAL ══ -->
-<div id="admin-pin-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:160;align-items:center;justify-content:center">
-  <div class="card p-8 w-full max-w-sm text-center anim-slideup">
-    <div class="text-4xl mb-4">🔐</div>
-    <h2 class="text-xl font-black text-slate-900 mb-2">Admin Access</h2>
-    <p class="text-slate-500 text-sm mb-6">Enter your admin PIN to continue</p>
-    <input id="admin-pin-input" class="input-field text-center text-2xl tracking-widest mb-4" type="password" maxlength="6" placeholder="••••••" onkeydown="if(event.key==='Enter')checkAdminPin()">
-    <div class="flex gap-3">
-      <button class="btn btn-primary flex-1" onclick="checkAdminPin()">Enter Dashboard</button>
-      <button class="btn" style="background:#f1f5f9;color:#475569;flex:1" onclick="closePinModal()">Cancel</button>
-    </div>
-    <div id="pin-error" class="mt-3 text-red-500 text-sm font-semibold" style="display:none">Incorrect PIN. Try again.</div>
-    <p class="text-xs text-slate-400 mt-4">Default PIN: <strong>DSH2026</strong> — Change in settings</p>
   </div>
 </div>
 
@@ -1495,7 +1507,6 @@ let scoreTotal   = 0;
 let avatarActive = false;
 let breathInterval= null;
 let scenarioActive= false;
-const ADMIN_PIN  = 'DSH2026';
 
 // ─── Auth UI ─────────────────────────────────────────────
 function showAuthTab(tab) {
@@ -1864,36 +1875,81 @@ async function doChangePassword() {
 }
 
 // ─── Admin ───────────────────────────────────────────────
-function openAdminPrompt() {
-  const m = document.getElementById('admin-pin-modal');
-  if(m){ m.style.display='flex'; document.getElementById('admin-pin-input').value=''; }
-}
-function checkAdminPin() {
-  const val = document.getElementById('admin-pin-input').value;
-  if(val===ADMIN_PIN){
-    document.getElementById('admin-pin-modal').style.display='none';
-    document.getElementById('admin-modal').style.display='flex';
-    loadLeaderboard();
-  } else {
-    const err=document.getElementById('pin-error');
-    if(err){err.textContent='Incorrect PIN.';err.style.display='block';}
+let currentAdminRole = null;
+
+async function openAdminPrompt() {
+  const modal = document.getElementById('admin-pin-modal');
+  const checking = document.getElementById('admin-access-checking');
+  const denied   = document.getElementById('admin-access-denied');
+  const setup    = document.getElementById('admin-first-setup');
+  const msg      = document.getElementById('admin-access-msg');
+  // Reset state
+  checking.style.display='block'; denied.style.display='none'; setup.style.display='none';
+  msg.textContent = 'Checking your access level…';
+  modal.style.display='flex';
+  try {
+    const uid = window._currentUser?.uid;
+    if(!uid) { denied.style.display='block'; checking.style.display='none'; return; }
+    // Check if any admins exist at all
+    const allAdmins = await window._loadAllAdmins();
+    if(!allAdmins || !Object.keys(allAdmins).length) {
+      // First-time setup — allow current user to claim owner
+      msg.textContent = 'No admin accounts found.';
+      checking.style.display='none'; setup.style.display='block'; return;
+    }
+    const role = await window._getAdminRole(uid);
+    currentAdminRole = role;
+    if(role) {
+      modal.style.display='none';
+      openAdminDashboard();
+    } else {
+      msg.textContent = 'Access check complete.';
+      checking.style.display='none'; denied.style.display='block';
+    }
+  } catch(e) {
+    msg.textContent = 'Error checking access.';
+    checking.style.display='none'; denied.style.display='block';
   }
 }
+
+async function claimOwnerAccount() {
+  const uid = window._currentUser?.uid;
+  if(!uid) return;
+  try {
+    await window._setAdminRole(uid, 'owner');
+    currentAdminRole = 'owner';
+    document.getElementById('admin-pin-modal').style.display='none';
+    openAdminDashboard();
+  } catch(e) { alert('Error claiming owner account: ' + e.message); }
+}
+
+function openAdminDashboard() {
+  const badge = document.getElementById('admin-role-badge');
+  if(badge) badge.textContent = `Destiny Springs Healthcare — Signed in as ${currentAdminRole==='owner' ? '🔑 Owner' : '🛡️ Admin'}`;
+  // Show/hide settings tab based on role
+  const stBtn = document.getElementById('settings-tab-btn');
+  if(stBtn) stBtn.style.display = currentAdminRole==='owner' ? 'block' : 'none';
+  document.getElementById('admin-modal').style.display='flex';
+  loadLeaderboard();
+}
+
 function closePinModal() { document.getElementById('admin-pin-modal').style.display='none'; }
-function closeAdmin() { document.getElementById('admin-modal').style.display='none'; }
+function closeAdmin()    { document.getElementById('admin-modal').style.display='none'; currentAdminRole=null; }
 
 function adminTab(name, el) {
   document.querySelectorAll('.admin-tab-btn').forEach(t=>{
-    t.className='admin-tab-btn py-3 px-4 text-xs font-black uppercase tracking-widest border-b-2 border-transparent text-slate-400';
+    t.className='admin-tab-btn py-3 px-4 text-xs font-black uppercase tracking-widest border-b-2 border-transparent text-slate-400 whitespace-nowrap';
   });
-  if(el){ el.className='admin-tab-btn py-3 px-4 text-xs font-black uppercase tracking-widest border-b-2 border-blue-600 text-blue-600'; }
-  ['leaderboard','users','analytics','reports'].forEach(t=>{
+  if(el){ el.className='admin-tab-btn py-3 px-4 text-xs font-black uppercase tracking-widest border-b-2 border-blue-600 text-blue-600 whitespace-nowrap'; }
+  ['leaderboard','users','analytics','reports','settings'].forEach(t=>{
     const d=document.getElementById('at-'+t);
     if(d) d.style.display=(t===name)?'block':'none';
   });
   if(name==='leaderboard') loadLeaderboard();
   if(name==='users')       loadUsers();
   if(name==='analytics')   loadAnalytics();
+  if(name==='reports')     loadReports();
+  if(name==='settings')    loadSettings();
 }
 
 async function loadLeaderboard() {
@@ -2009,7 +2065,223 @@ async function loadAnalytics() {
   }
 }
 
-// ─── Box Breathing ────────────────────────────────────────
+// ─── Reports ──────────────────────────────────────────────
+async function loadReports() {
+  const el = document.getElementById('at-reports');
+  if(!el) return;
+  el.innerHTML=`<p style="color:#94a3b8;font-size:.875rem;padding:1rem">Loading reports…</p>`;
+  try {
+    const users = await window._loadAllUsers() || {};
+    const list = Object.entries(users).map(([uid,d])=>({uid,...d}));
+    if(!list.length){ el.innerHTML='<p style="color:#94a3b8;font-size:.875rem;padding:1rem">No user data yet.</p>'; return; }
+
+    // Group by department
+    const depts = {};
+    list.forEach(u => {
+      const d = u.department || 'Unassigned';
+      if(!depts[d]) depts[d] = { total:0, completed:0, totalXP:0 };
+      depts[d].total++;
+      if((u.currentSlide||0)>=26) depts[d].completed++;
+      depts[d].totalXP += (u.xp||0);
+    });
+
+    let deptRows = Object.entries(depts).sort((a,b)=>b[1].total-a[1].total).map(([name,d])=>{
+      const pct = Math.round((d.completed/d.total)*100);
+      return `<tr style="border-bottom:1px solid #f1f5f9">
+        <td style="padding:.75rem 1rem;font-weight:700;color:#0f172a">${name}</td>
+        <td style="padding:.75rem 1rem;text-align:center;color:#475569">${d.total}</td>
+        <td style="padding:.75rem 1rem;text-align:center;color:#15803d;font-weight:800">${d.completed}</td>
+        <td style="padding:.75rem 1rem;text-align:center">
+          <div style="display:flex;align-items:center;gap:.5rem">
+            <div style="flex:1;background:#e2e8f0;border-radius:999px;height:8px">
+              <div style="background:${pct>=80?'#16a34a':pct>=50?'#2563eb':'#dc2626'};width:${pct}%;height:8px;border-radius:999px"></div>
+            </div>
+            <span style="font-size:.75rem;font-weight:800;color:#475569;min-width:2.5rem">${pct}%</span>
+          </div>
+        </td>
+        <td style="padding:.75rem 1rem;text-align:center;color:#7c3aed;font-weight:700">${Math.round(d.totalXP/d.total).toLocaleString()}</td>
+      </tr>`;
+    }).join('');
+
+    // Per-user table for CSV
+    const userRows = list.sort((a,b)=>b.xp-a.xp).map(u=>{
+      const done = (u.currentSlide||0)>=26;
+      return `<tr style="border-bottom:1px solid #f1f5f9">
+        <td style="padding:.6rem 1rem;font-weight:700;color:#0f172a">${u.firstName||''} ${u.lastName||''}</td>
+        <td style="padding:.6rem 1rem;color:#64748b;font-size:.8rem">${u.department||'—'}</td>
+        <td style="padding:.6rem 1rem;color:#64748b;font-size:.8rem">${u.jobTitle||'—'}</td>
+        <td style="padding:.6rem 1rem;text-align:center"><span style="background:${done?'#dcfce7':'#fef9c3'};color:${done?'#15803d':'#92400e'};padding:.2rem .65rem;border-radius:999px;font-size:.72rem;font-weight:800">${done?'✅ Complete':'⏳ In Progress'}</span></td>
+        <td style="padding:.6rem 1rem;text-align:center;font-weight:700;color:#7c3aed">${(u.xp||0).toLocaleString()}</td>
+        <td style="padding:.6rem 1rem;text-align:center;color:#475569;font-size:.8rem">${u.lastLogin?new Date(u.lastLogin).toLocaleDateString():'—'}</td>
+      </tr>`;
+    }).join('');
+
+    el.innerHTML = `
+      <div style="display:flex;justify-content:flex-end;margin-bottom:1.25rem">
+        <button onclick="exportCSV()" class="btn btn-primary" style="font-size:.8rem;padding:.5rem 1.25rem">⬇️ Export CSV</button>
+      </div>
+      <h3 style="font-weight:900;font-size:.85rem;color:#0f172a;text-transform:uppercase;letter-spacing:.07em;margin-bottom:.75rem">Completion by Department</h3>
+      <div style="overflow-x:auto;border:1px solid #e2e8f0;border-radius:1rem;margin-bottom:2rem">
+        <table style="width:100%;border-collapse:collapse;font-size:.85rem">
+          <thead><tr style="background:#f8fafc;">
+            <th style="padding:.75rem 1rem;text-align:left;font-weight:900;color:#0f172a">Department</th>
+            <th style="padding:.75rem 1rem;text-align:center;font-weight:900;color:#0f172a">Users</th>
+            <th style="padding:.75rem 1rem;text-align:center;font-weight:900;color:#0f172a">Completed</th>
+            <th style="padding:.75rem 1rem;text-align:left;font-weight:900;color:#0f172a">Rate</th>
+            <th style="padding:.75rem 1rem;text-align:center;font-weight:900;color:#0f172a">Avg XP</th>
+          </tr></thead>
+          <tbody>${deptRows}</tbody>
+        </table>
+      </div>
+      <h3 style="font-weight:900;font-size:.85rem;color:#0f172a;text-transform:uppercase;letter-spacing:.07em;margin-bottom:.75rem">All Users</h3>
+      <div style="overflow-x:auto;border:1px solid #e2e8f0;border-radius:1rem">
+        <table style="width:100%;border-collapse:collapse;font-size:.83rem">
+          <thead><tr style="background:#f8fafc;">
+            <th style="padding:.6rem 1rem;text-align:left;font-weight:900;color:#0f172a">Name</th>
+            <th style="padding:.6rem 1rem;text-align:left;font-weight:900;color:#0f172a">Dept</th>
+            <th style="padding:.6rem 1rem;text-align:left;font-weight:900;color:#0f172a">Title</th>
+            <th style="padding:.6rem 1rem;text-align:center;font-weight:900;color:#0f172a">Status</th>
+            <th style="padding:.6rem 1rem;text-align:center;font-weight:900;color:#0f172a">XP</th>
+            <th style="padding:.6rem 1rem;text-align:center;font-weight:900;color:#0f172a">Last Login</th>
+          </tr></thead>
+          <tbody>${userRows}</tbody>
+        </table>
+      </div>`;
+  } catch(e){
+    el.innerHTML=`<p style="color:#ef4444;font-size:.875rem">Error: ${e.message}</p>`;
+  }
+}
+
+async function exportCSV() {
+  const users = await window._loadAllUsers() || {};
+  const rows = [['First Name','Last Name','Email','Department','Job Title','Employee ID','XP','Level','Slide','Completed','Last Login','Training Year']];
+  Object.values(users).forEach(u => {
+    rows.push([
+      u.firstName||'', u.lastName||'', u.email||'',
+      u.department||'', u.jobTitle||'', u.employeeId||'',
+      u.xp||0, u.level||1, u.currentSlide||0,
+      (u.currentSlide||0)>=26 ? 'Yes':'No',
+      u.lastLogin ? new Date(u.lastLogin).toLocaleDateString() : '',
+      u.trainingYear||''
+    ]);
+  });
+  const csv = rows.map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
+  const a = document.createElement('a');
+  a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
+  a.download = `DSH_Training_Report_${new Date().toISOString().slice(0,10)}.csv`;
+  a.click();
+}
+
+// ─── Settings ─────────────────────────────────────────────
+async function loadSettings() {
+  if(currentAdminRole!=='owner') return;
+  const el = document.getElementById('at-settings');
+  if(!el) return;
+  el.innerHTML=`<p style="color:#94a3b8;font-size:.875rem;padding:1rem">Loading settings…</p>`;
+  try {
+    const [allUsers, allAdmins, settings] = await Promise.all([
+      window._loadAllUsers(), window._loadAllAdmins(), window._getSettings()
+    ]);
+    const userList = Object.entries(allUsers||{});
+    const adminUIDs = Object.keys(allAdmins||{});
+    const currentYear = settings.trainingYear || new Date().getFullYear();
+
+    const userOptions = userList.map(([uid,u])=>`<option value="${uid}">${u.firstName||''} ${u.lastName||''} (${u.email||uid})</option>`).join('');
+
+    const adminRows = adminUIDs.map(uid=>{
+      const role = allAdmins[uid]?.role;
+      const u = allUsers[uid]||{};
+      if(uid===window._currentUser?.uid) return `<tr style="border-bottom:1px solid #f1f5f9;background:#eff6ff">
+        <td style="padding:.75rem 1rem;font-weight:800;color:#1d4ed8">${u.firstName||''} ${u.lastName||''} <span style="font-size:.72rem">(You)</span></td>
+        <td style="padding:.75rem 1rem"><span style="background:#dbeafe;color:#1d4ed8;padding:.2rem .75rem;border-radius:999px;font-size:.75rem;font-weight:800">🔑 ${role}</span></td>
+        <td style="padding:.75rem 1rem;color:#94a3b8;font-size:.8rem">Cannot modify own account</td>
+      </tr>`;
+      return `<tr style="border-bottom:1px solid #f1f5f9">
+        <td style="padding:.75rem 1rem;font-weight:700;color:#0f172a">${u.firstName||''} ${u.lastName||''}</td>
+        <td style="padding:.75rem 1rem"><span style="background:${role==='owner'?'#fef3c7':'#f0fdf4'};color:${role==='owner'?'#92400e':'#15803d'};padding:.2rem .75rem;border-radius:999px;font-size:.75rem;font-weight:800">${role==='owner'?'🔑':'🛡️'} ${role}</span></td>
+        <td style="padding:.75rem 1rem">
+          <button onclick="revokeAdmin('${uid}','${u.firstName||''} ${u.lastName||''}')" style="background:#fef2f2;color:#dc2626;border:1px solid #fecaca;border-radius:.5rem;padding:.3rem .875rem;font-size:.78rem;font-weight:800;cursor:pointer">Revoke</button>
+        </td>
+      </tr>`;
+    }).join('');
+
+    el.innerHTML = `
+      <!-- Training Year -->
+      <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:1.25rem;padding:1.5rem;margin-bottom:1.5rem">
+        <h3 style="font-weight:900;font-size:.875rem;color:#0f172a;text-transform:uppercase;letter-spacing:.07em;margin-bottom:1rem">📅 Training Year</h3>
+        <div style="display:flex;align-items:center;gap:.75rem">
+          <input id="setting-year" type="number" value="${currentYear}" min="2020" max="2099" class="input-field" style="max-width:9rem;font-weight:800;font-size:1.1rem;text-align:center">
+          <button onclick="saveTrainingYear()" class="btn btn-primary" style="font-size:.82rem;padding:.55rem 1.25rem">Save Year</button>
+        </div>
+        <p style="font-size:.75rem;color:#64748b;margin-top:.75rem">Changing the year marks all users' current training as outdated at year-end rollover.</p>
+      </div>
+
+      <!-- Grant Admin -->
+      <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:1.25rem;padding:1.5rem;margin-bottom:1.5rem">
+        <h3 style="font-weight:900;font-size:.875rem;color:#0f172a;text-transform:uppercase;letter-spacing:.07em;margin-bottom:1rem">🛡️ Grant Admin Access</h3>
+        <div style="display:flex;gap:.75rem;flex-wrap:wrap">
+          <select id="grant-admin-uid" class="input-field" style="flex:1;min-width:200px;font-size:.85rem">${userOptions}</select>
+          <button onclick="grantAdminRole('admin')" class="btn" style="background:#f0fdf4;color:#15803d;border:1px solid #bbf7d0;font-size:.82rem;padding:.55rem 1.25rem;font-weight:800">Grant Admin</button>
+        </div>
+      </div>
+
+      <!-- Admin List -->
+      <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:1.25rem;padding:1.5rem;margin-bottom:1.5rem">
+        <h3 style="font-weight:900;font-size:.875rem;color:#0f172a;text-transform:uppercase;letter-spacing:.07em;margin-bottom:1rem">👤 Current Admins</h3>
+        ${adminUIDs.length ? `<div style="overflow-x:auto;border-radius:.875rem;overflow:hidden;border:1px solid #e2e8f0">
+          <table style="width:100%;border-collapse:collapse;font-size:.85rem">
+            <thead><tr style="background:#f1f5f9">
+              <th style="padding:.75rem 1rem;text-align:left;font-weight:900;color:#0f172a">User</th>
+              <th style="padding:.75rem 1rem;text-align:left;font-weight:900;color:#0f172a">Role</th>
+              <th style="padding:.75rem 1rem;text-align:left;font-weight:900;color:#0f172a">Actions</th>
+            </tr></thead>
+            <tbody>${adminRows}</tbody>
+          </table></div>` : '<p style="color:#94a3b8;font-size:.85rem">No admins assigned yet.</p>'}
+      </div>
+
+      <!-- Danger Zone -->
+      <div style="background:#fff5f5;border:1px solid #fecaca;border-radius:1.25rem;padding:1.5rem">
+        <h3 style="font-weight:900;font-size:.875rem;color:#dc2626;text-transform:uppercase;letter-spacing:.07em;margin-bottom:.5rem">⚠️ Danger Zone</h3>
+        <p style="font-size:.8rem;color:#ef4444;margin-bottom:1rem">These actions are irreversible. Proceed with caution.</p>
+        <button onclick="confirmResetTraining()" style="background:#fef2f2;color:#dc2626;border:1px solid #fecaca;border-radius:.75rem;padding:.55rem 1.25rem;font-size:.82rem;font-weight:800;cursor:pointer">🔄 Reset All Training Progress for New Year</button>
+      </div>`;
+  } catch(e) {
+    el.innerHTML=`<p style="color:#ef4444;font-size:.875rem">Error: ${e.message}</p>`;
+  }
+}
+
+async function saveTrainingYear() {
+  const val = document.getElementById('setting-year')?.value;
+  if(!val) return;
+  await window._saveSettings({ trainingYear: parseInt(val) });
+  alert(`Training year set to ${val}. New user sessions will reflect this year.`);
+}
+
+async function grantAdminRole(role) {
+  const uid = document.getElementById('grant-admin-uid')?.value;
+  if(!uid) return;
+  if(!confirm('Grant admin access to this user?')) return;
+  await window._setAdminRole(uid, role);
+  loadSettings();
+}
+
+async function revokeAdmin(uid, name) {
+  if(!confirm(`Revoke admin access for ${name}?`)) return;
+  await window._setAdminRole(uid, null);
+  loadSettings();
+}
+
+function confirmResetTraining() {
+  if(!confirm('⚠️ This will reset all users\\' slide progress to 0 for the new training year. This CANNOT be undone. Are you absolutely sure?')) return;
+  if(!confirm('Final confirmation: Reset all training progress?')) return;
+  resetAllTraining();
+}
+
+async function resetAllTraining() {
+  await window._resetAllProgress();
+  alert('All training progress has been reset for the new year.');
+  loadSettings();
+}
 function startBoxBreathing() {
   if(breathInterval) clearInterval(breathInterval);
   const phases=[{text:'Inhale',dur:4},{text:'Hold',dur:4},{text:'Exhale',dur:4},{text:'Hold',dur:4}];
