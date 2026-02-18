@@ -5,7 +5,8 @@
 <!-- Desktop-first viewport: optimized for desktop (1024px min) but mobile-adaptive -->
 <meta name="viewport" content="width=1024, initial-scale=1.0, user-scalable=yes">
 <title>DSH De-escalation Mastery Lab™</title>
-<script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
@@ -44,6 +45,8 @@ onAuthStateChanged(auth, user => {
   } else {
     document.getElementById('auth-screen').style.display = 'flex';
     document.getElementById('app').style.display = 'none';
+    const hub = document.getElementById('home-gateway');
+    if(hub) hub.style.display = 'none';
   }
 });
 async function loadUserData(user) {
@@ -61,6 +64,7 @@ async function loadUserData(user) {
       lastName: parts.slice(1).join(' ') || '',
       email: user.email, phone: '', jobTitle: '', department: '', employeeId: '',
       xp: 0, level: 1, scenariosDone: 0, scoreTotal: 0,
+      labCredits: 0, lastLabRun: {}, weekXP: 0,
       startDate: Date.now(), lastLogin: Date.now(), trainingYear: new Date().getFullYear()
     };
     await set(ref(db, 'users/' + user.uid), window._userData);
@@ -76,6 +80,7 @@ window._signUp = async function(fname, lname, email, pass, phone, title, dept, e
     name: displayName, firstName: fname, lastName: lname,
     email, phone: phone||'', jobTitle: title||'', department: dept||'', employeeId: empid||'',
     xp: 0, level: 1, scenariosDone: 0, scoreTotal: 0,
+    labCredits: 0, lastLabRun: {}, weekXP: 0,
     startDate: Date.now(), lastLogin: Date.now(), trainingYear: new Date().getFullYear()
   });
 };
@@ -318,6 +323,7 @@ h1,h2,.font-display{font-family:'Montserrat',sans-serif}
 /* Avatar mouth animation */
 #avatar-mouth{animation:none}
 #avatar-mouth.talking{animation:talking .15s ease infinite}
+#home-gateway{display:none;position:fixed;inset:0;z-index:130;background:radial-gradient(circle at 20% 20%,rgba(59,130,246,.12),transparent 35%),radial-gradient(circle at 80% 10%,rgba(14,165,233,.12),transparent 32%),radial-gradient(circle at 30% 80%,rgba(124,58,237,.12),transparent 38%),#0b1224;backdrop-filter:blur(10px);align-items:center;justify-content:center;padding:2rem}
 </style>
 </head>
 <body>
@@ -343,15 +349,8 @@ h1,h2,.font-display{font-family:'Montserrat',sans-serif}
     <div style="position:relative;z-index:2;display:flex;flex-direction:column;height:100%;padding:3rem 3.5rem">
 
       <!-- Logo -->
-      <div style="display:flex;align-items:center;gap:1rem;margin-bottom:auto">
-        <img src="https://static.wixstatic.com/media/793492_d56e2b7b06a14b4f84fee9d4f6b20c01~mv2.png/v1/fill/w_246,h_72,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/793492_d56e2b7b06a14b4f84fee9d4f6b20c01~mv2.png"
-          alt="Destiny Springs Healthcare"
-          style="height:54px;object-fit:contain;filter:brightness(0) invert(1)"
-          onerror="this.style.display='none';document.getElementById('logo-text-fallback').style.display='flex'">
-        <div id="logo-text-fallback" style="display:none;flex-direction:column">
-          <span style="font-family:Montserrat,sans-serif;font-weight:900;font-size:1.15rem;color:white;letter-spacing:-.02em;line-height:1.1">Destiny Springs</span>
-          <span style="font-family:Montserrat,sans-serif;font-weight:700;font-size:.7rem;color:#7dd3fc;letter-spacing:.18em;text-transform:uppercase">Healthcare</span>
-        </div>
+      <div style="display:flex;align-items:center;gap:1rem;margin-bottom:auto;max-width:320px;width:100%">
+        <div class="logo-inline" aria-label="Destiny Springs Healthcare logo" style="width:100%;display:block"></div>
       </div>
 
       <!-- Hero headline -->
@@ -408,8 +407,7 @@ h1,h2,.font-display{font-family:'Montserrat',sans-serif}
 
     <!-- Mobile logo (shows only when left panel hidden) -->
     <div style="display:none;text-align:center;margin-bottom:2rem" id="mobile-logo-block">
-      <div style="font-family:Montserrat,sans-serif;font-weight:900;font-size:1.3rem;color:#0f172a">Destiny Springs</div>
-      <div style="font-size:.7rem;color:#0369a1;font-weight:800;letter-spacing:.15em;text-transform:uppercase">Healthcare</div>
+      <div class="logo-inline" style="max-width:260px;margin:0 auto"></div>
     </div>
 
     <!-- Tab switcher -->
@@ -516,8 +514,8 @@ h1,h2,.font-display{font-family:'Montserrat',sans-serif}
         <span style="font-size:.68rem;color:#94a3b8;font-weight:700">Secure Login</span>
       </div>
       <div style="display:flex;align-items:center;gap:.4rem">
-        <span style="font-size:.9rem">🏅</span>
-        <span style="font-size:.68rem;color:#94a3b8;font-weight:700">Joint Commission Accredited</span>
+        <span style="font-size:.9rem">🧠</span>
+        <span style="font-size:.68rem;color:#94a3b8;font-weight:700">Trauma-Informed Care</span>
       </div>
       <div style="display:flex;align-items:center;gap:.4rem">
         <span style="font-size:.9rem">📍</span>
@@ -526,6 +524,44 @@ h1,h2,.font-display{font-family:'Montserrat',sans-serif}
     </div>
   </div>
 
+</div>
+
+<!-- Home gateway overlay -->
+<div id="home-gateway">
+  <div style="width:100%;max-width:1100px;display:grid;grid-template-columns:1.1fr 1fr;gap:1.75rem;align-items:center;color:#e2e8f0">
+    <div style="display:flex;flex-direction:column;gap:1.1rem">
+      <div class="logo-inline" aria-label="Destiny Springs Healthcare logo" style="max-width:360px;width:100%"></div>
+      <div style="font-family:Montserrat,sans-serif;font-weight:900;font-size:clamp(2rem,4vw,2.7rem);line-height:1.05;color:white">Welcome back to the Destiny Springs De-escalation Mastery Lab™</div>
+      <p style="color:#cbd5e1;font-size:1rem;line-height:1.7;max-width:640px;font-weight:600">Pick where you want to go. Restart the full training from slide one, or jump straight into the live Lab to practice scenarios. Your XP, level, and lab credits stay with you.</p>
+      <div style="display:flex;flex-wrap:wrap;gap:1rem;color:#94a3b8;font-weight:700;font-size:.9rem">
+        <div style="display:flex;align-items:center;gap:.5rem;padding:.65rem 1rem;border-radius:.9rem;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08)">🏥 Destiny Springs Healthcare</div>
+        <div style="display:flex;align-items:center;gap:.5rem;padding:.65rem 1rem;border-radius:.9rem;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08)">🎓 27-module training</div>
+        <div style="display:flex;align-items:center;gap:.5rem;padding:.65rem 1rem;border-radius:.9rem;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08)">🧠 Lab simulations</div>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr;gap:1rem">
+      <button onclick="startTrainingFromHub()" style="border:none;cursor:pointer;padding:1.4rem 1.2rem;border-radius:1.1rem;text-align:left;background:linear-gradient(135deg,#2563eb,#7c3aed);color:white;box-shadow:0 20px 50px rgba(79,70,229,.35);transition:transform .2s,box-shadow .2s">
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:1rem">
+          <div style="display:flex;flex-direction:column;gap:.45rem">
+            <div style="font-size:1.2rem;font-weight:900;font-family:Montserrat,sans-serif">Redo Training from Slide 1</div>
+            <div style="font-size:.95rem;font-weight:600;opacity:.9">Reset to the welcome slide and walk the full program again.</div>
+            <div style="font-size:.8rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;opacity:.8">Includes quizzes, XP, and certificate</div>
+          </div>
+          <div style="font-size:1.8rem">↻</div>
+        </div>
+      </button>
+      <button onclick="enterLabFromHub()" style="border:none;cursor:pointer;padding:1.4rem 1.2rem;border-radius:1.1rem;text-align:left;background:linear-gradient(135deg,#0ea5e9,#22c55e);color:white;box-shadow:0 20px 50px rgba(16,185,129,.28);transition:transform .2s,box-shadow .2s">
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:1rem">
+          <div style="display:flex;flex-direction:column;gap:.45rem">
+            <div style="font-size:1.2rem;font-weight:900;font-family:Montserrat,sans-serif">Enter the Lab</div>
+            <div style="font-size:.95rem;font-weight:600;opacity:.9">Skip straight to live scenarios and earn Lab Credits.</div>
+            <div style="font-size:.8rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;opacity:.8">Practice mode · Immediate feedback</div>
+          </div>
+          <div style="font-size:1.8rem">🚀</div>
+        </div>
+      </button>
+    </div>
+  </div>
 </div>
 
 <!-- ═══════════════════════════════════════════════ ADMIN MODAL ══ -->
@@ -548,6 +584,71 @@ h1,h2,.font-display{font-family:'Montserrat',sans-serif}
       <div id="at-analytics" style="display:none"></div>
       <div id="at-reports" style="display:none"></div>
       <div id="at-settings" style="display:none"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═════════════════════════════════════ LAB ROOM MODAL ══ -->
+<div id="lab-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.78);z-index:145;align-items:center;justify-content:center;padding:1rem">
+  <div class="card" style="width:100%;max-width:980px;max-height:92vh;overflow:hidden;display:flex;flex-direction:column">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:1rem 1.25rem;border-bottom:1px solid #e2e8f0">
+      <div>
+        <h3 style="margin:0;font-size:1.2rem;font-weight:900;color:#0f172a">🧪 Laboratory Room</h3>
+        <p style="margin:0;color:#64748b;font-weight:600;font-size:.85rem">Earn Lab Credits by running live de-escalation scenarios.</p>
+      </div>
+      <div style="display:flex;align-items:center;gap:.75rem">
+        <div style="background:#ecfdf3;border:1px solid #bbf7d0;padding:.4rem .75rem;border-radius:.75rem;font-weight:800;color:#15803d;font-size:.85rem">Credits: <span id="lab-modal-credits">0</span></div>
+        <button onclick="closeLabRoom()" style="width:36px;height:36px;border-radius:50%;background:#f1f5f9;border:none;font-weight:900;color:#475569;cursor:pointer">✕</button>
+      </div>
+    </div>
+    <div style="padding:1.25rem;overflow-y:auto">
+      <div style="display:grid;grid-template-columns:1.1fr 0.9fr;gap:1rem;align-items:start">
+        <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:1rem;padding:1rem">
+          <div style="display:flex;gap:.75rem;flex-wrap:wrap;margin-bottom:1rem">
+            <select id="lab-dx" class="input-field" style="flex:1;min-width:180px">
+              <option value="autism">Autism</option>
+              <option value="adhd">ADHD</option>
+              <option value="schizophrenia">Schizophrenia</option>
+              <option value="bipolar">Bipolar</option>
+              <option value="ptsd">PTSD</option>
+              <option value="bpd">BPD</option>
+            </select>
+            <select id="lab-diff" class="input-field" style="width:180px">
+              <option value="standard">Standard</option>
+              <option value="advanced">Advanced (+10% LC)</option>
+              <option value="intensive">Intensive (+20% LC)</option>
+            </select>
+            <button class="btn btn-primary" onclick="generateLabScenario()" style="padding:.65rem 1.1rem;font-size:.85rem;font-weight:800">🎲 New Scenario</button>
+          </div>
+          <div id="lab-scenario-box" style="background:white;border:1px solid #e2e8f0;border-radius:.875rem;padding:1rem;min-height:140px;color:#0f172a;font-weight:600;line-height:1.6">Pick a diagnosis and click New Scenario.</div>
+        </div>
+        <div style="background:#fffaf5;border:1px solid #fed7aa;border-radius:1rem;padding:1rem">
+          <h4 style="margin:0 0 .5rem;font-size:.95rem;font-weight:900;color:#92400e">Earning Rules</h4>
+          <ul style="margin:0;padding-left:1.1rem;color:#92400e;font-weight:700;font-size:.86rem;line-height:1.6">
+            <li>Base: 50 Lab Credits per completed scenario.</li>
+            <li>Score bonus: A +50, B +30, C +15, D +5.</li>
+            <li>Run each scenario once per day for credits (replays allowed, no credits).</li>
+            <li>Difficulty advanced/intensive adds +10%/+20% to total credits.</li>
+          </ul>
+          <div style="margin-top:.65rem;font-size:.82rem;color:#b45309;font-weight:700">Redemption tiers: 300 · 600 · 1000 · 1800 LC (set in settings).</div>
+        </div>
+      </div>
+
+      <div style="margin-top:1rem;display:grid;grid-template-columns:1fr 1fr;gap:1rem">
+        <textarea id="lab-response" class="input-field" placeholder="Type your de-escalation response..." style="height:180px;resize:vertical"></textarea>
+        <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:1rem;padding:1rem;display:flex;flex-direction:column;gap:.75rem">
+          <button id="lab-submit-btn" class="btn btn-success" onclick="submitLabScenario()" style="width:100%">Submit Response</button>
+          <div id="lab-score-panel" style="display:none;background:white;border:1px solid #e2e8f0;border-radius:.875rem;padding:.75rem">
+            <div style="display:flex;justify-content:space-between;align-items:center">
+              <div style="font-weight:900;color:#0f172a;font-size:1rem">Score: <span id="lab-score-letter">—</span></div>
+              <div style="font-weight:900;color:#16a34a;font-size:.95rem">+<span id="lab-lc-earned">0</span> LC</div>
+            </div>
+            <div id="lab-feedback" style="margin-top:.5rem;color:#475569;white-space:pre-wrap;font-size:.85rem;line-height:1.5"></div>
+            <div id="lab-cooldown" style="margin-top:.4rem;color:#dc2626;font-weight:800;display:none;font-size:.82rem"></div>
+          </div>
+        </div>
+      </div>
+
     </div>
   </div>
 </div>
@@ -650,6 +751,8 @@ h1,h2,.font-display{font-family:'Montserrat',sans-serif}
         <div><p style="font-size:1.4rem;font-weight:900;color:#60a5fa" id="acct-xp-stat">0</p><p style="font-size:.65rem;color:#64748b;font-weight:700;text-transform:uppercase">XP Earned</p></div>
         <div><p style="font-size:1.4rem;font-weight:900;color:#a78bfa" id="acct-level-stat">1</p><p style="font-size:.65rem;color:#64748b;font-weight:700;text-transform:uppercase">Level</p></div>
         <div><p style="font-size:1.4rem;font-weight:900;color:#34d399" id="acct-scenarios-stat">0</p><p style="font-size:.65rem;color:#64748b;font-weight:700;text-transform:uppercase">Scenarios</p></div>
+        <div><p style="font-size:1.4rem;font-weight:900;color:#22c55e" id="acct-lc-stat">0</p><p style="font-size:.65rem;color:#64748b;font-weight:700;text-transform:uppercase">Lab Credits</p></div>
+        <div><p style="font-size:1.4rem;font-weight:900;color:#fbbf24" id="acct-tier-stat">—</p><p style="font-size:.65rem;color:#64748b;font-weight:700;text-transform:uppercase">Redeem Tier</p></div>
       </div>
       <div style="display:flex;gap:.75rem">
         <button class="btn btn-primary" style="flex:1" onclick="openAccountEdit()">✏️ Edit Profile</button>
@@ -703,16 +806,25 @@ h1,h2,.font-display{font-family:'Montserrat',sans-serif}
 <!-- ═══════════════════════════════════════════════ NAV BAR ══ -->
 <div id="app" style="display:none">
 
-<!-- Professor Pax guide (floats upper-right to avoid covering content) -->
-<div id="avatar-container" style="position:fixed;top:5.5rem;right:1.25rem;z-index:90;display:none;flex-direction:column;align-items:flex-end;max-width:340px">
+<!-- Professor Pax guide (draggable, top-right by default) -->
+<div id="avatar-container" style="position:fixed;top:5.5rem;right:1.25rem;z-index:90;display:none;flex-direction:column;align-items:flex-end;max-width:340px;cursor:grab">
   <!-- Speech bubble -->
-  <div id="avatar-speech" style="position:relative;background:#fff;border-radius:1.1rem;border-bottom-right-radius:.3rem;padding:1rem 1.1rem;width:300px;box-shadow:0 8px 32px rgba(0,0,0,.2);font-size:.82rem;font-weight:500;color:#1e293b;display:none;line-height:1.65;margin-bottom:.6rem">
-    <div style="font-size:.65rem;font-weight:900;color:#2563eb;text-transform:uppercase;letter-spacing:.08em;margin-bottom:.35rem">Prof. Pax</div>
+  <div id="avatar-speech" style="position:relative;background:#fff;border-radius:1.1rem;border-bottom-right-radius:.3rem;padding:1rem 1.1rem;width:300px;box-shadow:0 8px 32px rgba(0,0,0,.2);font-size:.9rem;font-weight:600;color:#0f172a;display:none;line-height:1.65;margin-bottom:.6rem;cursor:pointer" title="Click to open chat">
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:.5rem;margin-bottom:.35rem">
+      <div style="font-size:.65rem;font-weight:900;color:#2563eb;text-transform:uppercase;letter-spacing:.08em">Prof. Pax</div>
+      <div style="display:flex;gap:.35rem">
+        <button id="pax-mute-btn" onclick="togglePaxMute(event)" style="border:none;background:#f1f5f9;color:#475569;border-radius:.6rem;padding:.25rem .5rem;font-weight:800;font-size:.75rem;cursor:pointer" title="Mute / Unmute">🔈</button>
+        <button id="pax-minimize-btn" onclick="minimizePax(event)" style="border:none;background:#f1f5f9;color:#475569;border-radius:.6rem;padding:.25rem .55rem;font-weight:800;font-size:.75rem;cursor:pointer" title="Minimize">–</button>
+      </div>
+    </div>
     <span id="avatar-speech-text"></span>
+    <div style="margin-top:.6rem;text-align:right">
+      <button onclick="openChatFromPax(event)" style="border:none;background:#2563eb;color:white;font-weight:800;font-size:.75rem;padding:.35rem .65rem;border-radius:.6rem;cursor:pointer">Open chat</button>
+    </div>
     <div style="position:absolute;bottom:-8px;right:16px;width:0;height:0;border-left:8px solid transparent;border-right:8px solid transparent;border-top:8px solid #fff"></div>
   </div>
   <!-- Avatar face -->
-  <div style="position:relative;width:72px;height:72px">
+  <div id="avatar-drag-handle" style="position:relative;width:72px;height:72px;cursor:grab">
     <svg width="72" height="72" viewBox="0 0 72 72" style="filter:drop-shadow(0 4px 14px rgba(37,99,235,.45));cursor:pointer" onclick="toggleAvatar()">
       <!-- Body -->
       <circle cx="36" cy="36" r="36" fill="#1d4ed8"/>
@@ -744,43 +856,142 @@ h1,h2,.font-display{font-family:'Montserrat',sans-serif}
     <button onclick="toggleAvatar()" style="position:absolute;top:-6px;right:-6px;width:20px;height:20px;background:#ef4444;color:white;border-radius:50%;border:none;font-size:10px;cursor:pointer;font-weight:900;line-height:1" title="Dismiss Professor Pax">✕</button>
   </div>
   <!-- Name label -->
-  <div style="font-size:.62rem;font-weight:900;color:#93c5fd;text-align:center;width:72px;margin-top:.3rem;letter-spacing:.04em;text-shadow:0 1px 4px rgba(0,0,0,.5)">PROF. PAX</div>
+  <div style="font-size:.72rem;font-weight:900;color:#0f172a;background:rgba(255,255,255,.9);padding:.2rem .55rem;border-radius:.75rem;text-align:center;width:auto;margin-top:.35rem;letter-spacing:.05em;box-shadow:0 6px 16px rgba(0,0,0,.15)">PROF. PAX</div>
 </div>
+
+<!-- Minimized pill -->
+<div id="avatar-mini" style="display:none;position:fixed;bottom:5rem;right:1rem;z-index:91;background:linear-gradient(135deg,#2563eb,#7c3aed);color:white;padding:.5rem .75rem;border-radius:.9rem;font-weight:900;cursor:pointer;box-shadow:0 8px 24px rgba(0,0,0,.25);font-size:.82rem" onclick="restorePax()">🎓 Pax (listening)</div>
 
 <div style="position:fixed;top:0;left:0;right:0;height:4px;background:#1e293b;z-index:100">
   <div id="progress-bar" class="progress-bar" style="height:100%;background:linear-gradient(90deg,#2563eb,#7c3aed);width:3.7%;transition:width .4s ease"></div>
 </div>
 
-<nav style="position:fixed;bottom:0;left:0;right:0;background:rgba(10,15,30,.97);backdrop-filter:blur(16px);border-top:1px solid rgba(255,255,255,.07);padding:.6rem 1rem;display:flex;align-items:center;gap:.5rem;z-index:80">
+<nav style="position:fixed;bottom:0;left:0;right:0;background:rgba(10,15,30,.97);backdrop-filter:blur(16px);border-top:1px solid rgba(255,255,255,.07);padding:.6rem 1rem;display:flex;align-items:center;gap:.5rem;z-index:80;flex-wrap:wrap;row-gap:.35rem">
   <!-- Left: slide counter + XP -->
   <div style="display:flex;align-items:center;gap:.75rem;flex-shrink:0">
-    <div id="nav-slide-counter" style="color:#475569;font-size:.68rem;font-weight:700;min-width:42px">1 / 27</div>
-    <div style="color:#64748b;font-size:.6rem;font-weight:600;white-space:nowrap">Lvl <span id="nav-level">1</span> · <span id="nav-xp">0</span> XP</div>
+    <div id="nav-slide-counter" style="color:#475569;font-size:.78rem;font-weight:800;min-width:46px">1 / 27</div>
+    <div style="color:#64748b;font-size:.72rem;font-weight:700;white-space:nowrap">Lvl <span id="nav-level">1</span> · <span id="nav-xp">0</span> XP</div>
+    <div style="color:#10b981;font-size:.72rem;font-weight:800;white-space:nowrap">💠 <span id="nav-lc">0 LC</span></div>
   </div>
 
   <!-- Spacer -->
   <div style="flex:1"></div>
 
   <!-- Right controls -->
-  <div style="display:flex;gap:.4rem;align-items:center">
-    <button onclick="showGuide()" title="Ask Professor Pax for a tip on this slide" style="background:rgba(96,165,250,.15);border:1px solid rgba(96,165,250,.3);color:#93c5fd;padding:.45rem .7rem;border-radius:.75rem;font-size:.75rem;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:.35rem;white-space:nowrap" onmouseover="this.style.background='rgba(96,165,250,.25)'" onmouseout="this.style.background='rgba(96,165,250,.15)'">🎓 <span style="font-size:.7rem">Prof. Pax</span></button>
-    <button onclick="openAdminPrompt()" title="Admin Dashboard" style="background:rgba(124,58,237,.18);border:1px solid rgba(124,58,237,.35);color:#c4b5fd;padding:.45rem .65rem;border-radius:.75rem;font-size:.75rem;font-weight:700;cursor:pointer" onmouseover="this.style.background='rgba(124,58,237,.3)'" onmouseout="this.style.background='rgba(124,58,237,.18)'">⚙️</button>
+  <div style="display:flex;gap:.4rem;align-items:center;flex-wrap:wrap;justify-content:flex-end">
+    <button onclick="toggleAmbience()" id="ambience-btn" title="Toggle background ambience" style="background:rgba(59,130,246,.12);border:1px solid rgba(59,130,246,.25);color:#bfdbfe;padding:.5rem .78rem;border-radius:.8rem;font-size:.85rem;font-weight:800;cursor:pointer" onmouseover="this.style.background='rgba(59,130,246,.2)'" onmouseout="this.style.background='rgba(59,130,246,.12)'">🎵 Ambience Off</button>
+    <button onclick="openChat()" title="Chat with Prof. Pax" style="background:rgba(244,114,182,.14);border:1px solid rgba(244,114,182,.3);color:#f9a8d4;padding:.5rem .78rem;border-radius:.8rem;font-size:.85rem;font-weight:800;cursor:pointer" onmouseover="this.style.background='rgba(244,114,182,.24)'" onmouseout="this.style.background='rgba(244,114,182,.14)'">💬 Chat</button>
+    <button onclick="openVideoModal()" title="Example videos" style="background:rgba(251,191,36,.16);border:1px solid rgba(251,191,36,.35);color:#facc15;padding:.5rem .78rem;border-radius:.8rem;font-size:.85rem;font-weight:800;cursor:pointer" onmouseover="this.style.background='rgba(251,191,36,.24)'" onmouseout="this.style.background='rgba(251,191,36,.16)'">🎬 Videos</button>
+    <button onclick="showGuide()" title="Ask Professor Pax for a tip on this slide" style="background:rgba(96,165,250,.15);border:1px solid rgba(96,165,250,.3);color:#93c5fd;padding:.5rem .78rem;border-radius:.8rem;font-size:.85rem;font-weight:800;cursor:pointer;display:flex;align-items:center;gap:.4rem;white-space:nowrap" onmouseover="this.style.background='rgba(96,165,250,.25)'" onmouseout="this.style.background='rgba(96,165,250,.15)'">🎓 <span style="font-size:.78rem">Prof. Pax</span></button>
+    <button onclick="openLabRoom()" title="Laboratory Room" style="background:rgba(16,185,129,.14);border:1px solid rgba(16,185,129,.3);color:#a7f3d0;padding:.5rem .78rem;border-radius:.8rem;font-size:.85rem;font-weight:800;cursor:pointer;display:flex;align-items:center;gap:.4rem;white-space:nowrap" onmouseover="this.style.background='rgba(16,185,129,.22)'" onmouseout="this.style.background='rgba(16,185,129,.14)'">🧪 Lab Room</button>
+    <button onclick="openAdminPrompt()" title="Admin Dashboard" style="background:rgba(124,58,237,.18);border:1px solid rgba(124,58,237,.35);color:#c4b5fd;padding:.5rem .7rem;border-radius:.8rem;font-size:.85rem;font-weight:800;cursor:pointer" onmouseover="this.style.background='rgba(124,58,237,.3)'" onmouseout="this.style.background='rgba(124,58,237,.18)'">⚙️</button>
     <button onclick="prevSlide()" title="Previous slide" style="background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);color:white;width:36px;height:36px;border-radius:.75rem;font-size:1.1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0" onmouseover="this.style.background='rgba(255,255,255,.15)'" onmouseout="this.style.background='rgba(255,255,255,.07)'">‹</button>
     <button onclick="nextSlide()" title="Next slide" style="background:#2563eb;color:white;width:36px;height:36px;border-radius:.75rem;font-size:1.1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 4px 14px rgba(37,99,235,.5)" onmouseover="this.style.background='#1d4ed8'" onmouseout="this.style.background='#2563eb'">›</button>
     <!-- My Account button -->
     <button onclick="openAccountModal()" title="My Account" style="display:flex;align-items:center;gap:.45rem;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);cursor:pointer;padding:.3rem .6rem .3rem .35rem;border-radius:.875rem;flex-shrink:0" onmouseover="this.style.background='rgba(255,255,255,.14)'" onmouseout="this.style.background='rgba(255,255,255,.07)'">
-      <div style="width:28px;height:28px;background:linear-gradient(135deg,#2563eb,#7c3aed);border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:900;color:white;font-size:.7rem;flex-shrink:0" id="nav-avatar-initials"></div>
-      <span style="color:white;font-weight:700;font-size:.72rem;white-space:nowrap"><span id="nav-name">My Account</span></span>
+      <div style="width:30px;height:30px;background:linear-gradient(135deg,#2563eb,#7c3aed);border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:900;color:white;font-size:.8rem;flex-shrink:0" id="nav-avatar-initials"></div>
+      <span style="color:white;font-weight:800;font-size:.82rem;white-space:nowrap"><span id="nav-name">My Account</span></span>
     </button>
-    <button onclick="doSignOut()" title="Sign out" style="background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.25);color:#fca5a5;padding:.45rem .65rem;border-radius:.75rem;font-size:.75rem;font-weight:700;cursor:pointer" onmouseover="this.style.background='rgba(239,68,68,.25)'" onmouseout="this.style.background='rgba(239,68,68,.12)'">Sign Out</button>
+    <button onclick="doSignOut()" title="Sign out" style="background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.25);color:#fca5a5;padding:.5rem .72rem;border-radius:.8rem;font-size:.85rem;font-weight:800;cursor:pointer" onmouseover="this.style.background='rgba(239,68,68,.25)'" onmouseout="this.style.background='rgba(239,68,68,.12)'">Sign Out</button>
   </div>
 </nav>
+
+<!-- Completion options modal -->
+<div id="completion-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:120;align-items:center;justify-content:center;padding:1rem">
+  <div style="background:white;border-radius:1rem;max-width:520px;width:100%;padding:1.5rem;box-shadow:0 16px 48px rgba(0,0,0,.35)">
+    <div style="display:flex;align-items:center;gap:.75rem;margin-bottom:1rem">
+      <div style="font-size:1.8rem">🎉</div>
+      <div>
+        <h3 style="margin:0;font-size:1.2rem;font-weight:900;color:#0f172a">You're certified!</h3>
+        <p style="margin:.2rem 0 0;color:#475569;font-weight:600;font-size:.92rem">Pick how you want to continue.</p>
+      </div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:.65rem">
+      <button onclick="chooseCompletionPath('review')" style="border:1px solid #e2e8f0;background:#f8fafc;border-radius:.85rem;padding:.85rem 1rem;text-align:left;cursor:pointer;font-weight:800;color:#0f172a">🔁 Review full training (restart)</button>
+      <button onclick="chooseCompletionPath('lab')" style="border:1px solid #d1fae5;background:#ecfdf3;border-radius:.85rem;padding:.85rem 1rem;text-align:left;cursor:pointer;font-weight:800;color:#065f46">🧪 Jump into Lab & role-play only</button>
+      <button onclick="chooseCompletionPath('continue')" style="border:1px solid #e0e7ff;background:#eef2ff;border-radius:.85rem;padding:.85rem 1rem;text-align:left;cursor:pointer;font-weight:800;color:#312e81">🚀 Keep exploring slides</button>
+    </div>
+  </div>
+</div>
+
+<!-- Chat panel -->
+<div id="chat-panel" style="display:none;position:fixed;bottom:5.2rem;right:1rem;z-index:96;width:340px;max-height:420px;background:white;border:1px solid #e2e8f0;border-radius:1rem;box-shadow:0 16px 48px rgba(0,0,0,.2);flex-direction:column;overflow:hidden">
+  <div style="display:flex;align-items:center;justify-content:space-between;padding:.75rem 1rem;border-bottom:1px solid #e2e8f0;background:#f8fafc">
+    <div>
+      <div style="font-weight:900;color:#0f172a;font-size:1.05rem">Ask Prof. Pax</div>
+      <div style="font-size:.8rem;color:#475569;font-weight:700">LLM-powered; defaults to supervisor if unsure</div>
+    </div>
+    <button onclick="closeChat()" style="width:28px;height:28px;border-radius:50%;border:1px solid #e2e8f0;background:#f1f5f9;font-weight:900;color:#475569;cursor:pointer">✕</button>
+  </div>
+  <div style="padding:.65rem 1rem;border-bottom:1px solid #e2e8f0;display:flex;gap:.4rem;align-items:center">
+    <div style="font-size:.8rem;color:#475569;font-weight:700">Secure backend chat enabled for staff.</div>
+  </div>
+  <div id="chat-messages" style="flex:1;overflow-y:auto;padding:1rem;background:#fff"></div>
+  <div style="padding:.6rem 1rem;border-top:1px solid #e2e8f0;background:#f8fafc;display:flex;gap:.5rem;flex-direction:column">
+    <textarea id="chat-input" rows="2" placeholder="Ask a question about de-escalation, policy, safety..." style="width:100%;border:1px solid #e2e8f0;border-radius:.75rem;padding:.7rem;font-size:.95rem;font-weight:700;resize:vertical;background:white"></textarea>
+    <div style="display:flex;gap:.5rem;align-items:center;justify-content:space-between">
+      <span style="font-size:.8rem;color:#64748b;font-weight:700">If I'm unsure, I'll suggest asking a supervisor/leadership.</span>
+      <button id="chat-send-btn" onclick="sendChatMessage()" style="border:none;background:#2563eb;color:white;font-weight:900;padding:.6rem 1rem;border-radius:.85rem;font-size:.9rem;cursor:pointer">Send</button>
+    </div>
+  </div>
+</div>
+
+<!-- Video modal -->
+<div id="video-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.72);z-index:95;align-items:center;justify-content:center;padding:1rem">
+  <div class="card" style="width:100%;max-width:960px;max-height:90vh;overflow:hidden;display:flex;flex-direction:column">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:1rem 1.25rem;border-bottom:1px solid #e2e8f0">
+      <div>
+        <h3 style="margin:0;font-size:1.1rem;font-weight:900;color:#0f172a">🎬 Training Example Videos</h3>
+        <p style="margin:0;color:#475569;font-weight:700;font-size:.9rem">Current links from YouTube/Facebook; swap with internal clips anytime.</p>
+      </div>
+      <button onclick="closeVideoModal()" style="width:36px;height:36px;border-radius:50%;background:#f1f5f9;border:none;font-weight:900;color:#475569;cursor:pointer">✕</button>
+    </div>
+    <div style="padding:1rem;overflow-y:auto;display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:1rem">
+      <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:1rem;padding:.85rem;display:flex;flex-direction:column;gap:.6rem">
+        <div style="font-weight:900;color:#0f172a;font-size:1.02rem">De-escalation Coaching (YouTube)</div>
+        <div style="position:relative;padding-top:56.25%;border-radius:.75rem;overflow:hidden;border:1px solid #e2e8f0;background:#000">
+          <iframe src="https://www.youtube.com/embed/yqdV8wCRET0" title="De-escalation coaching" style="position:absolute;inset:0;width:100%;height:100%;border:0" allow="accelerometer;autoplay;clipboard-write;encrypted-media;gyroscope;picture-in-picture" allowfullscreen></iframe>
+        </div>
+        <p style="font-size:.9rem;color:#475569;font-weight:600;line-height:1.55">Short clip illustrating calming tone and slow pacing during initial contact.</p>
+      </div>
+      <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:1rem;padding:.85rem;display:flex;flex-direction:column;gap:.6rem">
+        <div style="font-weight:900;color:#0f172a;font-size:1.02rem">Staff Safety Scenario (YouTube)</div>
+        <div style="position:relative;padding-top:56.25%;border-radius:.75rem;overflow:hidden;border:1px solid #e2e8f0;background:#000">
+          <iframe src="https://www.youtube.com/embed/x7T5Eukokgs" title="Staff safety scenario" style="position:absolute;inset:0;width:100%;height:100%;border:0" allow="accelerometer;autoplay;clipboard-write;encrypted-media;gyroscope;picture-in-picture" allowfullscreen></iframe>
+        </div>
+        <p style="font-size:.9rem;color:#475569;font-weight:600;line-height:1.55">Body positioning and teamwork during an escalating interaction.</p>
+      </div>
+      <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:1rem;padding:.85rem;display:flex;flex-direction:column;gap:.6rem">
+        <div style="font-weight:900;color:#0f172a;font-size:1.02rem">Trauma-Informed Example (YouTube)</div>
+        <div style="position:relative;padding-top:56.25%;border-radius:.75rem;overflow:hidden;border:1px solid #e2e8f0;background:#000">
+          <iframe src="https://www.youtube.com/embed/Jit68JYo0Us" title="Trauma-informed example" style="position:absolute;inset:0;width:100%;height:100%;border:0" allow="accelerometer;autoplay;clipboard-write;encrypted-media;gyroscope;picture-in-picture" allowfullscreen></iframe>
+        </div>
+        <p style="font-size:.9rem;color:#475569;font-weight:600;line-height:1.55">Example scripting that stays consent-focused and avoids re-traumatization.</p>
+      </div>
+      <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:1rem;padding:.85rem;display:flex;flex-direction:column;gap:.6rem">
+        <div style="font-weight:900;color:#0f172a;font-size:1.02rem">Rapid Tips (YouTube Short)</div>
+        <div style="position:relative;padding-top:56.25%;border-radius:.75rem;overflow:hidden;border:1px solid #e2e8f0;background:#000">
+          <iframe src="https://www.youtube.com/embed/LXCxqJw5rDg" title="Rapid de-escalation tips" style="position:absolute;inset:0;width:100%;height:100%;border:0" allow="accelerometer;autoplay;clipboard-write;encrypted-media;gyroscope;picture-in-picture" allowfullscreen></iframe>
+        </div>
+        <p style="font-size:.9rem;color:#475569;font-weight:600;line-height:1.55">Quick-hit reminders for tone, posture, and choice-offering.</p>
+      </div>
+      <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:1rem;padding:.85rem;display:flex;flex-direction:column;gap:.6rem">
+        <div style="font-weight:900;color:#0f172a;font-size:1.02rem">Facebook Clip</div>
+        <p style="font-size:.9rem;color:#475569;font-weight:600;line-height:1.55">Opens externally due to Facebook permissions.</p>
+        <a href="https://www.facebook.com/share/r/1DN8AiFLVR/" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;justify-content:center;gap:.45rem;background:#2563eb;color:white;font-weight:900;padding:.65rem .9rem;border-radius:.75rem;text-decoration:none">Open in Facebook ↗</a>
+      </div>
+    </div>
+  </div>
+</div>
 
 <!-- ════════════════════════════════════════════════════════════════
      SLIDE 1 — WELCOME
 ═══════════════════════════════════════════════════════════════════ -->
 <div class="slide active" style="background:linear-gradient(135deg,#0f172a 0%,#1e3a5f 60%,#0f172a 100%)">
   <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:3rem 2rem;text-align:center;padding-bottom:6rem">
+    <div style="margin-bottom:1.2rem;max-width:320px;width:70vw;filter:drop-shadow(0 6px 14px rgba(0,0,0,.25))">
+      <div class="logo-inline" aria-label="Destiny Springs Healthcare logo" style="width:100%;display:block"></div>
+    </div>
     <div class="badge" style="background:rgba(37,99,235,.2);color:#93c5fd;border:1px solid rgba(37,99,235,.3);margin-bottom:2rem;font-size:.7rem">
       🏥 Inpatient Psychiatric Acute Care · Est. 2026
     </div>
@@ -1860,6 +2071,14 @@ function getSlides14to27() { return `
     <div style="font-size:5rem;margin-bottom:1rem;animation:bounce 1s ease infinite">🎓</div>
     <h2 style="font-size:clamp(1.75rem,5vw,3rem);font-weight:900;color:white;font-family:Montserrat,sans-serif;margin-bottom:.75rem">Training Complete!</h2>
     <p style="color:#a5b4fc;font-size:1rem;margin-bottom:2.5rem">You have completed the Destiny Springs De-escalation Mastery Lab™</p>
+    <div id="final-quiz-card" style="background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);border-radius:1rem;padding:1.25rem;max-width:720px;width:100%;margin-bottom:1.5rem">
+      <div style="display:flex;align-items:center;gap:.75rem;margin-bottom:.75rem"><div style="font-size:1.5rem">📝</div><div><div style="font-weight:900;color:white;font-size:1rem">10-question knowledge check</div><div style="color:#cbd5e1;font-size:.85rem;font-weight:600">Pass to unlock your certificate.</div></div></div>
+      <div id="final-quiz-questions" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:.75rem"></div>
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:1rem;margin-top:1rem">
+        <div id="final-quiz-result" style="color:#cbd5e1;font-weight:700;font-size:.9rem">Answer all questions, then submit.</div>
+        <button onclick="submitFinalQuiz()" style="background:#38bdf8;border:none;color:#0f172a;font-weight:900;padding:.65rem 1rem;border-radius:.75rem;cursor:pointer">Submit quiz</button>
+      </div>
+    </div>
     <div style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:1.5rem;padding:2rem;max-width:600px;width:100%;margin-bottom:2rem;backdrop-filter:blur(12px)">
       <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-bottom:1.5rem">
         <div style="text-align:center"><div id="final-xp" style="font-size:2rem;font-weight:900;color:#60a5fa">0</div><p style="font-size:.7rem;color:#94a3b8;font-weight:700;margin-top:.25rem">Total XP</p></div>
@@ -1867,8 +2086,8 @@ function getSlides14to27() { return `
         <div style="text-align:center"><div id="final-scenarios" style="font-size:2rem;font-weight:900;color:#34d399">0</div><p style="font-size:.7rem;color:#94a3b8;font-weight:700;margin-top:.25rem">Scenarios</p></div>
         <div style="text-align:center"><div id="final-score" style="font-size:2rem;font-weight:900;color:#fb923c">—</div><p style="font-size:.7rem;color:#94a3b8;font-weight:700;margin-top:.25rem">Avg Score</p></div>
       </div>
-      <button onclick="downloadCertificate()" style="width:100%;background:linear-gradient(135deg,#2563eb,#7c3aed);color:white;font-weight:900;font-size:1rem;padding:1rem;border-radius:1rem;border:none;cursor:pointer;font-family:Montserrat,sans-serif;letter-spacing:.02em;box-shadow:0 8px 24px rgba(37,99,235,.4)">
-        📜 Download Certificate of Completion
+      <button id="cert-btn" onclick="downloadCertificate()" disabled style="width:100%;background:linear-gradient(135deg,#2563eb,#7c3aed);color:white;font-weight:900;font-size:1rem;padding:1rem;border-radius:1rem;border:none;cursor:pointer;font-family:Montserrat,sans-serif;letter-spacing:.02em;box-shadow:0 8px 24px rgba(37,99,235,.4);opacity:.8">
+        📜 Download Certificate of Completion (unlocked after quiz)
       </button>
     </div>
     <p style="color:#475569;font-size:.75rem;line-height:1.8">© 2026 Destiny Springs Healthcare. De-escalation Mastery Lab™ is proprietary training content.<br>Unauthorized reproduction, distribution, or commercial use is prohibited.</p>
@@ -1883,6 +2102,26 @@ function getSlides14to27() { return `
 ═══════════════════════════════════════════════════════════ -->
 <script>
 // ─── State ────────────────────────────────────────────────
+const LOGO_SVG = `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 900 300' role='img' aria-label='Destiny Springs Healthcare' width='100%' height='100%'>
+  <defs>
+    <linearGradient id='ds-grad' x1='0%' y1='0%' x2='100%' y2='100%'>
+      <stop offset='0%' stop-color='#1FA0E0'/>
+      <stop offset='100%' stop-color='#0066B3'/>
+    </linearGradient>
+  </defs>
+  <g transform='translate(40 30) scale(0.9)'>
+    <path fill='url(#ds-grad)' d='M200 240c-77 0-140-63-140-140S123 0 200 0s140 63 140 140-63 140-140 140Zm0-16c67 0 122-55 122-124S267  -24 200 -24 78 31 78 100s55 124 122 124Z' opacity='0.35'/>
+    <path fill='url(#ds-grad)' d='M205 248c-74 0-134-60-134-134 0-24 6-47 18-67 4-7 14-9 20-4 49 44 93 50 129 27 8-5 18 3 15 12-14 46-51 105-151 112 22 17 50 27 80 27 56 0 105-33 126-80-8 67-65 119-133 119Z'/>
+    <path fill='url(#ds-grad)' d='M121 213c39-6 70-34 95-107 4-13 19-17 28-7 9 10 12 26 6 41-27 75-78 97-129 73Z'/>
+    <text x='280' y='130' fill='#0f5fab' font-family='Georgia,serif' font-size='86' font-weight='400'>Destiny Springs</text>
+    <text x='280' y='185' fill='#0f9edd' font-family='Helvetica Neue,Arial,sans-serif' font-size='46' font-weight='700' letter-spacing='6'>HEALTHCARE</text>
+  </g>
+</svg>`;
+function renderInlineLogos() {
+  document.querySelectorAll('.logo-inline').forEach(el => { el.innerHTML = LOGO_SVG; });
+}
+document.addEventListener('DOMContentLoaded', renderInlineLogos);
+const CHAT_ENDPOINT = '/api/pax-chat';
 let currentSlide = 0;
 let totalSlides  = 0;
 let xp           = 0;
@@ -1891,9 +2130,27 @@ let scenariosDone= 0;
 let scoreTotal   = 0;
 let avatarActive = false;
 let breathInterval= null;
+let completedTraining = false;
+let finalQuizPassed = false;
+let finalQuizScore = 0;
+let finalQuizResponses = {};
+let sessionMode = 'training'; // training | review | lab | prompt
 let scenarioActive= false;
 let adminCodeHash = null; // stored hash from settings
 let lastSpokenSlide = -1; // ensure Pax speaks once per slide
+let labCredits = 0;
+let currentLabScenarioId = null;
+let currentLabDx = null;
+let labSettings = { labBaseLC:50, labScoreBonus:{A:50,B:30,C:15,D:5}, redemptionTiers:[300,600,1000,1800], weeklyBonusLC:200 };
+let paxMuted = false;
+let paxMinimized = false;
+let draggingPax = false;
+let dragOffset = {x:0,y:0};
+let chatMessages = [];
+let chatApiKey = '';
+let chatLoading = false;
+let ambienceAudio = null;
+let ambienceEnabled = false;
 
 async function hashText(text) {
   const enc = new TextEncoder();
@@ -1972,14 +2229,24 @@ function initApp() {
   if(!window._slidesReady) { window._initAppQueued = true; return; }
   const slides = document.querySelectorAll('.slide');
   totalSlides  = slides.length;
-  currentSlide = window._userData?.currentSlide || 0;
+  labCredits   = window._userData?.labCredits || 0;
   xp    = window._userData?.xp    || 0;
   level = window._userData?.level || 1;
   scenariosDone = window._userData?.scenariosDone || 0;
   scoreTotal    = window._userData?.scoreTotal   || 0;
+  completedTraining = !!window._userData?.completedTraining;
+  finalQuizPassed   = !!window._userData?.finalQuizPassed;
+  sessionMode       = window._userData?.sessionMode || 'training';
+  currentSlide      = 0;
+
   showSlide(currentSlide);
   updateNavUI();
   updateFinalStats();
+  initPaxDrag();
+  toggleAmbience(true);
+  renderFinalQuiz();
+  renderInlineLogos();
+  showHomeGateway();
   // Use stored firstName first, then displayName, then email prefix
   const ud = window._userData || {};
   const firstName = ud.firstName ||
@@ -2000,6 +2267,12 @@ function showSlide(n) {
     if(i===n) s.scrollTop = 0;
   });
   currentSlide = n;
+  if(n===totalSlides-1){
+    completedTraining = true;
+    window._saveUserData({ completedTraining:true }).catch(()=>{});
+    const certBtn = document.getElementById('cert-btn');
+    if(certBtn && !finalQuizPassed) certBtn.disabled = true;
+  }
   // Progress bar
   const pct = totalSlides>1 ? (n/(totalSlides-1))*100 : 0;
   const pb = document.getElementById('progress-bar');
@@ -2055,10 +2328,72 @@ function updateNavUI() {
   const navInit  = document.getElementById('nav-avatar-initials');
   const navLevel = document.getElementById('nav-level');
   const navXP    = document.getElementById('nav-xp');
+  const navLC    = document.getElementById('nav-lc');
   if(navName)  navName.textContent  = firstName;
   if(navInit)  navInit.textContent  = initials;
   if(navLevel) navLevel.textContent = `Level ${level}`;
   if(navXP)    navXP.textContent    = `${xp.toLocaleString()} XP`;
+  if(navLC)    navLC.textContent    = `${labCredits.toLocaleString()} LC`;
+}
+
+function showHomeGateway() {
+  const hub = document.getElementById('home-gateway');
+  if(hub) hub.style.display = 'flex';
+}
+
+function hideHomeGateway() {
+  const hub = document.getElementById('home-gateway');
+  if(hub) hub.style.display = 'none';
+}
+
+function startTrainingFromHub() {
+  hideHomeGateway();
+  const modal = document.getElementById('completion-modal');
+  if(modal) modal.style.display = 'none';
+  sessionMode = 'training';
+  completedTraining = false;
+  finalQuizPassed = false;
+  finalQuizScore = 0;
+  finalQuizResponses = {};
+  currentSlide = 0;
+  showSlide(0);
+  renderFinalQuiz();
+  window._saveUserData({ sessionMode, currentSlide:0, completedTraining:false, finalQuizPassed:false, finalQuizScore:0 }).catch(()=>{});
+}
+
+function enterLabFromHub() {
+  hideHomeGateway();
+  sessionMode = 'lab';
+  currentSlide = 0;
+  showSlide(0);
+  window._saveUserData({ sessionMode, currentSlide:0 }).catch(()=>{});
+  setTimeout(()=>openLabRoom(), 350);
+}
+
+function showCompletionOptions() {
+  const modal = document.getElementById('completion-modal');
+  if(modal) modal.style.display='flex';
+}
+
+function chooseCompletionPath(mode) {
+  const modal = document.getElementById('completion-modal');
+  if(modal) modal.style.display='none';
+  completedTraining = true;
+  if(mode === 'review') {
+    sessionMode = 'review';
+    currentSlide = 0;
+    showSlide(0);
+    window._saveUserData({ sessionMode, currentSlide:0, completedTraining:true }).catch(()=>{});
+  } else if(mode === 'lab') {
+    sessionMode = 'lab';
+    currentSlide = 0;
+    showSlide(0);
+    window._saveUserData({ sessionMode, currentSlide:0, completedTraining:true }).catch(()=>{});
+    setTimeout(()=>openLabRoom(), 300);
+  } else {
+    sessionMode = 'training';
+    window._saveUserData({ sessionMode, completedTraining:true }).catch(()=>{});
+  }
 }
 
 // ─── XP & Level ──────────────────────────────────────────
@@ -2072,13 +2407,98 @@ function awardXP(amount, save=true) {
   if(save) saveProgress();
 }
 
+function awardLabCredits(amount, save=true) {
+  labCredits += amount;
+  updateNavUI();
+  if(save) saveProgress();
+}
+
+function getTier(lc, tiers) {
+  const arr = Array.isArray(tiers) ? tiers.slice().sort((a,b)=>a-b) : [];
+  let tier = null;
+  arr.forEach((t,i)=>{ if(lc >= t) tier = i+1; });
+  return tier;
+}
+
+function ensureAmbienceAudio() {
+  if(ambienceAudio) return ambienceAudio;
+  ambienceAudio = new Audio('https://cdn.pixabay.com/download/audio/2022/10/09/audio_0c1486c1ef.mp3?filename=calm-nature-ambient-124008.mp3');
+  ambienceAudio.loop = true;
+  ambienceAudio.volume = 0.22;
+  return ambienceAudio;
+}
+
+async function toggleAmbience(auto=false) {
+  const btn = document.getElementById('ambience-btn');
+  const audio = ensureAmbienceAudio();
+  try {
+    if(audio.paused) { await audio.play(); ambienceEnabled = true; }
+    else { audio.pause(); ambienceEnabled = false; }
+  } catch(e) {
+    if(!auto) alert('Could not start audio (browser blocked autoplay). Try clicking again.');
+    ambienceEnabled = false;
+  }
+  if(btn) btn.textContent = ambienceEnabled ? '🎵 Ambience On' : '🎵 Ambience Off';
+}
+
+// ─── Final Quiz (Certificate Gate) ───────────────────────
+const finalQuizQuestions = [
+  {q:'First move when entering a tense room?', a:['Announce yourself calmly from the doorway','Stand close and speak firmly','Approach from behind to surprise'], correct:0},
+  {q:'Best body angle to reduce threat perception?', a:['90° straight on','45° off-angle with space','Stand directly over the patient'], correct:1},
+  {q:'What to remove first for autism sensory overload?', a:['Begin rapid questioning','Increase lighting','Remove the sensory trigger and lower stimulation'], correct:2},
+  {q:'When a patient is in CPI Stage 3 (Acceleration), you should…', a:['Debate the facts','Reduce verbal input and stimulation','Move closer to assert control'], correct:1},
+  {q:'Trauma-informed touch requires…', a:['Touching only if others are present','Announcing and asking consent every time','Never touching in any situation'], correct:1},
+  {q:'De-escalation language should be…', a:['Short, validating, offers choice','Complex, clinical, detailed','Directive and loud'], correct:0},
+  {q:'If unsure or out of scope, Prof. Pax will…', a:['Give definitive clinical orders','Guess an answer','Recommend asking supervisor/leadership'], correct:2},
+  {q:'Non-punitive limit setting sounds like…', a:['“If you do that, you’ll be punished.”','“I can’t let you do X because of safety. What I can do is Y.”','“Stop or I’ll call security.”'], correct:1},
+  {q:'Bipolar mania tone matching means…', a:['Suddenly going silent','Matching some energy then guiding it down','Speaking in monotone immediately'], correct:1},
+  {q:'Before certificate download you must…', a:['Finish quiz and pass threshold','Just click download anytime','Skip the quiz'], correct:0}
+];
+
+function renderFinalQuiz() {
+  const box = document.getElementById('final-quiz-questions');
+  if(!box) return;
+  box.innerHTML = finalQuizQuestions.map((q,i)=>{
+    const options = q.a.map((opt,idx)=>`
+      <label style="display:block;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.12);border-radius:.75rem;padding:.55rem .65rem;color:#e2e8f0;font-weight:600;cursor:pointer;margin-bottom:.4rem">
+        <input type="radio" name="fq-${i}" value="${idx}" style="margin-right:.5rem">${opt}
+      </label>`).join('');
+    return `<div style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:.9rem;padding:.75rem"><div style="color:#cbd5e1;font-weight:800;margin-bottom:.4rem;font-size:.9rem">Q${i+1}. ${q.q}</div>${options}</div>`;
+  }).join('');
+  const certBtn = document.getElementById('cert-btn');
+  if(certBtn) certBtn.disabled = !finalQuizPassed;
+  const res = document.getElementById('final-quiz-result');
+  if(res && finalQuizPassed) res.textContent = `Passed ${finalQuizScore}/10 — certificate unlocked.`;
+}
+
+function submitFinalQuiz() {
+  let answered = 0;
+  let score = 0;
+  finalQuizQuestions.forEach((q,i)=>{
+    const sel = document.querySelector(`input[name="fq-${i}"]:checked`);
+    if(sel){ answered++; if(Number(sel.value)===q.correct) score++; }
+  });
+  if(answered < finalQuizQuestions.length){
+    alert('Please answer all 10 questions.');
+    return;
+  }
+  finalQuizScore = score;
+  const pass = score >= 8;
+  finalQuizPassed = pass;
+  const certBtn = document.getElementById('cert-btn');
+  if(certBtn) { certBtn.disabled = !pass; certBtn.style.opacity = pass ? '1' : '.8'; }
+  const res = document.getElementById('final-quiz-result');
+  if(res) res.textContent = pass ? `Great work — you passed ${score}/10. Certificate unlocked.` : `Score ${score}/10. Need 8+ to unlock. Review and retry.`;
+  window._saveUserData({ finalQuizPassed: pass, finalQuizScore: score, completedTraining:true }).catch(()=>{});
+}
+
 // ─── Save / Load Progress ────────────────────────────────
 function saveProgress() {
   const user = window._currentUser;
   if(!user) return;
   window._saveUserData({
     xp, level, currentSlide,
-    scenariosDone, scoreTotal,
+    scenariosDone, scoreTotal, labCredits, sessionMode,
     lastActive: Date.now(),
     displayName: user.displayName || '',
     email: user.email
@@ -2117,6 +2537,147 @@ const slideTips = [
   ()=>'Great work completing the training! Download your certificate and share it with your supervisor. These skills save lives.'
 ];
 
+function renderChatMessages() {
+  const box = document.getElementById('chat-messages');
+  if(!box) return;
+  box.innerHTML = chatMessages.map(m=>`<div style="margin-bottom:.65rem;">${m.role==='user'?'<div style="font-size:.78rem;color:#475569;font-weight:800;margin-bottom:.2rem">You</div>':'<div style="font-size:.78rem;color:#1d4ed8;font-weight:900;margin-bottom:.2rem">Prof. Pax</div>'}<div style="background:${m.role==='user'?'#e2e8f0':'#eff6ff'};border:1px solid ${m.role==='user'?'#cbd5e1':'#bfdbfe'};border-radius:.75rem;padding:.65rem .8rem;font-size:.92rem;color:#0f172a;line-height:1.55">${m.content}</div></div>`).join('');
+  box.scrollTop = box.scrollHeight;
+}
+
+function openChat() {
+  const panel = document.getElementById('chat-panel');
+  if(panel) {
+    panel.style.display='flex';
+    panel.style.opacity='1';
+  }
+  const avatar = document.getElementById('avatar-container');
+  const mini = document.getElementById('avatar-mini');
+  paxMinimized = false;
+  if(avatar) avatar.style.display = 'flex';
+  if(mini) mini.style.display = 'none';
+  if(typeof restorePax === 'function') restorePax();
+  if(!chatMessages.length) {
+    chatMessages.push({role:'assistant', content:"Hi! I'm Prof. Pax. Ask me any training question. If I don't know, I'll suggest asking your supervisor or leadership."});
+  }
+  renderChatMessages();
+  const input = document.getElementById('chat-input');
+  if(input) setTimeout(()=>input.focus(), 50);
+}
+
+function openChatFromPax(evt) {
+  if(evt) evt.stopPropagation();
+  openChat();
+}
+
+function closeChat() {
+  const panel = document.getElementById('chat-panel');
+  if(panel) panel.style.display='none';
+}
+
+async function sendChatMessage() {
+  if(chatLoading) return;
+  const input = document.getElementById('chat-input');
+  const q = (input?.value||'').trim();
+  if(!q) return;
+  chatMessages.push({role:'user', content:q});
+  renderChatMessages();
+  if(input) input.value='';
+  chatLoading = true;
+  const sendBtn = document.getElementById('chat-send-btn');
+  if(sendBtn) { sendBtn.disabled=true; sendBtn.textContent='Sending...'; }
+  const sys = "You are Professor Pax, a calm psychiatric training coach for Destiny Springs Healthcare staff. Keep replies under 120 words. If unsure or the question is outside training scope, say you may not have the answer and recommend they ask their supervisor or leadership. Avoid PHI. Tone: supportive, concise.";
+  const body = { system: sys, messages: chatMessages.slice(-8) };
+  let reply = '';
+  try {
+    const res = await fetch(CHAT_ENDPOINT, {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify(body)
+    });
+    if(!res.ok) throw new Error('LLM request failed');
+    const data = await res.json();
+    reply = (data?.reply || data?.choices?.[0]?.message?.content || '').trim();
+  } catch(e) {
+    reply = "I might not have the answer here. Please check with your supervisor or leadership for the safest guidance.";
+  }
+  chatMessages.push({role:'assistant', content:reply});
+  chatLoading = false;
+  if(sendBtn) { sendBtn.disabled=false; sendBtn.textContent='Send'; }
+  renderChatMessages();
+}
+
+function updatePaxMiniLabel() {
+  const mini = document.getElementById('avatar-mini');
+  if(mini) mini.textContent = paxMuted ? '🎓 Pax (muted)' : '🎓 Pax (listening)';
+}
+
+function togglePaxMute(evt) {
+  if(evt) evt.stopPropagation();
+  paxMuted = !paxMuted;
+  const btn = document.getElementById('pax-mute-btn');
+  if(btn) btn.textContent = paxMuted ? '🔇' : '🔈';
+  if(paxMuted && window.speechSynthesis) window.speechSynthesis.cancel();
+  updatePaxMiniLabel();
+}
+
+function minimizePax(evt) {
+  if(evt) evt.stopPropagation();
+  paxMinimized = true;
+  const cont = document.getElementById('avatar-container');
+  const bubble = document.getElementById('avatar-speech');
+  const mini = document.getElementById('avatar-mini');
+  if(bubble) bubble.style.display = 'none';
+  if(cont) cont.style.display = 'none';
+  if(mini) { mini.style.display = 'block'; updatePaxMiniLabel(); }
+  if(window.speechSynthesis) window.speechSynthesis.cancel();
+}
+
+function restorePax() {
+  paxMinimized = false;
+  avatarActive = true;
+  const cont = document.getElementById('avatar-container');
+  const bubble = document.getElementById('avatar-speech');
+  const mini = document.getElementById('avatar-mini');
+  if(cont) cont.style.display = 'flex';
+  if(bubble) bubble.style.display = 'block';
+  if(mini) mini.style.display = 'none';
+}
+
+function initPaxDrag() {
+  const handle = document.getElementById('avatar-drag-handle');
+  const cont = document.getElementById('avatar-container');
+  if(!handle || !cont) return;
+  handle.style.touchAction = 'none';
+  let offsetX = 0, offsetY = 0;
+  const move = e => {
+    if(!draggingPax) return;
+    e.preventDefault();
+    const newLeft = Math.min(window.innerWidth - cont.offsetWidth - 10, Math.max(10, e.clientX - offsetX));
+    const newTop  = Math.min(window.innerHeight - cont.offsetHeight - 10, Math.max(10, e.clientY - offsetY));
+    cont.style.left = `${newLeft}px`;
+    cont.style.top  = `${newTop}px`;
+    cont.style.right = 'auto';
+  };
+  const up = () => {
+    draggingPax = false;
+    cont.style.cursor='grab';
+    document.removeEventListener('pointermove', move);
+    document.removeEventListener('pointerup', up);
+  };
+  handle.addEventListener('pointerdown', e => {
+    if(e.target && e.target.closest('button')) return;
+    e.preventDefault();
+    e.stopPropagation();
+    draggingPax = true;
+    cont.style.cursor='grabbing';
+    const rect = cont.getBoundingClientRect();
+    offsetX = e.clientX - rect.left;
+    offsetY = e.clientY - rect.top;
+    document.addEventListener('pointermove', move);
+    document.addEventListener('pointerup', up);
+  });
+}
+
 function showGuide() {
   const ud = window._userData || {};
   const fn = window._currentUser;
@@ -2128,8 +2689,10 @@ function showGuide() {
 function toggleAvatar() {
   const cont = document.getElementById('avatar-container');
   avatarActive = !avatarActive;
+  paxMinimized = !avatarActive ? paxMinimized : paxMinimized;
   if(cont) cont.style.display = avatarActive ? 'flex' : 'none';
   if(!avatarActive && window.speechSynthesis) window.speechSynthesis.cancel();
+  if(!avatarActive) document.getElementById('avatar-mini').style.display='none';
 }
 
 function showAvatarAndSpeak(context, name, directText) {
@@ -2149,6 +2712,11 @@ function showAvatarAndSpeak(context, name, directText) {
 
   cont.style.display = 'flex';
   avatarActive = true;
+  paxMinimized = false;
+  const mini = document.getElementById('avatar-mini');
+  if(mini) mini.style.display='none';
+  const muteBtn = document.getElementById('pax-mute-btn');
+  if(muteBtn) muteBtn.textContent = paxMuted ? '🔇' : '🔈';
   bubble.style.transition = 'none';
   bubble.style.display  = 'block';
   bubble.style.opacity  = '0';
@@ -2156,6 +2724,7 @@ function showAvatarAndSpeak(context, name, directText) {
   const speechText = document.getElementById('avatar-speech-text');
   if(speechText) speechText.textContent = text;
   else bubble.textContent = text;
+  bubble.onclick = openChatFromPax;
   requestAnimationFrame(()=>{
     requestAnimationFrame(()=>{
       bubble.style.transition = 'opacity .35s ease, transform .35s ease';
@@ -2165,7 +2734,7 @@ function showAvatarAndSpeak(context, name, directText) {
   });
 
   // Web Speech API — Professor Pax voice
-  if(window.speechSynthesis) {
+  if(window.speechSynthesis && !paxMuted) {
     window.speechSynthesis.cancel();
     const utt = new SpeechSynthesisUtterance(text);
     utt.rate   = 0.87;   // measured professorial pace
@@ -2203,6 +2772,7 @@ function openAccountModal() {
   const initials = ((fname[0]||'')+(lname[0]||'')).toUpperCase() || (user?.email||'?')[0].toUpperCase();
   document.getElementById('acct-avatar-circle').textContent = initials;
   document.getElementById('acct-header-name').textContent = fname + (lname ? ' ' + lname : '');
+  const tier = getTier(labCredits, labSettings.redemptionTiers||[]);
   document.getElementById('acct-header-sub').textContent = (ud.jobTitle||'') + (ud.department ? ' · ' + ud.department : '');
   document.getElementById('acct-fname').textContent   = fname || '—';
   document.getElementById('acct-lname').textContent   = lname || '—';
@@ -2212,6 +2782,10 @@ function openAccountModal() {
   document.getElementById('acct-dept').textContent    = ud.department || '—';
   document.getElementById('acct-empid').textContent   = ud.employeeId || '—';
   document.getElementById('acct-year').textContent    = ud.trainingYear || new Date().getFullYear();
+  const lcStat = document.getElementById('acct-lc-stat');
+  if(lcStat) lcStat.textContent = (labCredits||0).toLocaleString();
+  const tierEl = document.getElementById('acct-tier-stat');
+  if(tierEl) tierEl.textContent = tier ? `Tier ${tier}` : '—';
   document.getElementById('acct-xp-stat').textContent       = (ud.xp||xp||0).toLocaleString();
   document.getElementById('acct-level-stat').textContent    = ud.level||level||1;
   document.getElementById('acct-scenarios-stat').textContent= ud.scenariosDone||scenariosDone||0;
@@ -2624,13 +3198,16 @@ async function loadReports() {
 
 async function exportCSV() {
   const users = await window._loadAllUsers() || {};
-  const rows = [['First Name','Last Name','Email','Department','Job Title','Employee ID','XP','Level','Slide','Completed','Last Login','Training Year']];
+  const rows = [['First Name','Last Name','Email','Department','Job Title','Employee ID','XP','Level','Slide','Completed','Lab Credits','Tier','Last Login','Training Year']];
   Object.values(users).forEach(u => {
+    const tier = getTier(u.labCredits||0, (window._settingsCache?.redemptionTiers)||labSettings.redemptionTiers||[]);
     rows.push([
       u.firstName||'', u.lastName||'', u.email||'',
       u.department||'', u.jobTitle||'', u.employeeId||'',
       u.xp||0, u.level||1, u.currentSlide||0,
       (u.currentSlide||0)>=26 ? 'Yes':'No',
+      u.labCredits||0,
+      tier ? `Tier ${tier}` : '',
       u.lastLogin ? new Date(u.lastLogin).toLocaleDateString() : '',
       u.trainingYear||''
     ]);
@@ -2653,6 +3230,13 @@ async function loadSettings() {
       window._loadAllUsers(), window._loadAllAdmins(), window._getSettings()
     ]);
     adminCodeHash = settings?.adminCodeHash || null;
+    window._settingsCache = settings || {};
+    labSettings = {
+      labBaseLC: settings?.labBaseLC ?? 50,
+      labScoreBonus: settings?.labScoreBonus || {A:50,B:30,C:15,D:5},
+      redemptionTiers: settings?.redemptionTiers || [300,600,1000,1800],
+      weeklyBonusLC: settings?.weeklyBonusLC ?? 200
+    };
     const userList = Object.entries(allUsers||{});
     const adminUIDs = Object.keys(allAdmins||{});
     const currentYear = settings.trainingYear || new Date().getFullYear();
@@ -2708,6 +3292,32 @@ async function loadSettings() {
         <p style="font-size:.75rem;color:#64748b;margin-top:.5rem">Owners can rotate the code anytime. The hash is stored in Firebase settings; no code is embedded in the page.</p>
       </div>
 
+      <!-- Lab Settings -->
+      <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:1.25rem;padding:1.5rem;margin-bottom:1.5rem">
+        <h3 style="font-weight:900;font-size:.875rem;color:#0f172a;text-transform:uppercase;letter-spacing:.07em;margin-bottom:1rem">🧪 Lab Credits & Tiers</h3>
+        <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:1rem;align-items:end">
+          <div>
+            <label style="font-size:.8rem;font-weight:800;color:#475569">Base credits per scenario</label>
+            <input id="setting-lab-base" type="number" class="input-field" value="${labSettings.labBaseLC}" min="0" style="font-weight:800;text-align:center">
+          </div>
+          <div>
+            <label style="font-size:.8rem;font-weight:800;color:#475569">Weekly bonus (top 5)</label>
+            <input id="setting-weekly-bonus" type="number" class="input-field" value="${labSettings.weeklyBonusLC}" min="0" style="font-weight:800;text-align:center">
+          </div>
+        </div>
+        <div style="margin-top:1rem">
+          <label style="font-size:.8rem;font-weight:800;color:#475569">Redemption tiers (comma-separated)</label>
+          <input id="setting-tiers" class="input-field" value="${(labSettings.redemptionTiers||[]).join(', ')}" style="font-weight:800">
+        </div>
+        <div style="margin-top:1rem;display:grid;grid-template-columns:repeat(4,1fr);gap:.6rem">
+          <div style="font-size:.78rem;font-weight:800;color:#15803d;background:#ecfdf3;border:1px solid #bbf7d0;border-radius:.75rem;padding:.5rem">A Bonus: <input id="setting-bonus-a" type="number" value="${(labSettings.labScoreBonus||{}).A||50}" style="width:80px;text-align:center;font-weight:800"></div>
+          <div style="font-size:.78rem;font-weight:800;color:#2563eb;background:#eff6ff;border:1px solid #bfdbfe;border-radius:.75rem;padding:.5rem">B Bonus: <input id="setting-bonus-b" type="number" value="${(labSettings.labScoreBonus||{}).B||30}" style="width:80px;text-align:center;font-weight:800"></div>
+          <div style="font-size:.78rem;font-weight:800;color:#f59e0b;background:#fff7ed;border:1px solid #fed7aa;border-radius:.75rem;padding:.5rem">C Bonus: <input id="setting-bonus-c" type="number" value="${(labSettings.labScoreBonus||{}).C||15}" style="width:80px;text-align:center;font-weight:800"></div>
+          <div style="font-size:.78rem;font-weight:800;color:#dc2626;background:#fef2f2;border:1px solid #fecaca;border-radius:.75rem;padding:.5rem">D Bonus: <input id="setting-bonus-d" type="number" value="${(labSettings.labScoreBonus||{}).D||5}" style="width:80px;text-align:center;font-weight:800"></div>
+        </div>
+        <button onclick="saveLabSettings()" class="btn btn-primary" style="margin-top:1rem;font-size:.82rem;padding:.55rem 1.2rem;font-weight:800">Save Lab Settings</button>
+      </div>
+
       <!-- Admin List -->
       <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:1.25rem;padding:1.5rem;margin-bottom:1.5rem">
         <h3 style="font-weight:900;font-size:.875rem;color:#0f172a;text-transform:uppercase;letter-spacing:.07em;margin-bottom:1rem">👤 Current Admins</h3>
@@ -2750,6 +3360,27 @@ async function saveAdminAccessCode() {
   await window._saveSettings({ adminCodeHash: hash });
   adminCodeHash = hash;
   alert('Access code updated. Share the new code with admins/owners securely.');
+}
+
+async function saveLabSettings() {
+  if(currentAdminRole!=='owner') { alert('Only owners can change lab settings.'); return; }
+  const base = parseInt(document.getElementById('setting-lab-base')?.value||'50',10);
+  const weekly = parseInt(document.getElementById('setting-weekly-bonus')?.value||'200',10);
+  const tiersStr = document.getElementById('setting-tiers')?.value||'';
+  const bonusA = parseInt(document.getElementById('setting-bonus-a')?.value||'50',10);
+  const bonusB = parseInt(document.getElementById('setting-bonus-b')?.value||'30',10);
+  const bonusC = parseInt(document.getElementById('setting-bonus-c')?.value||'15',10);
+  const bonusD = parseInt(document.getElementById('setting-bonus-d')?.value||'5',10);
+  const tiers = tiersStr.split(',').map(t=>parseInt(t.trim(),10)).filter(n=>!isNaN(n)).sort((a,b)=>a-b);
+  const payload = {
+    labBaseLC: base,
+    weeklyBonusLC: weekly,
+    redemptionTiers: tiers,
+    labScoreBonus: {A:bonusA,B:bonusB,C:bonusC,D:bonusD}
+  };
+  await window._saveSettings(payload);
+  labSettings = Object.assign({}, labSettings, payload);
+  alert('Lab settings saved.');
 }
 
 async function grantAdminRole(role) {
@@ -2795,6 +3426,93 @@ function startBoxBreathing() {
   update();
   breathInterval=setInterval(update,1000);
   awardXP(25);
+}
+
+// ─── Lab Room Helpers ───────────────────────────────────
+function openLabRoom() {
+  document.getElementById('lab-modal').style.display='flex';
+  document.getElementById('lab-modal-credits').textContent = labCredits.toLocaleString();
+  document.getElementById('lab-score-panel').style.display='none';
+  document.getElementById('lab-feedback').textContent='';
+  document.getElementById('lab-cooldown').style.display='none';
+  document.getElementById('lab-response').value='';
+}
+function closeLabRoom() {
+  document.getElementById('lab-modal').style.display='none';
+}
+
+function openVideoModal() {
+  const modal = document.getElementById('video-modal');
+  if(modal) modal.style.display='flex';
+}
+function closeVideoModal() {
+  const modal = document.getElementById('video-modal');
+  if(modal) modal.style.display='none';
+}
+
+function generateLabScenario() {
+  const dx = document.getElementById('lab-dx').value;
+  const pool= scenarios[dx]||scenarios.general||[];
+  const idx = Math.floor(Math.random()*pool.length);
+  const scen= pool[idx] || 'No scenario available for this category yet.';
+  currentLabDx = dx;
+  currentLabScenarioId = `${dx}_${idx}`;
+  document.getElementById('lab-scenario-box').textContent = scen;
+  document.getElementById('lab-response').value = '';
+  document.getElementById('lab-score-panel').style.display='none';
+  document.getElementById('lab-feedback').textContent='';
+  document.getElementById('lab-cooldown').style.display='none';
+  document.getElementById('lab-submit-btn').disabled=false;
+}
+
+function submitLabScenario() {
+  const resp = document.getElementById('lab-response').value.trim();
+  const diff = document.getElementById('lab-diff').value;
+  const cooldown = document.getElementById('lab-cooldown');
+  if(resp.length<20){ alert('Please write a more detailed response (at least 20 characters).'); return; }
+  if(!currentLabScenarioId){ alert('Generate a scenario first.'); return; }
+  // Score based on response length and key words
+  const words = resp.toLowerCase();
+  const keyTerms=['safe','calm','choice','validate','empathize','listen','space','support','trigger','reduce','grounding','breathe','acknowledge','help','understand'];
+  const matched= keyTerms.filter(t=>words.includes(t)).length;
+  let grade, xpGain;
+  if(matched>=5||resp.length>200)      { grade='A'; xpGain=250; }
+  else if(matched>=3||resp.length>120) { grade='B'; xpGain=175; }
+  else if(matched>=2||resp.length>60)  { grade='C'; xpGain=100; }
+  else                                 { grade='D'; xpGain=50;  }
+
+  // Lab credit calculation with once-per-day per scenario guard
+  const today = new Date().toISOString().slice(0,10);
+  const lastRun = (window._userData?.lastLabRun||{})[currentLabScenarioId];
+  let lcEarned = 0;
+  if(lastRun === today) {
+    lcEarned = 0;
+    if(cooldown){ cooldown.textContent = 'Credits already earned for this scenario today. Replays are practice-only.'; cooldown.style.display='block'; }
+  } else {
+    const base = labSettings.labBaseLC || 50;
+    const bonusMap = labSettings.labScoreBonus || {A:50,B:30,C:15,D:5};
+    const diffMult = diff==='advanced'?1.1 : diff==='intensive'?1.2 : 1;
+    lcEarned = Math.round((base + (bonusMap[grade]||0)) * diffMult);
+    // persist lastLabRun
+    const updated = Object.assign({}, window._userData?.lastLabRun||{});
+    updated[currentLabScenarioId] = today;
+    window._saveUserData({ lastLabRun: updated, labCredits: labCredits + lcEarned }).catch(()=>{});
+    window._userData.lastLabRun = updated;
+    awardLabCredits(lcEarned, false);
+  }
+
+  // UI updates
+  document.getElementById('lab-score-panel').style.display='block';
+  document.getElementById('lab-score-letter').textContent = grade;
+  document.getElementById('lab-lc-earned').textContent = lcEarned;
+  document.getElementById('lab-feedback').textContent = feedback[grade];
+  document.getElementById('lab-modal-credits').textContent = labCredits.toLocaleString();
+  document.getElementById('lab-submit-btn').disabled=true;
+
+  scenariosDone++;
+  scoreTotal += ['A','B','C','D'].indexOf(grade)+1;
+  awardXP(xpGain);
+  updateFinalStats();
 }
 
 // ─── Crisis Scenario Lab ──────────────────────────────────
@@ -2963,53 +3681,87 @@ function printScript() {
 
 // ─── Certificate ─────────────────────────────────────────
 function downloadCertificate() {
+  if(!finalQuizPassed) { alert('Please pass the 10-question knowledge check to unlock your certificate.'); return; }
   const user = window._currentUser;
   const name = user ? (user.displayName||user.email) : 'DSH Staff Member';
   const date = new Date().toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'});
   const html = `
-  <div style="font-family:Georgia,serif;padding:3rem;text-align:center;background:white;max-width:800px;margin:0 auto;border:12px double #1e3a8a;border-radius:12px">
-    <div style="font-size:.75rem;letter-spacing:.3em;color:#64748b;text-transform:uppercase;margin-bottom:1rem">Destiny Springs Healthcare</div>
-    <div style="font-size:.65rem;letter-spacing:.25em;color:#94a3b8;text-transform:uppercase;margin-bottom:2rem">Certificate of Completion</div>
-    <div style="width:80px;height:4px;background:linear-gradient(90deg,#1e3a8a,#7c3aed);margin:0 auto 2rem"></div>
-    <div style="font-size:.9rem;color:#475569;margin-bottom:.75rem">This certifies that</div>
-    <div style="font-size:2.5rem;font-weight:700;color:#1e3a8a;font-family:Georgia,serif;margin-bottom:.75rem;font-style:italic">${name}</div>
-    <div style="font-size:.9rem;color:#475569;margin-bottom:2rem">has successfully completed</div>
-    <div style="font-size:1.4rem;font-weight:700;color:#0f172a;margin-bottom:.5rem">De-escalation Mastery Lab™</div>
-    <div style="font-size:.85rem;color:#64748b;margin-bottom:.35rem">27-Module Inpatient Psychiatric Crisis Intervention Training</div>
-    <div style="font-size:.8rem;color:#94a3b8;margin-bottom:2rem">Covering CPI Model · DSM-5 Diagnosis-Specific Care · Trauma-Informed Practice · Safety Protocols</div>
-    <div style="width:80px;height:4px;background:linear-gradient(90deg,#7c3aed,#1e3a8a);margin:0 auto 2rem"></div>
-    <div style="display:flex;justify-content:space-between;align-items:end;margin-top:2rem">
-      <div style="text-align:center">
-        <div style="border-top:2px solid #0f172a;width:180px;margin-bottom:.35rem"></div>
-        <div style="font-size:.75rem;color:#64748b;font-weight:700">Training Administrator</div>
-        <div style="font-size:.65rem;color:#94a3b8">Destiny Springs Healthcare</div>
+  <div id="certificate" style="font-family:Georgia,serif;padding:3rem;text-align:center;background:white;max-width:1000px;margin:0 auto;border:14px double #1e3a8a;border-radius:14px;box-shadow:0 20px 60px rgba(0,0,0,.12)">
+    <div style="margin-bottom:1.25rem;max-width:360px;width:100%;margin-left:auto;margin-right:auto">
+      <div class="logo-inline" aria-label="Destiny Springs Healthcare logo" style="width:100%;display:block"></div>
+    </div>
+    <div style="font-size:.78rem;letter-spacing:.32em;color:#475569;text-transform:uppercase;margin-bottom:1rem">Destiny Springs Healthcare</div>
+    <div style="font-size:.68rem;letter-spacing:.28em;color:#64748b;text-transform:uppercase;margin-bottom:2rem">Certificate of Completion</div>
+    <div style="width:120px;height:4px;background:linear-gradient(90deg,#1e3a8a,#7c3aed);margin:0 auto 2.2rem;border-radius:2px"></div>
+    <div style="font-size:1rem;color:#334155;margin-bottom:.85rem">This certifies that</div>
+    <div style="font-size:2.8rem;font-weight:700;color:#0f172a;font-family:Georgia,serif;margin-bottom:1rem;font-style:italic">${name}</div>
+    <div style="font-size:1rem;color:#334155;margin-bottom:2.2rem">has successfully completed</div>
+    <div style="font-size:1.6rem;font-weight:700;color:#0f172a;margin-bottom:.6rem">De-escalation Mastery Lab™</div>
+    <div style="font-size:.92rem;color:#475569;margin-bottom:.45rem">27-Module Inpatient Psychiatric Crisis Intervention Training</div>
+    <div style="font-size:.82rem;color:#94a3b8;margin-bottom:2rem">Covering CPI Model · Diagnosis-Specific Care · Trauma-Informed Practice · Safety Protocols</div>
+    <div style="width:120px;height:4px;background:linear-gradient(90deg,#7c3aed,#1e3a8a);margin:0 auto 2rem;border-radius:2px"></div>
+    <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-top:1.5rem;gap:1.5rem">
+      <div style="text-align:center;flex:1">
+        <div style="border-top:2px solid #0f172a;width:220px;margin:0 auto .45rem"></div>
+        <div style="font-size:.85rem;color:#475569;font-weight:700">Training Administrator</div>
+        <div style="font-size:.72rem;color:#94a3b8">Destiny Springs Healthcare</div>
       </div>
-      <div style="text-align:center">
-        <div style="font-size:3rem;margin-bottom:.25rem">🎓</div>
-        <div style="font-size:.7rem;color:#94a3b8">XP: ${xp.toLocaleString()} · Level ${level}</div>
+      <div style="text-align:center;flex:.6">
+        <div style="font-size:3.2rem;margin-bottom:.25rem">🎓</div>
+        <div style="font-size:.8rem;color:#475569;font-weight:700">XP: ${xp.toLocaleString()} · Level ${level}</div>
       </div>
-      <div style="text-align:center">
-        <div style="border-top:2px solid #0f172a;width:180px;margin-bottom:.35rem"></div>
-        <div style="font-size:.75rem;color:#64748b;font-weight:700">Date of Completion</div>
-        <div style="font-size:.65rem;color:#94a3b8">${date}</div>
+      <div style="text-align:center;flex:1">
+        <div style="border-top:2px solid #0f172a;width:220px;margin:0 auto .45rem"></div>
+        <div style="font-size:.85rem;color:#475569;font-weight:700">Date of Completion</div>
+        <div style="font-size:.72rem;color:#94a3b8">${date}</div>
       </div>
     </div>
-    <div style="margin-top:2rem;font-size:.65rem;color:#cbd5e1;border-top:1px solid #e2e8f0;padding-top:1rem">
+    <div style="margin-top:2.2rem;font-size:.7rem;color:#94a3b8;border-top:1px solid #e2e8f0;padding-top:1rem">
       © 2026 Destiny Springs Healthcare. All Rights Reserved. De-escalation Mastery Lab™ is proprietary training content.
     </div>
   </div>`;
   const d = document.createElement('div');
-  d.style.position='fixed'; d.style.top='-9999px'; d.innerHTML=html;
+  d.style.position='fixed';
+  d.style.inset='0';
+  d.style.padding='32px';
+  d.style.background='#ffffff';
+  d.style.zIndex='9999';
+  d.style.overflow='auto';
+  d.style.display='flex';
+  d.style.justifyContent='center';
+  d.style.alignItems='flex-start';
+  d.innerHTML=html;
   document.body.appendChild(d);
-  if(window.html2pdf){
-    window.html2pdf().from(d).set({
-      margin:0.4, filename:`DSH-Certificate-${name.replace(/\s+/g,'-')}.pdf`,
-      html2canvas:{scale:2,useCORS:true},
+  renderInlineLogos();
+  const certEl = d.firstElementChild;
+  const cleanup = ()=>{ try{ d.remove(); }catch(_e){} };
+  const celebrate = ()=>{
+    if(!window.confetti) return;
+    const opts = {particleCount:140, spread:70, origin:{y:0.6}};
+    window.confetti(opts);
+    setTimeout(()=>window.confetti(Object.assign({},opts,{particleCount:90,spread:90,origin:{y:0.4}})), 180);
+  };
+  const finishFlow = ()=>{
+    try {
+      currentSlide = 0;
+      showSlide(0);
+      window._saveUserData({ currentSlide:0 }).catch(()=>{});
+      setTimeout(()=>{
+        const signOut = window.confirm('Certificate saved! Do you want to sign out? Press OK to sign out, Cancel to continue training.');
+        if(signOut) doSignOut();
+      }, 300);
+    } catch(_e){}
+  };
+  if(window.html2pdf && certEl){
+    window.html2pdf().from(certEl).set({
+      margin:0,
+      filename:`DSH-Certificate-${name.replace(/\s+/g,'-')}.pdf`,
+      html2canvas:{scale:2,useCORS:true,backgroundColor:'#ffffff'},
       jsPDF:{unit:'in',format:'letter',orientation:'landscape'}
-    }).save().then(()=>d.remove());
+    }).save().then(()=>{ cleanup(); celebrate(); finishFlow(); }).catch(()=>cleanup());
   } else {
     alert('PDF library not loaded. Please try again in a moment.');
-    d.remove();
+    cleanup();
   }
 }
 
