@@ -77,8 +77,8 @@ window._deleteUser = async function(uid) {
 <style>
 *{box-sizing:border-box}
 body{font-family:'Inter',sans-serif;background:#0f172a;overflow:hidden;margin:0}
-.slide{display:none;width:100vw;height:100vh;overflow-y:auto;flex-direction:column}
-.slide.active{display:flex}
+.slide{display:none;width:100vw;min-height:100vh;overflow-y:auto;flex-direction:column}
+.slide.active{display:block}
 h1,h2,.font-display{font-family:'Montserrat',sans-serif}
 .progress-bar{transition:width .4s cubic-bezier(.4,0,.2,1)}
 .card{background:#fff;border-radius:1.5rem;box-shadow:0 10px 40px rgba(0,0,0,.08)}
@@ -1405,7 +1405,8 @@ function showSlide(n) {
   const slides = document.querySelectorAll('.slide');
   slides.forEach((s,i)=>{
     s.style.display = i===n ? 'block' : 'none';
-    s.classList.toggle('active',i===n);
+    s.classList.toggle('active', i===n);
+    if(i===n) s.scrollTop = 0;
   });
   currentSlide = n;
   // Progress bar
@@ -1413,7 +1414,7 @@ function showSlide(n) {
   const pb = document.getElementById('progress-bar');
   if(pb) pb.style.width = pct+'%';
   // Counter
-  const sc = document.getElementById('slide-counter');
+  const sc = document.getElementById('nav-slide-counter');
   if(sc) sc.textContent = `${n+1} / ${totalSlides}`;
   // Award XP on first visit
   const key = 'visited_'+n;
@@ -1447,7 +1448,7 @@ function updateNavUI() {
   const name = user.displayName || user.email.split('@')[0];
   const initials = name.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
   const navName  = document.getElementById('nav-name');
-  const navInit  = document.getElementById('nav-initials');
+  const navInit  = document.getElementById('nav-avatar-initials');
   const navLevel = document.getElementById('nav-level');
   const navXP    = document.getElementById('nav-xp');
   if(navName)  navName.textContent  = name.split(' ')[0];
