@@ -560,13 +560,13 @@ h1,h2,.font-display{font-family:'Montserrat',sans-serif}
 <!-- ═══════════════════════════════════════════════ NAV BAR ══ -->
 <div id="app" style="display:none">
 
-<!-- Professor Pax guide (floats lower-left when active) -->
-<div id="avatar-container" style="position:fixed;bottom:5.5rem;left:1.25rem;z-index:90;display:none;flex-direction:column;align-items:flex-start">
+<!-- Professor Pax guide (floats upper-right to avoid covering content) -->
+<div id="avatar-container" style="position:fixed;top:5.5rem;right:1.25rem;z-index:90;display:none;flex-direction:column;align-items:flex-end;max-width:340px">
   <!-- Speech bubble -->
-  <div id="avatar-speech" style="position:relative;background:#fff;border-radius:1.1rem;border-bottom-left-radius:.3rem;padding:1rem 1.1rem;width:270px;box-shadow:0 8px 32px rgba(0,0,0,.2);font-size:.82rem;font-weight:500;color:#1e293b;display:none;line-height:1.65;margin-bottom:.6rem">
+  <div id="avatar-speech" style="position:relative;background:#fff;border-radius:1.1rem;border-bottom-right-radius:.3rem;padding:1rem 1.1rem;width:300px;box-shadow:0 8px 32px rgba(0,0,0,.2);font-size:.82rem;font-weight:500;color:#1e293b;display:none;line-height:1.65;margin-bottom:.6rem">
     <div style="font-size:.65rem;font-weight:900;color:#2563eb;text-transform:uppercase;letter-spacing:.08em;margin-bottom:.35rem">Prof. Pax</div>
     <span id="avatar-speech-text"></span>
-    <div style="position:absolute;bottom:-8px;left:16px;width:0;height:0;border-left:8px solid transparent;border-right:8px solid transparent;border-top:8px solid #fff"></div>
+    <div style="position:absolute;bottom:-8px;right:16px;width:0;height:0;border-left:8px solid transparent;border-right:8px solid transparent;border-top:8px solid #fff"></div>
   </div>
   <!-- Avatar face -->
   <div style="position:relative;width:72px;height:72px">
@@ -1750,6 +1750,7 @@ let avatarActive = false;
 let breathInterval= null;
 let scenarioActive= false;
 let adminCodeHash = null; // stored hash from settings
+let lastSpokenSlide = -1; // ensure Pax speaks once per slide
 
 async function hashText(text) {
   const enc = new TextEncoder();
@@ -1872,6 +1873,17 @@ function showSlide(n) {
   saveProgress();
   // Update final stats on last slide
   if(n===totalSlides-1) updateFinalStats();
+
+  // Auto guidance once per slide
+  if(lastSpokenSlide !== n) {
+    const ud = window._userData || {};
+    const user = window._currentUser;
+    const firstName = ud.firstName || (user?.displayName||'').split(' ')[0] || 'there';
+    const tipFn = slideTips[n] || slideTips[slideTips.length-1];
+    const msg = `${tipFn(firstName)} Any questions on this part?`;
+    showAvatarAndSpeak('_direct_', firstName, msg);
+    lastSpokenSlide = n;
+  }
 }
 
 function nextSlide() {
