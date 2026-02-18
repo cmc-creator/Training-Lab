@@ -222,15 +222,47 @@ h1,h2,.font-display{font-family:'Montserrat',sans-serif}
   nav[style*="position:fixed;bottom:0"] button{padding:.4rem .5rem!important;font-size:.7rem!important}
   nav[style*="position:fixed;bottom:0"] button[style*="width:36px"]{width:32px!important;height:32px!important}
   
-  /* Hide "Sign Out" text on mobile, keep button */
-  nav button[onclick="doSignOut()"]{font-size:0!important;padding:.45rem!important}
-  nav button[onclick="doSignOut()"]::before{content:"×";font-size:1.2rem}
+  /* Hide "Sign Out" text on mobile, keep button - using visibility for accessibility */
+  nav button[onclick="doSignOut()"]{
+    padding:.45rem!important;
+    overflow:hidden;
+    text-indent:-9999px;
+  }
+  nav button[onclick="doSignOut()"]::before{
+    content:"×";
+    font-size:1.2rem;
+    position:absolute;
+    left:50%;
+    top:50%;
+    transform:translate(-50%,-50%);
+    text-indent:0;
+  }
   
-  /* Hide Prof. Pax text on mobile */
-  nav button[onclick="showGuide()"] span{display:none}
+  /* Hide Prof. Pax text on mobile - keep for screen readers */
+  nav button[onclick="showGuide()"] span{
+    position:absolute;
+    width:1px;
+    height:1px;
+    padding:0;
+    margin:-1px;
+    overflow:hidden;
+    clip:rect(0,0,0,0);
+    white-space:nowrap;
+    border:0;
+  }
   
-  /* My Account - hide name on mobile */
-  #nav-name{display:none}
+  /* My Account - hide name on mobile but keep for screen readers */
+  #nav-name{
+    position:absolute;
+    width:1px;
+    height:1px;
+    padding:0;
+    margin:-1px;
+    overflow:hidden;
+    clip:rect(0,0,0,0);
+    white-space:nowrap;
+    border:0;
+  }
   
   /* Avatar container - hide on mobile */
   #avatar-container{display:none!important}
