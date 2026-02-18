@@ -436,8 +436,18 @@ h1,h2,.font-display{font-family:'Montserrat',sans-serif}
         <p style="color:#1d4ed8;font-weight:800;font-size:.875rem">🔑 First-Time Setup</p>
         <p style="color:#3b82f6;font-size:.78rem;margin-top:.35rem">No admin accounts exist yet. Claim the Owner role for your account now.</p>
       </div>
-      <button onclick="claimOwnerAccount()" style="width:100%;padding:.75rem;background:linear-gradient(135deg,#2563eb,#7c3aed);color:white;border:none;border-radius:.875rem;font-weight:900;cursor:pointer;font-size:.875rem;margin-bottom:.625rem">🔑 Claim Owner Account</button>
+      <input id="owner-code-new" type="password" placeholder="Create access code" class="input-field" style="width:100%;margin-bottom:.5rem;text-align:center;font-weight:800" autocomplete="off">
+      <input id="owner-code-conf" type="password" placeholder="Confirm access code" class="input-field" style="width:100%;margin-bottom:.85rem;text-align:center;font-weight:800" autocomplete="off">
+      <div id="owner-code-error" style="display:none;color:#dc2626;font-size:.8rem;font-weight:800;margin-bottom:.6rem"></div>
+      <button onclick="claimOwnerAccount()" style="width:100%;padding:.75rem;background:linear-gradient(135deg,#2563eb,#7c3aed);color:white;border:none;border-radius:.875rem;font-weight:900;cursor:pointer;font-size:.875rem;margin-bottom:.625rem">🔑 Claim Owner + Set Code</button>
       <button onclick="closePinModal()" style="width:100%;padding:.75rem;background:#f1f5f9;color:#475569;border:none;border-radius:.875rem;font-weight:800;cursor:pointer;font-size:.82rem">Cancel</button>
+    </div>
+    <!-- Code entry -->
+    <div id="admin-code-entry" style="display:none">
+      <input id="admin-access-code" type="password" placeholder="Enter access code" class="input-field" style="width:100%;margin-bottom:.65rem;text-align:center;font-weight:800" autocomplete="off">
+      <div id="admin-code-error" style="display:none;color:#dc2626;font-size:.8rem;font-weight:800;margin-bottom:.6rem"></div>
+      <button onclick="verifyAdminCode()" style="width:100%;padding:.75rem;background:linear-gradient(135deg,#2563eb,#7c3aed);color:white;border:none;border-radius:.875rem;font-weight:900;cursor:pointer;font-size:.875rem;margin-bottom:.625rem">Unlock Command Center</button>
+      <button onclick="closePinModal()" style="width:100%;padding:.7rem;background:#f1f5f9;color:#475569;border:none;border-radius:.875rem;font-weight:800;cursor:pointer;font-size:.82rem">Cancel</button>
     </div>
   </div>
 </div>
@@ -1739,6 +1749,14 @@ let scoreTotal   = 0;
 let avatarActive = false;
 let breathInterval= null;
 let scenarioActive= false;
+let adminCodeHash = null; // stored hash from settings
+
+async function hashText(text) {
+  const enc = new TextEncoder();
+  const buf = await crypto.subtle.digest('SHA-256', enc.encode(text));
+  const arr = Array.from(new Uint8Array(buf));
+  return arr.map(b=>b.toString(16).padStart(2,'0')).join('');
+}
 
 // ─── Auth UI ─────────────────────────────────────────────
 function showAuthTab(tab) {
@@ -2134,30 +2152,41 @@ async function doChangePassword() {
 let currentAdminRole = null;
 
 async function openAdminPrompt() {
-  const modal = document.getElementById('admin-pin-modal');
+  const modal    = document.getElementById('admin-pin-modal');
   const checking = document.getElementById('admin-access-checking');
   const denied   = document.getElementById('admin-access-denied');
   const setup    = document.getElementById('admin-first-setup');
+  const codeBox  = document.getElementById('admin-code-entry');
+  const codeErr  = document.getElementById('admin-code-error');
+  const codeInp  = document.getElementById('admin-access-code');
   const msg      = document.getElementById('admin-access-msg');
   // Reset state
-  checking.style.display='block'; denied.style.display='none'; setup.style.display='none';
+  checking.style.display='block'; denied.style.display='none'; setup.style.display='none'; codeBox.style.display='none';
+  codeErr.style.display='none'; if(codeInp) codeInp.value='';
   msg.textContent = 'Checking your access level…';
   modal.style.display='flex';
   try {
     const uid = window._currentUser?.uid;
     if(!uid) { denied.style.display='block'; checking.style.display='none'; return; }
-    // Check if any admins exist at all
-    const allAdmins = await window._loadAllAdmins();
+    // Load settings and admins
+    const [allAdmins, settings] = await Promise.all([window._loadAllAdmins(), window._getSettings()]);
+    adminCodeHash = settings?.adminCodeHash || null;
     if(!allAdmins || !Object.keys(allAdmins).length) {
-      // First-time setup — allow current user to claim owner
+      // First-time setup — allow current user to claim owner and set code
       msg.textContent = 'No admin accounts found.';
       checking.style.display='none'; setup.style.display='block'; return;
     }
     const role = await window._getAdminRole(uid);
     currentAdminRole = role;
     if(role) {
-      modal.style.display='none';
-      openAdminDashboard();
+      if(adminCodeHash) {
+        msg.textContent = 'Enter access code to continue.';
+        checking.style.display='none'; codeBox.style.display='block';
+        if(codeInp) setTimeout(()=>codeInp.focus(),50);
+      } else {
+        modal.style.display='none';
+        openAdminDashboard();
+      }
     } else {
       msg.textContent = 'Access check complete.';
       checking.style.display='none'; denied.style.display='block';
@@ -2171,12 +2200,21 @@ async function openAdminPrompt() {
 async function claimOwnerAccount() {
   const uid = window._currentUser?.uid;
   if(!uid) return;
+  const code = document.getElementById('owner-code-new')?.value.trim();
+  const conf = document.getElementById('owner-code-conf')?.value.trim();
+  const err  = document.getElementById('owner-code-error');
+  if(err) err.style.display='none';
+  if(!code || !conf) { if(err){err.textContent='Enter and confirm an access code.'; err.style.display='block';} return; }
+  if(code!==conf){ if(err){err.textContent='Codes do not match.'; err.style.display='block';} return; }
   try {
+    const hash = await hashText(code);
     await window._setAdminRole(uid, 'owner');
+    await window._saveSettings({ adminCodeHash: hash });
+    adminCodeHash = hash;
     currentAdminRole = 'owner';
     document.getElementById('admin-pin-modal').style.display='none';
     openAdminDashboard();
-  } catch(e) { alert('Error claiming owner account: ' + e.message); }
+  } catch(e) { if(err){err.textContent='Error: '+e.message; err.style.display='block';} else { alert('Error claiming owner account: ' + e.message); } }
 }
 
 function openAdminDashboard() {
@@ -2187,6 +2225,27 @@ function openAdminDashboard() {
   if(stBtn) stBtn.style.display = currentAdminRole==='owner' ? 'block' : 'none';
   document.getElementById('admin-modal').style.display='flex';
   loadLeaderboard();
+}
+
+async function verifyAdminCode() {
+  const inp = document.getElementById('admin-access-code');
+  const err = document.getElementById('admin-code-error');
+  if(err) err.style.display='none';
+  if(!inp) return;
+  const val = inp.value.trim();
+  if(!val){ if(err){err.textContent='Enter the access code.'; err.style.display='block';} return; }
+  if(!adminCodeHash) {
+    document.getElementById('admin-pin-modal').style.display='none';
+    openAdminDashboard();
+    return;
+  }
+  const hash = await hashText(val);
+  if(hash === adminCodeHash) {
+    document.getElementById('admin-pin-modal').style.display='none';
+    openAdminDashboard();
+  } else {
+    if(err){err.textContent='Incorrect code. Try again.'; err.style.display='block';}
+  }
 }
 
 function closePinModal() { document.getElementById('admin-pin-modal').style.display='none'; }
@@ -2438,6 +2497,7 @@ async function loadSettings() {
     const [allUsers, allAdmins, settings] = await Promise.all([
       window._loadAllUsers(), window._loadAllAdmins(), window._getSettings()
     ]);
+    adminCodeHash = settings?.adminCodeHash || null;
     const userList = Object.entries(allUsers||{});
     const adminUIDs = Object.keys(allAdmins||{});
     const currentYear = settings.trainingYear || new Date().getFullYear();
@@ -2478,7 +2538,19 @@ async function loadSettings() {
         <div style="display:flex;gap:.75rem;flex-wrap:wrap">
           <select id="grant-admin-uid" class="input-field" style="flex:1;min-width:200px;font-size:.85rem">${userOptions}</select>
           <button onclick="grantAdminRole('admin')" class="btn" style="background:#f0fdf4;color:#15803d;border:1px solid #bbf7d0;font-size:.82rem;padding:.55rem 1.25rem;font-weight:800">Grant Admin</button>
+          <button onclick="grantAdminRole('owner')" class="btn" style="background:#fef3c7;color:#92400e;border:1px solid #fcd34d;font-size:.82rem;padding:.55rem 1.25rem;font-weight:800">Grant Owner</button>
         </div>
+      </div>
+
+      <!-- Access Code -->
+      <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:1.25rem;padding:1.5rem;margin-bottom:1.5rem">
+        <h3 style="font-weight:900;font-size:.875rem;color:#0f172a;text-transform:uppercase;letter-spacing:.07em;margin-bottom:1rem">🔒 Admin/Owner Access Code</h3>
+        <div style="display:grid;gap:.65rem;grid-template-columns:1fr 1fr">
+          <input id="setting-code-new" type="password" class="input-field" placeholder="New access code" autocomplete="off" style="font-weight:800;text-align:center">
+          <input id="setting-code-conf" type="password" class="input-field" placeholder="Confirm code" autocomplete="off" style="font-weight:800;text-align:center">
+        </div>
+        <button onclick="saveAdminAccessCode()" class="btn btn-primary" style="margin-top:.75rem;font-size:.82rem;padding:.55rem 1.2rem;font-weight:800">Save Access Code</button>
+        <p style="font-size:.75rem;color:#64748b;margin-top:.5rem">Owners can rotate the code anytime. The hash is stored in Firebase settings; no code is embedded in the page.</p>
       </div>
 
       <!-- Admin List -->
@@ -2513,10 +2585,22 @@ async function saveTrainingYear() {
   alert(`Training year set to ${val}. New user sessions will reflect this year.`);
 }
 
+async function saveAdminAccessCode() {
+  if(currentAdminRole!=='owner') { alert('Only owners can change the access code.'); return; }
+  const a = document.getElementById('setting-code-new')?.value.trim();
+  const b = document.getElementById('setting-code-conf')?.value.trim();
+  if(!a||!b){ alert('Enter and confirm the access code.'); return; }
+  if(a!==b){ alert('Codes do not match.'); return; }
+  const hash = await hashText(a);
+  await window._saveSettings({ adminCodeHash: hash });
+  adminCodeHash = hash;
+  alert('Access code updated. Share the new code with admins/owners securely.');
+}
+
 async function grantAdminRole(role) {
   const uid = document.getElementById('grant-admin-uid')?.value;
   if(!uid) return;
-  if(!confirm('Grant admin access to this user?')) return;
+  if(!confirm(role==='owner'?'Grant OWNER access to this user?':'Grant ADMIN access to this user?')) return;
   await window._setAdminRole(uid, role);
   loadSettings();
 }
