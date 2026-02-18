@@ -85,6 +85,73 @@
             border-b-4 border-transparent;
             transition: all 0.3s ease;
         }
+        
+        /* ═══════════════════════════════════════════════════════════════
+           RESPONSIVE MOBILE ADAPTIVE STYLES
+           ═══════════════════════════════════════════════════════════════ */
+        
+        /* Mobile: < 640px */
+        @media(max-width:640px){
+            /* Slides: prevent horizontal overflow */
+            .slide{width:100%!important;padding:1rem!important;padding-bottom:4rem!important}
+            
+            /* Reduce font sizes for mobile */
+            body{font-size:14px}
+            h1{font-size:1.5rem!important}
+            h2{font-size:1.25rem!important}
+            h3{font-size:1.1rem!important}
+            
+            /* Score badge */
+            .score-badge{font-size:1.8rem;padding:.75rem;min-width:60px}
+            
+            /* Trainer chat bubble - adjust position */
+            .fixed.bottom-24{bottom:4rem!important;left:1rem!important;right:1rem!important}
+            .max-w-xs{max-width:none!important}
+            
+            /* Navigation buttons - adjust positioning */
+            .fixed.bottom-6.right-6{bottom:1rem!important;right:1rem!important;left:1rem!important;flex-direction:column;width:auto!important}
+            
+            /* Admin modal - full screen on mobile */
+            #admin-modal>div{max-width:100%;width:100%;margin:0;border-radius:0;max-height:100vh}
+            #admin-modal .p-8{padding:1.5rem!important}
+            
+            /* Admin tabs - smaller text */
+            .admin-tab{font-size:.7rem!important;padding:.5rem .75rem!important}
+            
+            /* Grid layouts - stack on mobile */
+            .grid-cols-1.md\:grid-cols-2{grid-template-columns:1fr!important}
+            
+            /* Diagnosis pills - wrap properly */
+            .diagnosis-card{font-size:.85rem}
+            
+            /* XP bar and level display */
+            .xp-bar{height:6px}
+            
+            /* Welcome text */
+            .text-3xl{font-size:1.5rem!important}
+            .text-2xl{font-size:1.25rem!important}
+            
+            /* Spacing adjustments */
+            .p-8{padding:1.5rem!important}
+            .p-6{padding:1.25rem!important}
+            .gap-6{gap:1rem!important}
+            .gap-4{gap:.75rem!important}
+        }
+        
+        /* Tablet: 641px - 1024px */
+        @media(min-width:641px) and (max-width:1024px){
+            /* Slides */
+            .slide{padding:1.5rem!important;padding-bottom:4rem!important}
+            
+            /* Reduce spacing slightly */
+            body{font-size:15px}
+            
+            /* Admin modal */
+            #admin-modal>div{max-width:90%;margin:1rem}
+            
+            /* Grid layouts maintain 2 columns on tablet */
+            .grid-cols-1.md\:grid-cols-2{grid-template-columns:repeat(2,1fr)!important}
+        }
     </style>
 </head>
 <body class="bg-slate-900 overflow-hidden">
