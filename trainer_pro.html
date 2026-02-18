@@ -323,7 +323,7 @@ h1,h2,.font-display{font-family:'Montserrat',sans-serif}
 /* Avatar mouth animation */
 #avatar-mouth{animation:none}
 #avatar-mouth.talking{animation:talking .15s ease infinite}
-#home-gateway{display:none;position:fixed;inset:0;z-index:130;background:radial-gradient(circle at 20% 20%,rgba(59,130,246,.12),transparent 35%),radial-gradient(circle at 80% 10%,rgba(14,165,233,.12),transparent 32%),radial-gradient(circle at 30% 80%,rgba(124,58,237,.12),transparent 38%),#0b1224;backdrop-filter:blur(10px);align-items:center;justify-content:center;padding:2rem}
+#home-gateway{display:none;position:fixed;inset:0;z-index:70;background:radial-gradient(circle at 20% 20%,rgba(59,130,246,.12),transparent 35%),radial-gradient(circle at 80% 10%,rgba(14,165,233,.12),transparent 32%),radial-gradient(circle at 30% 80%,rgba(124,58,237,.12),transparent 38%),#0b1224;backdrop-filter:blur(10px);align-items:center;justify-content:center;padding:2rem}
 </style>
 </head>
 <body>
@@ -2255,7 +2255,6 @@ function initApp() {
     'there';
   const welEl = document.getElementById('welcome-name');
   if(welEl) welEl.textContent = firstName;
-  setTimeout(()=>showAvatarAndSpeak('welcome', firstName), 1200);
 }
 
 // ─── Slide Navigation ────────────────────────────────────
@@ -2336,6 +2335,12 @@ function updateNavUI() {
   if(navLC)    navLC.textContent    = `${labCredits.toLocaleString()} LC`;
 }
 
+function currentFirstName() {
+  const ud = window._userData || {};
+  const user = window._currentUser;
+  return ud.firstName || (user?.displayName||'').split(' ')[0] || (user?.email||'').split('@')[0] || 'there';
+}
+
 function showHomeGateway() {
   const hub = document.getElementById('home-gateway');
   if(hub) hub.style.display = 'flex';
@@ -2358,6 +2363,8 @@ function startTrainingFromHub() {
   currentSlide = 0;
   showSlide(0);
   renderFinalQuiz();
+   const fname = currentFirstName();
+   setTimeout(()=>showAvatarAndSpeak('_direct_', fname, 'Welcome back. Restarting from slide 1 — I am here if you need me.'), 500);
   window._saveUserData({ sessionMode, currentSlide:0, completedTraining:false, finalQuizPassed:false, finalQuizScore:0 }).catch(()=>{});
 }
 
@@ -2366,6 +2373,8 @@ function enterLabFromHub() {
   sessionMode = 'lab';
   currentSlide = 0;
   showSlide(0);
+  const fname = currentFirstName();
+  setTimeout(()=>showAvatarAndSpeak('_direct_', fname, 'Jumping into the Lab. Ask me if you want tips while you practice.'), 500);
   window._saveUserData({ sessionMode, currentSlide:0 }).catch(()=>{});
   setTimeout(()=>openLabRoom(), 350);
 }
@@ -2508,7 +2517,7 @@ function saveProgress() {
 // ─── Avatar & Voice ──────────────────────────────────────
 // Per-slide tips (0-indexed slide number)
 const slideTips = [
-  n=>`Welcome, ${n}. I'm Professor Pax, your training guide here at Destiny Springs. I'll be with you through all twenty-seven slides. Tap me any time you want a pointer on what we're covering. Let's get started.`,
+  n=>`Welcome back. I'm here if you want guidance — start when you're ready.`,
   ()=>'De-escalation is a skill, not a personality trait. Every technique you learn here can be practiced until it becomes instinct.',
   ()=>'The CPI model has 4 key pillars: Care, Welfare, Safety, and Security. Keep all four in mind for every patient interaction.',
   ()=>'Remember: behavior is communication. Ask yourself — what is this patient trying to tell me with this behavior?',
