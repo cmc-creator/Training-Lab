@@ -8,7 +8,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, updateProfile } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, updateProfile, reauthenticateWithCredential, EmailAuthProvider, updatePassword } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 import { getDatabase, ref, set, get, update, onValue, remove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 const firebaseConfig = {
   apiKey: "AIzaSyDVdGXUgxqsSZZiVoEjPL4DkDEMU29meMY",
@@ -27,6 +27,12 @@ window._auth = auth; window._db = db; window._ref = ref;
 window._set = set; window._get = get; window._update = update;
 window._onValue = onValue; window._remove = remove;
 window._updateProfile = updateProfile;
+window._reauthAndChangePassword = async function(currentPass, newPass) {
+  const user = auth.currentUser;
+  const cred = EmailAuthProvider.credential(user.email, currentPass);
+  await reauthenticateWithCredential(user, cred);
+  await updatePassword(user, newPass);
+};
 onAuthStateChanged(auth, user => {
   window._currentUser = user;
   if (user) {
@@ -42,15 +48,34 @@ async function loadUserData(user) {
   const snap = await get(ref(db, 'users/' + user.uid));
   if (snap.exists()) {
     window._userData = snap.val();
+    // Update last login and training year each session
+    await update(ref(db, 'users/' + user.uid), { lastLogin: Date.now(), trainingYear: new Date().getFullYear() });
   } else {
-    window._userData = { name: user.displayName || 'Trainee', xp: 0, level: 1, scenarios: 0, scores: [], startDate: Date.now() };
+    // Legacy / admin-created account fallback
+    const parts = (user.displayName || '').split(' ');
+    window._userData = {
+      name: user.displayName || user.email.split('@')[0],
+      firstName: parts[0] || user.email.split('@')[0],
+      lastName: parts.slice(1).join(' ') || '',
+      email: user.email, phone: '', jobTitle: '', department: '', employeeId: '',
+      xp: 0, level: 1, scenariosDone: 0, scoreTotal: 0,
+      startDate: Date.now(), lastLogin: Date.now(), trainingYear: new Date().getFullYear()
+    };
     await set(ref(db, 'users/' + user.uid), window._userData);
   }
   initApp();
 }
-window._signUp = async function(name, email, pass) {
+window._signUp = async function(fname, lname, email, pass, phone, title, dept, empid) {
   const cred = await createUserWithEmailAndPassword(auth, email, pass);
-  await updateProfile(cred.user, { displayName: name });
+  const displayName = fname + ' ' + lname;
+  await updateProfile(cred.user, { displayName });
+  // Store extended profile in DB immediately
+  await set(ref(db, 'users/' + cred.user.uid), {
+    name: displayName, firstName: fname, lastName: lname,
+    email, phone: phone||'', jobTitle: title||'', department: dept||'', employeeId: empid||'',
+    xp: 0, level: 1, scenariosDone: 0, scoreTotal: 0,
+    startDate: Date.now(), lastLogin: Date.now(), trainingYear: new Date().getFullYear()
+  });
 };
 window._signIn = async function(email, pass) {
   await signInWithEmailAndPassword(auth, email, pass);
@@ -138,10 +163,20 @@ h1,h2,.font-display{font-family:'Montserrat',sans-serif}
     </div>
     <div id="signup-form" style="display:none">
       <div class="space-y-3">
-        <input id="su-name" class="input-field" type="text" placeholder="Your Full Name">
-        <input id="su-email" class="input-field" type="email" placeholder="your.email@destinysprings.com">
-        <input id="su-pass" class="input-field" type="password" placeholder="Create Password (min 6 chars)">
-        <input id="su-conf" class="input-field" type="password" placeholder="Confirm Password">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem">
+          <input id="su-fname" class="input-field" type="text" placeholder="First Name *">
+          <input id="su-lname" class="input-field" type="text" placeholder="Last Name *">
+        </div>
+        <input id="su-email" class="input-field" type="email" placeholder="Work Email * (your.email@destinysprings.com)">
+        <input id="su-phone" class="input-field" type="tel" placeholder="Mobile Phone * (for account recovery / MFA)">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem">
+          <input id="su-title" class="input-field" type="text" placeholder="Job Title *">
+          <input id="su-dept" class="input-field" type="text" placeholder="Department *">
+        </div>
+        <input id="su-empid" class="input-field" type="text" placeholder="Employee ID (optional)">
+        <input id="su-pass" class="input-field" type="password" placeholder="Create Password (min 6 chars) *">
+        <input id="su-conf" class="input-field" type="password" placeholder="Confirm Password *">
+        <p style="font-size:.7rem;color:#94a3b8;line-height:1.5;padding:.25rem 0">Your phone number is stored securely and may be used for multi-factor authentication or account recovery in the future.</p>
         <button class="btn btn-success w-full text-base py-4" onclick="doSignUp()">Create Account →</button>
       </div>
     </div>
@@ -187,10 +222,118 @@ h1,h2,.font-display{font-family:'Montserrat',sans-serif}
   </div>
 </div>
 
+<!-- ═══════════════════════════════════ MY ACCOUNT MODAL ══ -->
+<div id="account-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:155;align-items:center;justify-content:center;padding:1rem">
+  <div class="card w-full max-w-lg" style="max-height:92vh;overflow-y:auto">
+    <div style="padding:1.5rem 1.5rem 0;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #f1f5f9;padding-bottom:1rem">
+      <div style="display:flex;align-items:center;gap:.875rem">
+        <div id="acct-avatar-circle" style="width:52px;height:52px;background:linear-gradient(135deg,#2563eb,#7c3aed);border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:900;color:white;font-size:1.1rem">?</div>
+        <div>
+          <h2 style="font-size:1.1rem;font-weight:900;color:#0f172a;font-family:Montserrat,sans-serif" id="acct-header-name">My Account</h2>
+          <p style="font-size:.7rem;color:#94a3b8;font-weight:600" id="acct-header-sub">Destiny Springs Healthcare</p>
+        </div>
+      </div>
+      <button onclick="closeAccountModal()" style="width:36px;height:36px;border-radius:50%;background:#f1f5f9;border:none;cursor:pointer;font-size:1rem;font-weight:900;color:#64748b">✕</button>
+    </div>
+
+    <!-- View Mode -->
+    <div id="acct-view" style="padding:1.5rem">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem;margin-bottom:1rem">
+        <div style="background:#f8fafc;border-radius:.875rem;padding:.875rem">
+          <p style="font-size:.65rem;font-weight:800;color:#94a3b8;text-transform:uppercase;letter-spacing:.08em;margin-bottom:.25rem">First Name</p>
+          <p style="font-size:.95rem;font-weight:700;color:#0f172a" id="acct-fname">—</p>
+        </div>
+        <div style="background:#f8fafc;border-radius:.875rem;padding:.875rem">
+          <p style="font-size:.65rem;font-weight:800;color:#94a3b8;text-transform:uppercase;letter-spacing:.08em;margin-bottom:.25rem">Last Name</p>
+          <p style="font-size:.95rem;font-weight:700;color:#0f172a" id="acct-lname">—</p>
+        </div>
+        <div style="background:#f8fafc;border-radius:.875rem;padding:.875rem">
+          <p style="font-size:.65rem;font-weight:800;color:#94a3b8;text-transform:uppercase;letter-spacing:.08em;margin-bottom:.25rem">Work Email</p>
+          <p style="font-size:.85rem;font-weight:700;color:#0f172a;word-break:break-all" id="acct-email">—</p>
+        </div>
+        <div style="background:#f8fafc;border-radius:.875rem;padding:.875rem">
+          <p style="font-size:.65rem;font-weight:800;color:#94a3b8;text-transform:uppercase;letter-spacing:.08em;margin-bottom:.25rem">Mobile Phone</p>
+          <p style="font-size:.95rem;font-weight:700;color:#0f172a" id="acct-phone">—</p>
+        </div>
+        <div style="background:#f8fafc;border-radius:.875rem;padding:.875rem">
+          <p style="font-size:.65rem;font-weight:800;color:#94a3b8;text-transform:uppercase;letter-spacing:.08em;margin-bottom:.25rem">Job Title</p>
+          <p style="font-size:.95rem;font-weight:700;color:#0f172a" id="acct-title">—</p>
+        </div>
+        <div style="background:#f8fafc;border-radius:.875rem;padding:.875rem">
+          <p style="font-size:.65rem;font-weight:800;color:#94a3b8;text-transform:uppercase;letter-spacing:.08em;margin-bottom:.25rem">Department</p>
+          <p style="font-size:.95rem;font-weight:700;color:#0f172a" id="acct-dept">—</p>
+        </div>
+        <div style="background:#f8fafc;border-radius:.875rem;padding:.875rem">
+          <p style="font-size:.65rem;font-weight:800;color:#94a3b8;text-transform:uppercase;letter-spacing:.08em;margin-bottom:.25rem">Employee ID</p>
+          <p style="font-size:.95rem;font-weight:700;color:#0f172a" id="acct-empid">—</p>
+        </div>
+        <div style="background:#f8fafc;border-radius:.875rem;padding:.875rem">
+          <p style="font-size:.65rem;font-weight:800;color:#94a3b8;text-transform:uppercase;letter-spacing:.08em;margin-bottom:.25rem">Training Year</p>
+          <p style="font-size:.95rem;font-weight:700;color:#0f172a" id="acct-year">—</p>
+        </div>
+      </div>
+      <!-- Training Stats -->
+      <div style="background:linear-gradient(135deg,#0f172a,#1e3a5f);border-radius:1rem;padding:1rem;margin-bottom:1rem;display:grid;grid-template-columns:repeat(3,1fr);gap:.75rem;text-align:center">
+        <div><p style="font-size:1.4rem;font-weight:900;color:#60a5fa" id="acct-xp-stat">0</p><p style="font-size:.65rem;color:#64748b;font-weight:700;text-transform:uppercase">XP Earned</p></div>
+        <div><p style="font-size:1.4rem;font-weight:900;color:#a78bfa" id="acct-level-stat">1</p><p style="font-size:.65rem;color:#64748b;font-weight:700;text-transform:uppercase">Level</p></div>
+        <div><p style="font-size:1.4rem;font-weight:900;color:#34d399" id="acct-scenarios-stat">0</p><p style="font-size:.65rem;color:#64748b;font-weight:700;text-transform:uppercase">Scenarios</p></div>
+      </div>
+      <div style="display:flex;gap:.75rem">
+        <button class="btn btn-primary" style="flex:1" onclick="openAccountEdit()">✏️ Edit Profile</button>
+        <button class="btn" style="background:#fef2f2;color:#dc2626;border:1px solid #fee2e2;flex:1" onclick="openChangePassword()">🔑 Change Password</button>
+      </div>
+    </div>
+
+    <!-- Edit Mode -->
+    <div id="acct-edit" style="display:none;padding:1.5rem">
+      <h3 style="font-size:.9rem;font-weight:900;color:#0f172a;margin-bottom:1rem">Edit Profile Information</h3>
+      <div class="space-y-3">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem">
+          <input id="edit-fname" class="input-field" type="text" placeholder="First Name">
+          <input id="edit-lname" class="input-field" type="text" placeholder="Last Name">
+        </div>
+        <input id="edit-phone" class="input-field" type="tel" placeholder="Mobile Phone">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem">
+          <input id="edit-title" class="input-field" type="text" placeholder="Job Title">
+          <input id="edit-dept" class="input-field" type="text" placeholder="Department">
+        </div>
+        <input id="edit-empid" class="input-field" type="text" placeholder="Employee ID (optional)">
+        <div id="acct-edit-error" style="display:none;color:#dc2626;font-size:.8rem;font-weight:700;padding:.5rem;background:#fef2f2;border-radius:.5rem"></div>
+        <div style="display:flex;gap:.75rem">
+          <button class="btn btn-success" style="flex:1" onclick="saveAccountEdit()">Save Changes</button>
+          <button class="btn" style="background:#f1f5f9;color:#475569;flex:1" onclick="cancelAccountEdit()">Cancel</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Change Password Mode -->
+    <div id="acct-pw" style="display:none;padding:1.5rem">
+      <h3 style="font-size:.9rem;font-weight:900;color:#0f172a;margin-bottom:1rem">Change Password</h3>
+      <div class="space-y-3">
+        <input id="pw-current" class="input-field" type="password" placeholder="Current Password">
+        <input id="pw-new" class="input-field" type="password" placeholder="New Password (min 6 chars)">
+        <input id="pw-conf" class="input-field" type="password" placeholder="Confirm New Password">
+        <div id="acct-pw-error" style="display:none;color:#dc2626;font-size:.8rem;font-weight:700;padding:.5rem;background:#fef2f2;border-radius:.5rem"></div>
+        <div id="acct-pw-success" style="display:none;color:#059669;font-size:.8rem;font-weight:700;padding:.5rem;background:#f0fdf4;border-radius:.5rem">Password updated successfully!</div>
+        <div style="display:flex;gap:.75rem">
+          <button class="btn btn-primary" style="flex:1" onclick="doChangePassword()">Update Password</button>
+          <button class="btn" style="background:#f1f5f9;color:#475569;flex:1" onclick="cancelChangePassword()">Cancel</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- ═══════════════════════════════════════════════ AVATAR ══ -->
-<div id="avatar-container" style="position:fixed;bottom:5.5rem;left:1.25rem;z-index:90;display:none">
+<!-- Avatar is inside #app so it only shows after login -->
+
+<!-- ═══════════════════════════════════════════════ NAV BAR ══ -->
+<div id="app" style="display:none">
+
+<!-- AI Guide bubble (floats lower-left when active) -->
+<div id="avatar-container" style="position:fixed;bottom:5.5rem;left:1.25rem;z-index:90;display:none;flex-direction:column;align-items:flex-start">
   <div style="position:relative;width:72px;height:72px">
-    <svg width="72" height="72" viewBox="0 0 72 72" style="filter:drop-shadow(0 4px 12px rgba(0,0,0,.3))">
+    <svg width="72" height="72" viewBox="0 0 72 72" style="filter:drop-shadow(0 4px 12px rgba(0,0,0,.35));cursor:pointer" onclick="toggleAvatar()">
       <circle cx="36" cy="36" r="36" fill="#2563eb"/>
       <circle cx="36" cy="28" r="14" fill="#bfdbfe"/>
       <circle cx="30" cy="25" r="3" fill="#1e40af"/>
@@ -200,35 +343,42 @@ h1,h2,.font-display{font-family:'Montserrat',sans-serif}
       <ellipse id="avatar-mouth" cx="36" cy="33" rx="5" ry="2.5" fill="#1e40af"/>
       <circle cx="36" cy="50" r="13" fill="#3b82f6"/>
     </svg>
-    <button onclick="toggleAvatar()" style="position:absolute;top:-6px;right:-6px;width:20px;height:20px;background:#ef4444;color:white;border-radius:50%;border:none;font-size:10px;cursor:pointer;font-weight:900;line-height:1">✕</button>
+    <button onclick="toggleAvatar()" style="position:absolute;top:-6px;right:-6px;width:20px;height:20px;background:#ef4444;color:white;border-radius:50%;border:none;font-size:10px;cursor:pointer;font-weight:900;line-height:1" title="Dismiss guide">✕</button>
   </div>
-  <div id="avatar-speech" style="position:absolute;bottom:78px;left:0;background:#fff;border-radius:1rem;border-bottom-left-radius:.25rem;padding:.75rem 1rem;width:220px;box-shadow:0 8px 24px rgba(0,0,0,.15);font-size:.78rem;font-weight:600;color:#1e293b;display:none;line-height:1.5"></div>
+  <div id="avatar-speech" style="position:absolute;bottom:82px;left:0;background:#fff;border-radius:1rem;border-bottom-left-radius:.25rem;padding:.875rem 1rem;width:240px;box-shadow:0 8px 32px rgba(0,0,0,.18);font-size:.8rem;font-weight:600;color:#1e293b;display:none;line-height:1.6">
+    <div style="position:absolute;bottom:-8px;left:12px;width:0;height:0;border-left:8px solid transparent;border-right:8px solid transparent;border-top:8px solid #fff"></div>
+  </div>
 </div>
 
-<!-- ═══════════════════════════════════════════════ NAV BAR ══ -->
-<div id="app" style="display:none">
-<div style="position:fixed;top:0;left:0;right:0;height:3px;background:#1e293b;z-index:100">
-  <div id="progress-bar" class="progress-bar" style="height:100%;background:linear-gradient(90deg,#2563eb,#7c3aed);width:3.7%"></div>
+<div style="position:fixed;top:0;left:0;right:0;height:4px;background:#1e293b;z-index:100">
+  <div id="progress-bar" class="progress-bar" style="height:100%;background:linear-gradient(90deg,#2563eb,#7c3aed);width:3.7%;transition:width .4s ease"></div>
 </div>
-<div style="position:fixed;bottom:0;left:0;right:0;background:rgba(15,23,42,.95);backdrop-filter:blur(12px);border-top:1px solid rgba(255,255,255,.08);padding:.75rem 1rem;display:flex;align-items:center;justify-content:between;gap:.5rem;z-index:80">
-  <div style="flex:1;display:flex;align-items:center;gap:.75rem">
-    <div id="nav-user" style="display:flex;align-items:center;gap:.5rem">
-      <div style="width:32px;height:32px;background:linear-gradient(135deg,#2563eb,#7c3aed);border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:900;color:white;font-size:.75rem" id="nav-avatar-initials">?</div>
-      <div>
-        <p id="nav-name" style="color:white;font-weight:800;font-size:.8rem;line-height:1">Trainee</p>
-        <p style="color:#94a3b8;font-size:.65rem;font-weight:600">Lvl <span id="nav-level">1</span> · <span id="nav-xp">0</span> XP</p>
-      </div>
+
+<nav style="position:fixed;bottom:0;left:0;right:0;background:rgba(10,15,30,.97);backdrop-filter:blur(16px);border-top:1px solid rgba(255,255,255,.07);padding:.6rem 1rem;display:flex;align-items:center;gap:.5rem;z-index:80">
+  <!-- Left: Avatar + name (clickable → My Account) -->
+  <button onclick="openAccountModal()" title="My Account" style="display:flex;align-items:center;gap:.5rem;background:transparent;border:none;cursor:pointer;padding:.25rem .5rem .25rem .25rem;border-radius:.875rem;transition:background .2s;flex-shrink:0" onmouseover="this.style.background='rgba(255,255,255,.07)'" onmouseout="this.style.background='transparent'">
+    <div style="width:34px;height:34px;background:linear-gradient(135deg,#2563eb,#7c3aed);border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:900;color:white;font-size:.75rem;flex-shrink:0;box-shadow:0 2px 8px rgba(37,99,235,.4)" id="nav-avatar-initials">?</div>
+    <div style="text-align:left">
+      <p id="nav-name" style="color:white;font-weight:800;font-size:.8rem;line-height:1.1">...</p>
+      <p style="color:#64748b;font-size:.6rem;font-weight:600;line-height:1">Lvl <span id="nav-level">1</span> · <span id="nav-xp">0</span> XP</p>
     </div>
-    <div id="nav-slide-counter" style="color:#64748b;font-size:.7rem;font-weight:700;margin-left:.5rem">1 / 27</div>
+  </button>
+
+  <!-- Slide counter -->
+  <div id="nav-slide-counter" style="color:#475569;font-size:.68rem;font-weight:700;flex-shrink:0;min-width:42px">1 / 27</div>
+
+  <!-- Spacer -->
+  <div style="flex:1"></div>
+
+  <!-- Right controls -->
+  <div style="display:flex;gap:.4rem;align-items:center">
+    <button onclick="showGuide()" title="Ask your AI guide" style="background:rgba(96,165,250,.15);border:1px solid rgba(96,165,250,.3);color:#93c5fd;padding:.45rem .65rem;border-radius:.75rem;font-size:.75rem;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:.35rem;white-space:nowrap" onmouseover="this.style.background='rgba(96,165,250,.25)'" onmouseout="this.style.background='rgba(96,165,250,.15)'">🎙️ <span style="font-size:.7rem">Guide</span></button>
+    <button onclick="openAdminPrompt()" title="Admin Dashboard" style="background:rgba(124,58,237,.18);border:1px solid rgba(124,58,237,.35);color:#c4b5fd;padding:.45rem .65rem;border-radius:.75rem;font-size:.75rem;font-weight:700;cursor:pointer" onmouseover="this.style.background='rgba(124,58,237,.3)'" onmouseout="this.style.background='rgba(124,58,237,.18)'">⚙️</button>
+    <button onclick="prevSlide()" title="Previous slide" style="background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);color:white;width:36px;height:36px;border-radius:.75rem;font-size:1.1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0" onmouseover="this.style.background='rgba(255,255,255,.15)'" onmouseout="this.style.background='rgba(255,255,255,.07)'">‹</button>
+    <button onclick="nextSlide()" title="Next slide" style="background:#2563eb;color:white;width:36px;height:36px;border-radius:.75rem;font-size:1.1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 4px 14px rgba(37,99,235,.5)" onmouseover="this.style.background='#1d4ed8'" onmouseout="this.style.background='#2563eb'">›</button>
+    <button onclick="doSignOut()" title="Sign out" style="background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.25);color:#fca5a5;padding:.45rem .65rem;border-radius:.75rem;font-size:.75rem;font-weight:700;cursor:pointer" onmouseover="this.style.background='rgba(239,68,68,.25)'" onmouseout="this.style.background='rgba(239,68,68,.12)'">Sign Out</button>
   </div>
-  <div style="display:flex;gap:.5rem;align-items:center">
-    <button onclick="showAvatarAndSpeak('slide')" style="background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);color:white;padding:.5rem .75rem;border-radius:.75rem;font-size:.75rem;font-weight:700;cursor:pointer" title="AI Guide">🎙️ Guide</button>
-    <button onclick="openAdminPrompt()" style="background:rgba(124,58,237,.2);border:1px solid rgba(124,58,237,.4);color:#c4b5fd;padding:.5rem .75rem;border-radius:.75rem;font-size:.75rem;font-weight:700;cursor:pointer">⚙️ Admin</button>
-    <button onclick="prevSlide()" style="background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);color:white;width:38px;height:38px;border-radius:.75rem;font-size:1rem;cursor:pointer;display:flex;align-items:center;justify-content:center">‹</button>
-    <button onclick="nextSlide()" style="background:#2563eb;color:white;width:38px;height:38px;border-radius:.75rem;font-size:1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 12px rgba(37,99,235,.4)">›</button>
-    <button onclick="doSignOut()" style="background:rgba(239,68,68,.15);border:1px solid rgba(239,68,68,.3);color:#fca5a5;padding:.5rem .75rem;border-radius:.75rem;font-size:.75rem;font-weight:700;cursor:pointer">Sign Out</button>
-  </div>
-</div>
+</nav>
 
 <!-- ════════════════════════════════════════════════════════════════
      SLIDE 1 — WELCOME
@@ -749,6 +899,9 @@ h1,h2,.font-display{font-family:'Montserrat',sans-serif}
 document.addEventListener('DOMContentLoaded', function() {
   const app = document.getElementById('app');
   app.insertAdjacentHTML('beforeend', getSlides14to27());
+  window._slidesReady = true;
+  // If Firebase auth already fired and initApp was queued, run it now
+  if(window._initAppQueued) { window._initAppQueued = false; initApp(); }
 });
 
 function getSlides14to27() { return `
@@ -1366,20 +1519,28 @@ async function doSignIn() {
 }
 
 async function doSignUp() {
-  const name  = document.getElementById('su-name').value.trim();
+  const fname = document.getElementById('su-fname').value.trim();
+  const lname = document.getElementById('su-lname').value.trim();
   const email = document.getElementById('su-email').value.trim();
+  const phone = document.getElementById('su-phone').value.trim();
+  const title = document.getElementById('su-title').value.trim();
+  const dept  = document.getElementById('su-dept').value.trim();
+  const empid = document.getElementById('su-empid').value.trim();
   const pass  = document.getElementById('su-pass').value;
   const conf  = document.getElementById('su-conf').value;
   const err   = document.getElementById('auth-error');
   const btn   = document.querySelector('#signup-form .btn-success');
   err.style.display='none';
-  if (!name){err.textContent='Please enter your full name.';err.style.display='block';return;}
-  if (!email||!pass){err.textContent='Please fill in all fields.';err.style.display='block';return;}
+  if (!fname||!lname){err.textContent='Please enter your first and last name.';err.style.display='block';return;}
+  if (!email){err.textContent='Please enter your work email.';err.style.display='block';return;}
+  if (!phone){err.textContent='Please enter your mobile phone number.';err.style.display='block';return;}
+  if (!title||!dept){err.textContent='Please enter your job title and department.';err.style.display='block';return;}
+  if (!pass){err.textContent='Please create a password.';err.style.display='block';return;}
   if (pass!==conf){err.textContent='Passwords do not match.';err.style.display='block';return;}
   if (pass.length<6){err.textContent='Password must be at least 6 characters.';err.style.display='block';return;}
   if(btn){btn.disabled=true;btn.textContent='Creating account...';}
   try {
-    await window._signUp(name,email,pass);
+    await window._signUp(fname, lname, email, pass, phone, title, dept, empid);
   } catch(e){
     const msg = e.message.replace('Firebase: ','');
     err.textContent = msg.includes('email-already-in-use') ? 'That email is already registered. Try signing in.' :
@@ -1391,6 +1552,8 @@ async function doSignUp() {
 
 // ─── App Init ────────────────────────────────────────────
 function initApp() {
+  // Slides 14-27 are injected on DOMContentLoaded — if not ready yet, queue and return
+  if(!window._slidesReady) { window._initAppQueued = true; return; }
   const slides = document.querySelectorAll('.slide');
   totalSlides  = slides.length;
   currentSlide = window._userData?.currentSlide || 0;
@@ -1401,12 +1564,15 @@ function initApp() {
   showSlide(currentSlide);
   updateNavUI();
   updateFinalStats();
-  // Welcome message
-  const name = window._currentUser?.displayName || 'there';
-  const firstName = name.split(' ')[0];
-  document.querySelectorAll('[id="welcome-name"]').forEach(el=>el.textContent=firstName);
-  document.getElementById('welcome-name') && (document.getElementById('welcome-name').textContent = firstName);
-  setTimeout(()=>showAvatarAndSpeak('welcome',firstName),1200);
+  // Use stored firstName first, then displayName, then email prefix
+  const ud = window._userData || {};
+  const firstName = ud.firstName ||
+    (window._currentUser?.displayName||'').split(' ')[0] ||
+    (window._currentUser?.email||'').split('@')[0] ||
+    'there';
+  const welEl = document.getElementById('welcome-name');
+  if(welEl) welEl.textContent = firstName;
+  setTimeout(()=>showAvatarAndSpeak('welcome', firstName), 1200);
 }
 
 // ─── Slide Navigation ────────────────────────────────────
@@ -1454,13 +1620,15 @@ document.addEventListener('keydown',e=>{
 function updateNavUI() {
   const user = window._currentUser;
   if(!user) return;
-  const name = user.displayName || user.email.split('@')[0];
-  const initials = name.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
+  const ud = window._userData || {};
+  const firstName = ud.firstName || (user.displayName||'').split(' ')[0] || user.email.split('@')[0];
+  const lastName  = ud.lastName  || (user.displayName||'').split(' ').slice(1).join(' ') || '';
+  const initials  = ((firstName[0]||'')+(lastName[0]||'')).toUpperCase() || user.email[0].toUpperCase();
   const navName  = document.getElementById('nav-name');
   const navInit  = document.getElementById('nav-avatar-initials');
   const navLevel = document.getElementById('nav-level');
   const navXP    = document.getElementById('nav-xp');
-  if(navName)  navName.textContent  = name.split(' ')[0];
+  if(navName)  navName.textContent  = firstName;
   if(navInit)  navInit.textContent  = initials;
   if(navLevel) navLevel.textContent = `Level ${level}`;
   if(navXP)    navXP.textContent    = `${xp.toLocaleString()} XP`;
@@ -1491,53 +1659,208 @@ function saveProgress() {
 }
 
 // ─── Avatar & Voice ──────────────────────────────────────
-const avatarLines = {
-  welcome: n=>`Welcome back, ${n}! I'm your de-escalation guide. Let's sharpen those skills today!`,
-  slide1:  ()=>'This training will give you real clinical tools. Stay with it — these skills save lives.',
-  slide7:  ()=>'Try the 5-4-3-2-1 grounding technique with a patient next time you see anxiety escalating.',
-  slide8:  ()=>'Box breathing is one of the fastest ways to bring a patient — or yourself — down from a stress response.',
-  slide10: ()=>'Recognizing which stage of escalation a patient is in determines everything about your approach.',
-  slide11: ()=>'With autism, sensory overload is often the invisible trigger. Reduce stimulation before doing anything else.',
-  default: ()=>'Great work progressing through the training! Keep going — every slide builds clinical confidence.'
-};
+// Per-slide tips (0-indexed slide number)
+const slideTips = [
+  n=>`Welcome, ${n}! I'm your AI training guide. Click me any time for tips on the current slide. Let's build your de-escalation confidence!`,
+  ()=>'De-escalation is a skill, not a personality trait. Every technique you learn here can be practiced until it becomes instinct.',
+  ()=>'The CPI model has 4 key pillars: Care, Welfare, Safety, and Security. Keep all four in mind for every patient interaction.',
+  ()=>'Remember: behavior is communication. Ask yourself — what is this patient trying to tell me with this behavior?',
+  ()=>'Verbal de-escalation tip: Lower your voice when a patient raises theirs. They will often unconsciously mirror your calm tone.',
+  ()=>'Body language accounts for over 55% of communication. Keep an open stance, avoid crossed arms, and stay at eye level.',
+  ()=>'Active listening means reflecting back what you hear: "It sounds like you\'re feeling really frustrated right now. Am I hearing that right?"',
+  ()=>'5-4-3-2-1 grounding: Ask them to name 5 things they can see, 4 they can touch, 3 they can hear, 2 they can smell, 1 they can taste.',
+  ()=>'Box breathing works for staff too! Use it yourself before entering a high-tension room to regulate your own stress response.',
+  ()=>'Trauma-informed care means asking "What happened to you?" instead of "What\'s wrong with you?" — it changes everything.',
+  ()=>'CPI Stage 3 (Acceleration): Reduce verbal interaction. The patient is past reasoning. Focus on lowering stimulation, not winning the conversation.',
+  ()=>'With autism: remove the sensory trigger FIRST. No touching, no crowding, no loud voice. Silence and space are your tools.',
+  ()=>'ADHD de-escalation: short sentences win. "I hear you. Let\'s step outside." Three to five words at a time max during a crisis.',
+  ()=>'Schizophrenia: never argue with a delusion. Validate the emotion behind it — "That sounds really frightening. I want you to feel safe."',
+  ()=>'Bipolar mania: match their energy level first, then slowly bring your tone down. Sudden calm can feel threatening to a manic patient.',
+  ()=>'PTSD: always announce before you touch. "I\'m going to put my hand on your shoulder — is that okay?" Every time. No exceptions.',
+  ()=>'BPD: the most powerful words are "I\'m not leaving." Abandonment is the core fear. Your consistent presence is the intervention.',
+  ()=>'Seclusion and restraint are last resort options — not behavior management tools. Document every alternative you tried first.',
+  ()=>'Non-punitive limit setting: "I can\'t let you do X because I care about your safety. What I CAN do is Y. Your choice."',
+  ()=>'Cultural humility means staying curious about a patient\'s cultural context rather than assuming you know what their behavior means.',
+  ()=>'Suicide risk: the C-SSRS is your structured tool — but your relationship with the patient determines whether they tell you the truth.',
+  ()=>'Scenario practice builds muscle memory. The goal is not to score an A — it\'s to build automatic clinical responses for real situations.',
+  ()=>'The role-play script builder helps your team practice together. Run it with a colleague this week — even 10 minutes builds skill.',
+  ()=>'Box breathing for staff: try 4 counts before any difficult conversation. Your regulated nervous system helps regulate your patient\'s.',
+  ()=>'Quick reference cards are yours to keep. Print the de-escalation phrases card and post it somewhere you\'ll see it every shift.',
+  ()=>'You\'ve made it to the final module. This training counts — and your patients benefit every time you practice these skills.',
+  ()=>'Great work completing the training! Download your certificate and share it with your supervisor. These skills save lives.'
+];
+
+function showGuide() {
+  const ud = window._userData || {};
+  const fn = window._currentUser;
+  const firstName = ud.firstName || (fn?.displayName||'').split(' ')[0] || 'there';
+  const tipFn = slideTips[currentSlide] || slideTips[slideTips.length-1];
+  showAvatarAndSpeak('_direct_', firstName, tipFn(firstName));
+}
 
 function toggleAvatar() {
   const cont = document.getElementById('avatar-container');
   avatarActive = !avatarActive;
   if(cont) cont.style.display = avatarActive ? 'flex' : 'none';
-  if(!avatarActive) window.speechSynthesis && window.speechSynthesis.cancel();
+  if(!avatarActive && window.speechSynthesis) window.speechSynthesis.cancel();
 }
 
-function showAvatarAndSpeak(context, name) {
-  const cont = document.getElementById('avatar-container');
+function showAvatarAndSpeak(context, name, directText) {
+  const cont   = document.getElementById('avatar-container');
   const bubble = document.getElementById('avatar-speech');
   const mouth  = document.getElementById('avatar-mouth');
-  if(!cont||!bubble) return;
-  const fn = avatarLines[context] || avatarLines.default;
-  const text = fn(name);
+  if(!cont || !bubble) return;
+
+  let text;
+  if(directText) {
+    text = directText;
+  } else if(context === 'welcome') {
+    text = slideTips[0](name);
+  } else {
+    text = slideTips[currentSlide] ? slideTips[currentSlide](name) : slideTips[slideTips.length-1](name);
+  }
+
   cont.style.display = 'flex';
   avatarActive = true;
-  bubble.style.display = 'block';
+  bubble.style.transition = 'none';
+  bubble.style.display  = 'block';
+  bubble.style.opacity  = '0';
+  bubble.style.transform = 'translateY(10px)';
   bubble.textContent = text;
-  bubble.style.opacity='0';
-  bubble.style.transform='translateY(8px)';
-  setTimeout(()=>{
-    bubble.style.opacity='1';
-    bubble.style.transform='translateY(0)';
-    bubble.style.transition='all .4s ease';
-  },100);
-  // Web Speech
+  requestAnimationFrame(()=>{
+    requestAnimationFrame(()=>{
+      bubble.style.transition = 'opacity .35s ease, transform .35s ease';
+      bubble.style.opacity    = '1';
+      bubble.style.transform  = 'translateY(0)';
+    });
+  });
+
+  // Web Speech API
   if(window.speechSynthesis) {
     window.speechSynthesis.cancel();
     const utt = new SpeechSynthesisUtterance(text);
-    utt.rate = 0.95; utt.pitch = 1.1; utt.volume = 0.9;
-    const voices = window.speechSynthesis.getVoices();
-    const preferred = voices.find(v=>v.lang==='en-US'&&v.name.includes('Female'))||
-                      voices.find(v=>v.lang==='en-US')||voices[0];
-    if(preferred) utt.voice=preferred;
-    utt.onstart  = ()=>{ if(mouth) mouth.classList.add('talking'); };
-    utt.onend    = ()=>{ if(mouth) mouth.classList.remove('talking'); };
-    window.speechSynthesis.speak(utt);
+    utt.rate = 0.92; utt.pitch = 1.05; utt.volume = 0.9;
+    // Wait for voices to load on first call
+    const trySpeak = () => {
+      const voices = window.speechSynthesis.getVoices();
+      const preferred = voices.find(v=>v.lang==='en-US' && (v.name.includes('Samantha')||v.name.includes('Female')||v.name.includes('Zira'))) ||
+                        voices.find(v=>v.lang.startsWith('en')) || voices[0];
+      if(preferred) utt.voice = preferred;
+      utt.onstart = ()=>{ if(mouth) mouth.setAttribute('ry','4'); };
+      utt.onend   = ()=>{ if(mouth) mouth.setAttribute('ry','2.5'); };
+      window.speechSynthesis.speak(utt);
+    };
+    if(window.speechSynthesis.getVoices().length) { trySpeak(); }
+    else { window.speechSynthesis.onvoiceschanged = trySpeak; }
+  }
+}
+
+// ─── My Account ──────────────────────────────────────────
+function openAccountModal() {
+  const ud = window._userData || {};
+  const user = window._currentUser;
+  const fname = ud.firstName || (ud.name||'').split(' ')[0] || '';
+  const lname = ud.lastName  || (ud.name||'').split(' ').slice(1).join(' ') || '';
+  const initials = ((fname[0]||'')+(lname[0]||'')).toUpperCase() || (user?.email||'?')[0].toUpperCase();
+  document.getElementById('acct-avatar-circle').textContent = initials;
+  document.getElementById('acct-header-name').textContent = fname + (lname ? ' ' + lname : '');
+  document.getElementById('acct-header-sub').textContent = (ud.jobTitle||'') + (ud.department ? ' · ' + ud.department : '');
+  document.getElementById('acct-fname').textContent   = fname || '—';
+  document.getElementById('acct-lname').textContent   = lname || '—';
+  document.getElementById('acct-email').textContent   = ud.email || user?.email || '—';
+  document.getElementById('acct-phone').textContent   = ud.phone || '—';
+  document.getElementById('acct-title').textContent   = ud.jobTitle || '—';
+  document.getElementById('acct-dept').textContent    = ud.department || '—';
+  document.getElementById('acct-empid').textContent   = ud.employeeId || '—';
+  document.getElementById('acct-year').textContent    = ud.trainingYear || new Date().getFullYear();
+  document.getElementById('acct-xp-stat').textContent       = (ud.xp||xp||0).toLocaleString();
+  document.getElementById('acct-level-stat').textContent    = ud.level||level||1;
+  document.getElementById('acct-scenarios-stat').textContent= ud.scenariosDone||scenariosDone||0;
+  document.getElementById('acct-view').style.display = 'block';
+  document.getElementById('acct-edit').style.display = 'none';
+  document.getElementById('acct-pw').style.display   = 'none';
+  document.getElementById('account-modal').style.display = 'flex';
+}
+function closeAccountModal() { document.getElementById('account-modal').style.display='none'; }
+function openAccountEdit() {
+  const ud = window._userData || {};
+  const fname = ud.firstName || (ud.name||'').split(' ')[0] || '';
+  const lname = ud.lastName  || (ud.name||'').split(' ').slice(1).join(' ') || '';
+  document.getElementById('edit-fname').value = fname;
+  document.getElementById('edit-lname').value = lname;
+  document.getElementById('edit-phone').value = ud.phone || '';
+  document.getElementById('edit-title').value = ud.jobTitle || '';
+  document.getElementById('edit-dept').value  = ud.department || '';
+  document.getElementById('edit-empid').value = ud.employeeId || '';
+  document.getElementById('acct-edit-error').style.display = 'none';
+  document.getElementById('acct-view').style.display = 'none';
+  document.getElementById('acct-edit').style.display = 'block';
+}
+function cancelAccountEdit() {
+  document.getElementById('acct-edit').style.display = 'none';
+  document.getElementById('acct-view').style.display = 'block';
+}
+async function saveAccountEdit() {
+  const fname = document.getElementById('edit-fname').value.trim();
+  const lname = document.getElementById('edit-lname').value.trim();
+  const phone = document.getElementById('edit-phone').value.trim();
+  const title = document.getElementById('edit-title').value.trim();
+  const dept  = document.getElementById('edit-dept').value.trim();
+  const empid = document.getElementById('edit-empid').value.trim();
+  const errEl = document.getElementById('acct-edit-error');
+  errEl.style.display='none';
+  if(!fname||!lname){errEl.textContent='First and last name are required.';errEl.style.display='block';return;}
+  if(!phone){errEl.textContent='Phone number is required.';errEl.style.display='block';return;}
+  if(!title||!dept){errEl.textContent='Job title and department are required.';errEl.style.display='block';return;}
+  const displayName = fname + ' ' + lname;
+  const updates = { firstName:fname, lastName:lname, name:displayName, phone, jobTitle:title, department:dept, employeeId:empid };
+  try {
+    await window._saveUserData(updates);
+    await window._updateProfile(window._currentUser, { displayName });
+    // Refresh nav
+    updateNavUI();
+    // Refresh welcome name on slide 1
+    const welEl = document.getElementById('welcome-name');
+    if(welEl) welEl.textContent = fname;
+    // Close edit, reopen view
+    cancelAccountEdit();
+    openAccountModal();
+  } catch(e) {
+    errEl.textContent = 'Error saving: ' + e.message;
+    errEl.style.display='block';
+  }
+}
+function openChangePassword() {
+  document.getElementById('pw-current').value='';
+  document.getElementById('pw-new').value='';
+  document.getElementById('pw-conf').value='';
+  document.getElementById('acct-pw-error').style.display='none';
+  document.getElementById('acct-pw-success').style.display='none';
+  document.getElementById('acct-view').style.display='none';
+  document.getElementById('acct-pw').style.display='block';
+}
+function cancelChangePassword() {
+  document.getElementById('acct-pw').style.display='none';
+  document.getElementById('acct-view').style.display='block';
+}
+async function doChangePassword() {
+  const cur  = document.getElementById('pw-current').value;
+  const nw   = document.getElementById('pw-new').value;
+  const conf = document.getElementById('pw-conf').value;
+  const errEl = document.getElementById('acct-pw-error');
+  const okEl  = document.getElementById('acct-pw-success');
+  errEl.style.display='none'; okEl.style.display='none';
+  if(!cur){errEl.textContent='Enter your current password.';errEl.style.display='block';return;}
+  if(nw.length<6){errEl.textContent='New password must be at least 6 characters.';errEl.style.display='block';return;}
+  if(nw!==conf){errEl.textContent='New passwords do not match.';errEl.style.display='block';return;}
+  try {
+    await window._reauthAndChangePassword(cur, nw);
+    okEl.style.display='block';
+    setTimeout(()=>cancelChangePassword(),2500);
+  } catch(e) {
+    const msg = e.message.replace('Firebase: ','');
+    errEl.textContent = msg.includes('wrong-password')||msg.includes('invalid-credential') ? 'Current password is incorrect.' : msg;
+    errEl.style.display='block';
   }
 }
 
