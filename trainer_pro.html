@@ -76,8 +76,9 @@ window._deleteUser = async function(uid) {
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800;900&family=Montserrat:wght@700;800;900&display=swap" rel="stylesheet">
 <style>
 *{box-sizing:border-box}
+html,body{height:100%}
 body{font-family:'Inter',sans-serif;background:#0f172a;overflow:hidden;margin:0}
-.slide{display:none;width:100vw;min-height:100vh;overflow-y:auto;flex-direction:column}
+.slide{display:none;width:100vw;height:100vh;overflow-y:auto;flex-direction:column;padding-bottom:5rem}
 .slide.active{display:block}
 h1,h2,.font-display{font-family:'Montserrat',sans-serif}
 .progress-bar{transition:width .4s cubic-bezier(.4,0,.2,1)}
@@ -185,7 +186,7 @@ h1,h2,.font-display{font-family:'Montserrat',sans-serif}
       <button class="btn btn-primary flex-1" onclick="checkAdminPin()">Enter Dashboard</button>
       <button class="btn" style="background:#f1f5f9;color:#475569;flex:1" onclick="closePinModal()">Cancel</button>
     </div>
-    <div id="pin-error" class="mt-3 text-red-500 text-sm font-semibold hidden">Incorrect PIN. Try again.</div>
+    <div id="pin-error" class="mt-3 text-red-500 text-sm font-semibold" style="display:none">Incorrect PIN. Try again.</div>
     <p class="text-xs text-slate-400 mt-4">Default PIN: <strong>DSH2026</strong> — Change in settings</p>
   </div>
 </div>
@@ -1511,6 +1512,7 @@ function showAvatarAndSpeak(context, name) {
   const text = fn(name);
   cont.style.display = 'flex';
   avatarActive = true;
+  bubble.style.display = 'block';
   bubble.textContent = text;
   bubble.style.opacity='0';
   bubble.style.transform='translateY(8px)';
@@ -1554,8 +1556,10 @@ function closePinModal() { document.getElementById('admin-pin-modal').style.disp
 function closeAdmin() { document.getElementById('admin-modal').style.display='none'; }
 
 function adminTab(name, el) {
-  document.querySelectorAll('.admin-tab').forEach(t=>t.classList.remove('active'));
-  el && el.classList.add('active');
+  document.querySelectorAll('.admin-tab-btn').forEach(t=>{
+    t.className='admin-tab-btn py-3 px-4 text-xs font-black uppercase tracking-widest border-b-2 border-transparent text-slate-400';
+  });
+  if(el){ el.className='admin-tab-btn py-3 px-4 text-xs font-black uppercase tracking-widest border-b-2 border-blue-600 text-blue-600'; }
   ['leaderboard','users','analytics','reports'].forEach(t=>{
     const d=document.getElementById('at-'+t);
     if(d) d.style.display=(t===name)?'block':'none';
