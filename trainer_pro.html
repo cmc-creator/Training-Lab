@@ -355,27 +355,26 @@ h1,h2,.font-display{font-family:'Montserrat',sans-serif}
 </div>
 
 <nav style="position:fixed;bottom:0;left:0;right:0;background:rgba(10,15,30,.97);backdrop-filter:blur(16px);border-top:1px solid rgba(255,255,255,.07);padding:.6rem 1rem;display:flex;align-items:center;gap:.5rem;z-index:80">
-  <!-- Left: Avatar + name (clickable → My Account) -->
-  <button onclick="openAccountModal()" title="My Account" style="display:flex;align-items:center;gap:.5rem;background:transparent;border:none;cursor:pointer;padding:.25rem .5rem .25rem .25rem;border-radius:.875rem;transition:background .2s;flex-shrink:0" onmouseover="this.style.background='rgba(255,255,255,.07)'" onmouseout="this.style.background='transparent'">
-    <div style="width:34px;height:34px;background:linear-gradient(135deg,#2563eb,#7c3aed);border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:900;color:white;font-size:.75rem;flex-shrink:0;box-shadow:0 2px 8px rgba(37,99,235,.4)" id="nav-avatar-initials">?</div>
-    <div style="text-align:left">
-      <p id="nav-name" style="color:white;font-weight:800;font-size:.8rem;line-height:1.1">...</p>
-      <p style="color:#64748b;font-size:.6rem;font-weight:600;line-height:1">Lvl <span id="nav-level">1</span> · <span id="nav-xp">0</span> XP</p>
-    </div>
-  </button>
-
-  <!-- Slide counter -->
-  <div id="nav-slide-counter" style="color:#475569;font-size:.68rem;font-weight:700;flex-shrink:0;min-width:42px">1 / 27</div>
+  <!-- Left: slide counter + XP -->
+  <div style="display:flex;align-items:center;gap:.75rem;flex-shrink:0">
+    <div id="nav-slide-counter" style="color:#475569;font-size:.68rem;font-weight:700;min-width:42px">1 / 27</div>
+    <div style="color:#64748b;font-size:.6rem;font-weight:600;white-space:nowrap">Lvl <span id="nav-level">1</span> · <span id="nav-xp">0</span> XP</div>
+  </div>
 
   <!-- Spacer -->
   <div style="flex:1"></div>
 
   <!-- Right controls -->
   <div style="display:flex;gap:.4rem;align-items:center">
-    <button onclick="showGuide()" title="Ask your AI guide" style="background:rgba(96,165,250,.15);border:1px solid rgba(96,165,250,.3);color:#93c5fd;padding:.45rem .65rem;border-radius:.75rem;font-size:.75rem;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:.35rem;white-space:nowrap" onmouseover="this.style.background='rgba(96,165,250,.25)'" onmouseout="this.style.background='rgba(96,165,250,.15)'">🎙️ <span style="font-size:.7rem">Guide</span></button>
+    <button onclick="showGuide()" title="Ask your AI guide for a tip on this slide" style="background:rgba(96,165,250,.15);border:1px solid rgba(96,165,250,.3);color:#93c5fd;padding:.45rem .7rem;border-radius:.75rem;font-size:.75rem;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:.35rem;white-space:nowrap" onmouseover="this.style.background='rgba(96,165,250,.25)'" onmouseout="this.style.background='rgba(96,165,250,.15)'">🎙️ <span style="font-size:.7rem">Guide</span></button>
     <button onclick="openAdminPrompt()" title="Admin Dashboard" style="background:rgba(124,58,237,.18);border:1px solid rgba(124,58,237,.35);color:#c4b5fd;padding:.45rem .65rem;border-radius:.75rem;font-size:.75rem;font-weight:700;cursor:pointer" onmouseover="this.style.background='rgba(124,58,237,.3)'" onmouseout="this.style.background='rgba(124,58,237,.18)'">⚙️</button>
     <button onclick="prevSlide()" title="Previous slide" style="background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);color:white;width:36px;height:36px;border-radius:.75rem;font-size:1.1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0" onmouseover="this.style.background='rgba(255,255,255,.15)'" onmouseout="this.style.background='rgba(255,255,255,.07)'">‹</button>
     <button onclick="nextSlide()" title="Next slide" style="background:#2563eb;color:white;width:36px;height:36px;border-radius:.75rem;font-size:1.1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 4px 14px rgba(37,99,235,.5)" onmouseover="this.style.background='#1d4ed8'" onmouseout="this.style.background='#2563eb'">›</button>
+    <!-- My Account button -->
+    <button onclick="openAccountModal()" title="My Account" style="display:flex;align-items:center;gap:.45rem;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);cursor:pointer;padding:.3rem .6rem .3rem .35rem;border-radius:.875rem;flex-shrink:0" onmouseover="this.style.background='rgba(255,255,255,.14)'" onmouseout="this.style.background='rgba(255,255,255,.07)'">
+      <div style="width:28px;height:28px;background:linear-gradient(135deg,#2563eb,#7c3aed);border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:900;color:white;font-size:.7rem;flex-shrink:0" id="nav-avatar-initials">?</div>
+      <span style="color:white;font-weight:700;font-size:.72rem;white-space:nowrap"><span id="nav-name">My Account</span></span>
+    </button>
     <button onclick="doSignOut()" title="Sign out" style="background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.25);color:#fca5a5;padding:.45rem .65rem;border-radius:.75rem;font-size:.75rem;font-weight:700;cursor:pointer" onmouseover="this.style.background='rgba(239,68,68,.25)'" onmouseout="this.style.background='rgba(239,68,68,.12)'">Sign Out</button>
   </div>
 </nav>
