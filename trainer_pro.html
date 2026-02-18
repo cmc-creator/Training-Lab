@@ -388,20 +388,55 @@ h1,h2,.font-display{font-family:'Montserrat',sans-serif}
 <div id="admin-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:150;align-items:center;justify-content:center;padding:1rem">
   <div class="card w-full max-w-5xl" style="max-height:90vh;overflow:hidden;display:flex;flex-direction:column">
     <div class="p-6 border-b border-slate-200 flex items-center justify-between flex-shrink-0">
-      <div><h2 class="text-xl font-black text-slate-900">📊 Admin Dashboard</h2><p class="text-xs text-slate-400 font-semibold">Destiny Springs Healthcare — Training Management</p></div>
+      <div><h2 class="text-xl font-black text-slate-900">🏥 Command Center</h2><p id="admin-role-badge" class="text-xs text-slate-400 font-semibold">Destiny Springs Healthcare — Training Management</p></div>
       <button onclick="closeAdmin()" class="w-9 h-9 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center font-black text-slate-600">✕</button>
     </div>
-    <div class="flex gap-0 border-b border-slate-200 px-6 flex-shrink-0">
-      <button class="admin-tab-btn py-3 px-4 text-xs font-black uppercase tracking-widest border-b-2 border-blue-600 text-blue-600" onclick="adminTab('leaderboard',this)">🏆 Leaderboard</button>
-      <button class="admin-tab-btn py-3 px-4 text-xs font-black uppercase tracking-widest border-b-2 border-transparent text-slate-400" onclick="adminTab('users',this)">👥 Users</button>
-      <button class="admin-tab-btn py-3 px-4 text-xs font-black uppercase tracking-widest border-b-2 border-transparent text-slate-400" onclick="adminTab('analytics',this)">📈 Analytics</button>
-      <button class="admin-tab-btn py-3 px-4 text-xs font-black uppercase tracking-widest border-b-2 border-transparent text-slate-400" onclick="adminTab('reports',this)">📋 Reports</button>
+    <div class="flex gap-0 border-b border-slate-200 px-6 flex-shrink-0" style="overflow-x:auto">
+      <button class="admin-tab-btn py-3 px-4 text-xs font-black uppercase tracking-widest border-b-2 border-blue-600 text-blue-600 whitespace-nowrap" onclick="adminTab('leaderboard',this)">🏆 Leaderboard</button>
+      <button class="admin-tab-btn py-3 px-4 text-xs font-black uppercase tracking-widest border-b-2 border-transparent text-slate-400 whitespace-nowrap" onclick="adminTab('users',this)">👥 Users</button>
+      <button class="admin-tab-btn py-3 px-4 text-xs font-black uppercase tracking-widest border-b-2 border-transparent text-slate-400 whitespace-nowrap" onclick="adminTab('analytics',this)">📈 Analytics</button>
+      <button class="admin-tab-btn py-3 px-4 text-xs font-black uppercase tracking-widest border-b-2 border-transparent text-slate-400 whitespace-nowrap" onclick="adminTab('reports',this)">📋 Reports</button>
+      <button id="settings-tab-btn" class="admin-tab-btn py-3 px-4 text-xs font-black uppercase tracking-widest border-b-2 border-transparent text-slate-400 whitespace-nowrap" onclick="adminTab('settings',this)" style="display:none">⚙️ Settings</button>
     </div>
     <div class="flex-1 overflow-y-auto p-6">
       <div id="at-leaderboard"></div>
       <div id="at-users" style="display:none"></div>
       <div id="at-analytics" style="display:none"></div>
       <div id="at-reports" style="display:none"></div>
+      <div id="at-settings" style="display:none"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════ ADMIN ACCESS MODAL ══ -->
+<div id="admin-pin-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:160;align-items:center;justify-content:center;padding:1rem">
+  <div class="card" style="width:100%;max-width:420px;padding:2rem;text-align:center">
+    <div style="width:56px;height:56px;background:linear-gradient(135deg,#7c3aed,#2563eb);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 1.25rem;font-size:1.5rem">⚙️</div>
+    <h2 style="font-size:1.15rem;font-weight:900;color:#0f172a;margin-bottom:.35rem">Admin Access</h2>
+    <p id="admin-access-msg" style="font-size:.82rem;color:#64748b;margin-bottom:1.25rem">Checking your access level…</p>
+    <!-- Checking state -->
+    <div id="admin-access-checking" style="display:block">
+      <div style="display:flex;align-items:center;justify-content:center;gap:.625rem;color:#7c3aed;font-weight:700;font-size:.875rem">
+        <div style="width:18px;height:18px;border:2px solid #7c3aed;border-top-color:transparent;border-radius:50%;animation:spin 1s linear infinite"></div>
+        Verifying…
+      </div>
+    </div>
+    <!-- Denied state -->
+    <div id="admin-access-denied" style="display:none">
+      <div style="background:#fef2f2;border:1px solid #fecaca;border-radius:.875rem;padding:1rem;margin-bottom:1rem">
+        <p style="color:#dc2626;font-weight:800;font-size:.875rem">🚫 Access Denied</p>
+        <p style="color:#ef4444;font-size:.78rem;margin-top:.35rem">Your account does not have admin privileges. Contact your Owner administrator.</p>
+      </div>
+      <button onclick="closePinModal()" style="width:100%;padding:.75rem;background:#f1f5f9;color:#475569;border:none;border-radius:.875rem;font-weight:800;cursor:pointer;font-size:.875rem">Close</button>
+    </div>
+    <!-- First-time setup -->
+    <div id="admin-first-setup" style="display:none">
+      <div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:.875rem;padding:1rem;margin-bottom:1rem">
+        <p style="color:#1d4ed8;font-weight:800;font-size:.875rem">🔑 First-Time Setup</p>
+        <p style="color:#3b82f6;font-size:.78rem;margin-top:.35rem">No admin accounts exist yet. Claim the Owner role for your account now.</p>
+      </div>
+      <button onclick="claimOwnerAccount()" style="width:100%;padding:.75rem;background:linear-gradient(135deg,#2563eb,#7c3aed);color:white;border:none;border-radius:.875rem;font-weight:900;cursor:pointer;font-size:.875rem;margin-bottom:.625rem">🔑 Claim Owner Account</button>
+      <button onclick="closePinModal()" style="width:100%;padding:.75rem;background:#f1f5f9;color:#475569;border:none;border-radius:.875rem;font-weight:800;cursor:pointer;font-size:.82rem">Cancel</button>
     </div>
   </div>
 </div>
@@ -1873,7 +1908,7 @@ function saveProgress() {
     lastActive: Date.now(),
     displayName: user.displayName || '',
     email: user.email
-  });
+  }).catch(()=>{}); // suppress permission errors — slide navigation always succeeds
 }
 
 // ─── Avatar & Voice ──────────────────────────────────────
@@ -1964,15 +1999,16 @@ function showAvatarAndSpeak(context, name, directText) {
     utt.volume = 1.0;
     const trySpeak = () => {
       const voices = window.speechSynthesis.getVoices();
-      // Priority: best natural male voices available in Chrome on Windows
+      // Priority: MALE voices only — skip Google US English (female)
       const pick =
-        voices.find(v => v.name === 'Google US English') ||
+        voices.find(v => v.name === 'Google UK English Male') ||
         voices.find(v => v.name.includes('Microsoft David') && v.lang.startsWith('en')) ||
         voices.find(v => v.name.includes('Microsoft Mark')  && v.lang.startsWith('en')) ||
         voices.find(v => v.name.includes('Microsoft Guy')   && v.lang.startsWith('en')) ||
+        voices.find(v => v.name.includes('Microsoft James') && v.lang.startsWith('en')) ||
         voices.find(v => /\b(male|man|david|mark|guy|james|daniel|aaron|fred|alex|tom|oliver)\b/i.test(v.name) && v.lang.startsWith('en')) ||
-        voices.find(v => v.lang === 'en-US') ||
-        voices.find(v => v.lang.startsWith('en')) ||
+        voices.find(v => v.lang === 'en-US' && !/zira|female|woman/i.test(v.name)) ||
+        voices.find(v => v.lang.startsWith('en') && !/zira|female|woman/i.test(v.name)) ||
         voices[0];
       if(pick) utt.voice = pick;
       utt.onstart = () => { if(mouth) { mouth.setAttribute('ry','3.5'); mouth.style.animation='talking .18s ease infinite'; } };
