@@ -36,7 +36,7 @@ const isReloadNav = (() => {
   if (performance && performance.navigation) return performance.navigation.type === 1; // legacy API
   return false;
 })();
-let reloadHandled = false;
+let firstAuthEvent = true;
 window._reauthAndChangePassword = async function(currentPass, newPass) {
   const user = auth.currentUser;
   const cred = EmailAuthProvider.credential(user.email, currentPass);
@@ -45,12 +45,13 @@ window._reauthAndChangePassword = async function(currentPass, newPass) {
 };
 onAuthStateChanged(auth, user => {
   window._currentUser = user;
-  if (user && isReloadNav && !reloadHandled) {
-    // On hard reload, force sign-out so everyone returns to landing/login
+  if (firstAuthEvent && user && isReloadNav) {
+    // Only sign out persisted sessions that survive a hard reload
     signOut(auth);
-    reloadHandled = true;
+    firstAuthEvent = false;
     return;
   }
+  firstAuthEvent = false;
   if (user) {
     document.getElementById('auth-screen').style.display = 'none';
     document.getElementById('app').style.display = 'block';
