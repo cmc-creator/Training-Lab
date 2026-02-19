@@ -505,7 +505,7 @@ h1,h2,.font-display{font-family:'Montserrat',sans-serif}
             <input id="su-conf" class="input-field" type="password" placeholder="repeat password">
           </div>
         </div>
-        <button class="btn w-full" style="padding:.95rem;font-size:.9rem;margin-top:.25rem;border-radius:12px;background:linear-gradient(135deg,#059669,#10b981);color:white;font-weight:800;border:none;cursor:pointer;box-shadow:0 4px 16px rgba(16,185,129,.3)" onclick="doSignUp()">
+        <button id="signup-btn" class="btn w-full" style="padding:.95rem;font-size:.9rem;margin-top:.25rem;border-radius:12px;background:linear-gradient(135deg,#059669,#10b981);color:white;font-weight:800;border:none;cursor:pointer;box-shadow:0 4px 16px rgba(16,185,129,.3)" onclick="doSignUp()">
           Create Account →
         </button>
         <p style="font-size:.68rem;color:#94a3b8;text-align:center;line-height:1.5">
@@ -2221,7 +2221,7 @@ async function doSignUp() {
   const pass  = document.getElementById('su-pass').value;
   const conf  = document.getElementById('su-conf').value;
   const err   = document.getElementById('auth-error');
-  const btn   = document.querySelector('#signup-form .btn-success');
+  const btn   = document.getElementById('signup-btn');
   err.style.display='none';
   if (!fname||!lname){err.textContent='Please enter your first and last name.';err.style.display='block';return;}
   if (!email){err.textContent='Please enter your work email.';err.style.display='block';return;}
@@ -2230,15 +2230,16 @@ async function doSignUp() {
   if (!pass){err.textContent='Please create a password.';err.style.display='block';return;}
   if (pass!==conf){err.textContent='Passwords do not match.';err.style.display='block';return;}
   if (pass.length<6){err.textContent='Password must be at least 6 characters.';err.style.display='block';return;}
-  if(btn){btn.disabled=true;btn.textContent='Creating account...';}
+  if(btn){btn.disabled=true;btn.textContent='Creating account...';btn.style.opacity='0.7';}
   try {
     await window._signUp(fname, lname, email, pass, phone, title, dept, empid);
+    if(btn){btn.disabled=false;btn.textContent='Account created! Redirecting...';btn.style.opacity='1';}
   } catch(e){
     const msg = e.message.replace('Firebase: ','');
     err.textContent = msg.includes('email-already-in-use') ? 'That email is already registered. Try signing in.' :
                       msg.includes('invalid-email') ? 'Please enter a valid email address.' : msg;
     err.style.display='block';
-    if(btn){btn.disabled=false;btn.textContent='Create Account →';}
+    if(btn){btn.disabled=false;btn.textContent='Create Account →';btn.style.opacity='1';}
   }
 }
 
