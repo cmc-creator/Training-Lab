@@ -2263,6 +2263,7 @@ function getSlides14to27() { return `
           </div>
           <div id="hazard-status" style="color:#cbd5e1;font-weight:700;font-size:.88rem">Press start to reveal hazards.</div>
           <img id="hazard-fail-img" src="failure.png" alt="De-escalation failure" style="width:100%;border-radius:.75rem;display:none;opacity:.92;margin-top:.1rem">
+          <img id="hazard-success-img" src="success.png" alt="De-escalation success" style="width:100%;border-radius:.75rem;display:none;opacity:.92;margin-top:.1rem">
         </div>
       </div>
     </div>
@@ -2887,6 +2888,7 @@ function pickBranch(choice) {
   if(choice === 'validate') {
     videoBox.style.padding = '.9rem';
     videoBox.innerHTML = `<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.75rem;min-height:120px;text-align:center">
+      <img src="success.png" alt="De-escalation success" style="width:100%;border-radius:.75rem;opacity:.92;margin-bottom:.25rem">
       <div style="color:#bbf7d0;font-weight:800;font-size:.8rem;text-transform:uppercase;letter-spacing:.07em">✓ Good example — de-escalation</div>
       <a href="https://abc7chicago.com/post/franklin-park-police-cook-county-sheriffs-office-bodycam-video/11778196/" target="_blank" rel="noopener noreferrer" style="display:inline-flex;align-items:center;gap:.45rem;background:#0ea5e9;color:white;font-weight:900;font-size:.9rem;padding:.55rem 1.3rem;border-radius:.6rem;text-decoration:none">▶ Watch Video</a>
       <div style="color:#94a3b8;font-size:.75rem">Opens in new tab</div>
@@ -2929,7 +2931,9 @@ function startVitalsDrill() {
    const cue = document.getElementById('micro-cue');
   if(meter) meter.style.width = '0%';
   const fimgV = document.getElementById('vitals-fail-img');
+  const simgV = document.getElementById('vitals-success-img');
   if(fimgV) fimgV.style.display = 'none';
+  if(simgV) simgV.style.display = 'none';
   if(status) {
     status.textContent = 'Watching micro-signals. Tap when you see the jaw clench.';
     status.removeAttribute('data-triggered');
@@ -2973,14 +2977,17 @@ function tapIntervene() {
   }
   const now = Date.now();
   const tapFimg = document.getElementById('vitals-fail-img');
+  const tapSimg = document.getElementById('vitals-success-img');
   if(now >= vitalsTargetTs) {
     if(status) status.textContent = 'Good catch — agitation contained.';
     if(meter) meter.style.width = '100%';
     if(tapFimg) tapFimg.style.display = 'none';
+    if(tapSimg) tapSimg.style.display = 'block';
   } else {
     if(status) status.textContent = 'Too early — wait for the jaw set before stepping in.';
     if(meter) meter.style.width = '45%';
     if(tapFimg) tapFimg.style.display = 'block';
+    if(tapSimg) tapSimg.style.display = 'none';
   }
   if(cue) {
     cue.style.opacity = '0';
@@ -3014,7 +3021,9 @@ function startHazardScan() {
   const status = document.getElementById('hazard-status');
   if(status) status.textContent = 'Scan the room and tap hazards.';
   const hfimgS = document.getElementById('hazard-fail-img');
+  const hsimgS = document.getElementById('hazard-success-img');
   if(hfimgS) hfimgS.style.display = 'none';
+  if(hsimgS) hsimgS.style.display = 'none';
   updateHazardUI();
   hazardTimer = setInterval(()=>{
     hazardTimeLeft -= 1;
@@ -3048,16 +3057,20 @@ function endHazardScan(state='reset') {
   }
   const status = document.getElementById('hazard-status');
   const hfimg = document.getElementById('hazard-fail-img');
+  const hsimg = document.getElementById('hazard-success-img');
   if(state === 'win') {
     if(status) status.textContent = 'Nice scan — all hazards cleared.';
     if(hfimg) hfimg.style.display = 'none';
+    if(hsimg) hsimg.style.display = 'block';
   } else if(state === 'time') {
     hazardTimeLeft = 0;
     if(status) status.textContent = 'Time up — review what you missed and restart.';
     if(hfimg) hfimg.style.display = 'block';
+    if(hsimg) hsimg.style.display = 'none';
   } else {
     if(status) status.textContent = 'Press start to reveal hazards.';
     if(hfimg) hfimg.style.display = 'none';
+    if(hsimg) hsimg.style.display = 'none';
   }
   document.querySelectorAll('.hazard-dot').forEach(dot => dot.style.display = 'none');
   updateHazardUI();
