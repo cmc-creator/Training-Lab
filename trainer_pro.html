@@ -244,7 +244,10 @@ h1,h2,.font-display{font-family:'Montserrat',sans-serif}
   /* Navigation bar - more compact on mobile */
   nav[style*="position:fixed;bottom:0"]{padding:.5rem .75rem!important;gap:.35rem!important}
   nav[style*="position:fixed;bottom:0"] button{padding:.4rem .5rem!important;font-size:.7rem!important}
-  nav[style*="position:fixed;bottom:0"] button[style*="width:36px"]{width:32px!important;height:32px!important}
+  nav[style*="position:fixed;bottom:0"] button[style*="width:48px"]{width:38px!important;height:38px!important}
+  /* hide side-edge arrows on small screens to avoid obscuring content */
+  button[style*="border-radius:0 .75rem"]{display:none!important}
+  button[style*="border-radius:.75rem 0"]{display:none!important}
   
   /* Hide "Sign Out" text on mobile, keep button - using visibility for accessibility */
   nav button[onclick="doSignOut()"]{
@@ -634,8 +637,17 @@ h1,h2,.font-display{font-family:'Montserrat',sans-serif}
         <button onclick="closeLabRoom()" style="width:36px;height:36px;border-radius:50%;background:#f1f5f9;border:none;font-weight:900;color:#475569;cursor:pointer">✕</button>
       </div>
     </div>
-    <div style="padding:1.25rem;overflow-y:auto">
-      <div style="display:grid;grid-template-columns:1.1fr 0.9fr;gap:1rem;align-items:start">
+    <!-- Tab bar -->
+    <div style="display:flex;gap:0;border-bottom:2px solid #e2e8f0;padding:0 1.25rem;background:#f8fafc">
+      <button id="lab-tab-btn-scenarios" onclick="switchLabTab('scenarios')" style="padding:.65rem 1.1rem;font-size:.85rem;font-weight:800;border:none;cursor:pointer;border-bottom:3px solid #2563eb;color:#2563eb;background:transparent;margin-bottom:-2px">🎲 Scenarios</button>
+      <button id="lab-tab-btn-debrief" onclick="switchLabTab('debrief')" style="padding:.65rem 1.1rem;font-size:.85rem;font-weight:800;border:none;cursor:pointer;border-bottom:3px solid transparent;color:#64748b;background:transparent;margin-bottom:-2px">🎓 Debrief</button>
+      <button id="lab-tab-btn-script" onclick="switchLabTab('script')" style="padding:.65rem 1.1rem;font-size:.85rem;font-weight:800;border:none;cursor:pointer;border-bottom:3px solid transparent;color:#64748b;background:transparent;margin-bottom:-2px">📝 Script Builder</button>
+    </div>
+    <div style="padding:1.25rem;overflow-y:auto;flex:1">
+
+      <!-- TAB: Scenarios -->
+      <div id="lab-tab-scenarios">
+        <div style="display:grid;grid-template-columns:1.1fr 0.9fr;gap:1rem;align-items:start">
         <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:1rem;padding:1rem">
           <div style="display:flex;gap:.75rem;flex-wrap:wrap;margin-bottom:1rem">
             <select id="lab-dx" class="input-field" style="flex:1;min-width:180px">
@@ -666,7 +678,6 @@ h1,h2,.font-display{font-family:'Montserrat',sans-serif}
           <div style="margin-top:.65rem;font-size:.82rem;color:#b45309;font-weight:700">Redemption tiers: 300 · 600 · 1000 · 1800 LC (set in settings).</div>
         </div>
       </div>
-
       <div style="margin-top:1rem;display:grid;grid-template-columns:1fr 1fr;gap:1rem">
         <textarea id="lab-response" class="input-field" placeholder="Type your de-escalation response..." style="height:180px;resize:vertical"></textarea>
         <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:1rem;padding:1rem;display:flex;flex-direction:column;gap:.75rem">
@@ -681,6 +692,33 @@ h1,h2,.font-display{font-family:'Montserrat',sans-serif}
           </div>
         </div>
       </div>
+      </div><!-- end tab scenarios -->
+
+      <!-- TAB: Debrief -->
+      <div id="lab-tab-debrief" style="display:none">
+        <p style="margin:0 0 1rem;color:#64748b;font-size:.88rem;font-weight:700">Describe a real or practice incident. Dr. Rivera will review it and provide structured clinical feedback.</p>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
+          <div style="display:flex;flex-direction:column;gap:.5rem">
+            <label style="font-size:.75rem;font-weight:800;color:#475569;text-transform:uppercase;letter-spacing:.06em">📝 What happened?</label>
+            <textarea id="debrief-input" class="input-field" placeholder="Describe the incident, what you tried, and how it went. Be specific..." style="height:280px;resize:vertical"></textarea>
+            <button id="debrief-btn" class="btn btn-primary" onclick="runDebrief()" style="width:100%">Get Clinical Feedback ✨</button>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:.5rem">
+            <label style="font-size:.75rem;font-weight:800;color:#475569;text-transform:uppercase;letter-spacing:.06em">🎓 Clinical Mentor Analysis</label>
+            <div id="debrief-output" style="flex:1;min-height:280px;background:#1e1b4b;border:1px solid #4338ca;border-radius:.875rem;padding:1rem;color:#c7d2fe;font-size:.875rem;line-height:1.6;font-weight:600;overflow-y:auto;white-space:pre-wrap"><span style="opacity:.5">Your mentor's feedback will appear here...</span></div>
+          </div>
+        </div>
+      </div><!-- end tab debrief -->
+
+      <!-- TAB: Script Builder -->
+      <div id="lab-tab-script" style="display:none">
+        <p style="margin:0 0 1rem;color:#64748b;font-size:.88rem;font-weight:700">Generate a realistic roleplay script for a team huddle or training drill from any scenario topic.</p>
+        <div style="display:flex;gap:.75rem;margin-bottom:1rem;flex-wrap:wrap">
+          <input id="script-topic" class="input-field" placeholder="e.g. Medication refusal, PTSD flashback, manic episode..." style="flex:1;min-width:220px">
+          <button id="script-btn" class="btn btn-primary" onclick="buildScript()">Build Script ✨</button>
+        </div>
+        <div id="script-output" style="background:#0f172a;border:1px solid rgba(255,255,255,.1);border-radius:.875rem;padding:1.25rem;color:#4ade80;font-family:monospace;font-size:.85rem;line-height:1.7;min-height:300px;overflow-y:auto;white-space:pre-wrap"><span style="opacity:.5">Roleplay script appears here...</span></div>
+      </div><!-- end tab script -->
 
     </div>
   </div>
@@ -899,6 +937,10 @@ h1,h2,.font-display{font-family:'Montserrat',sans-serif}
   <div id="progress-bar" class="progress-bar" style="height:100%;background:linear-gradient(90deg,#2563eb,#7c3aed);width:3.7%;transition:width .4s ease"></div>
 </div>
 
+<!-- floating slide edge nav arrows -->
+<button onclick="prevSlide()" title="Previous slide" style="position:fixed;left:0;top:50%;transform:translateY(-50%);z-index:79;width:52px;height:80px;background:rgba(10,15,30,.65);border:none;color:white;font-size:1.6rem;cursor:pointer;border-radius:0 .75rem .75rem 0;backdrop-filter:blur(8px);transition:background .2s" onmouseover="this.style.background='rgba(37,99,235,.7)'" onmouseout="this.style.background='rgba(10,15,30,.65)'">&#8249;</button>
+<button onclick="nextSlide()" title="Next slide" style="position:fixed;right:0;top:50%;transform:translateY(-50%);z-index:79;width:52px;height:80px;background:rgba(37,99,235,.7);border:none;color:white;font-size:1.6rem;cursor:pointer;border-radius:.75rem 0 0 .75rem;backdrop-filter:blur(8px);transition:background .2s" onmouseover="this.style.background='rgba(37,99,235,.92)'" onmouseout="this.style.background='rgba(37,99,235,.7)'">&#8250;</button>
+
 <nav style="position:fixed;bottom:0;left:0;right:0;background:rgba(10,15,30,.97);backdrop-filter:blur(16px);border-top:1px solid rgba(255,255,255,.07);padding:.6rem 1rem;display:flex;align-items:center;gap:.5rem;z-index:80;flex-wrap:wrap;row-gap:.35rem">
   <!-- Left: slide counter + XP -->
   <div style="display:flex;align-items:center;gap:.75rem;flex-shrink:0">
@@ -917,8 +959,9 @@ h1,h2,.font-display{font-family:'Montserrat',sans-serif}
     <button onclick="openVideoModal()" title="Example videos" style="background:rgba(251,191,36,.16);border:1px solid rgba(251,191,36,.35);color:#facc15;padding:.5rem .78rem;border-radius:.8rem;font-size:.85rem;font-weight:800;cursor:pointer" onmouseover="this.style.background='rgba(251,191,36,.24)'" onmouseout="this.style.background='rgba(251,191,36,.16)'">🎬 Videos</button>
     <button onclick="openLabRoom()" title="Laboratory Room" style="background:rgba(16,185,129,.14);border:1px solid rgba(16,185,129,.3);color:#a7f3d0;padding:.5rem .78rem;border-radius:.8rem;font-size:.85rem;font-weight:800;cursor:pointer;display:flex;align-items:center;gap:.4rem;white-space:nowrap" onmouseover="this.style.background='rgba(16,185,129,.22)'" onmouseout="this.style.background='rgba(16,185,129,.14)'">🧪 Lab Room</button>
     <button onclick="openAdminPrompt()" title="Admin Dashboard" style="background:rgba(124,58,237,.18);border:1px solid rgba(124,58,237,.35);color:#c4b5fd;padding:.5rem .7rem;border-radius:.8rem;font-size:.85rem;font-weight:800;cursor:pointer" onmouseover="this.style.background='rgba(124,58,237,.3)'" onmouseout="this.style.background='rgba(124,58,237,.18)'">⚙️</button>
-    <button onclick="prevSlide()" title="Previous slide" style="background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);color:white;width:36px;height:36px;border-radius:.75rem;font-size:1.1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0" onmouseover="this.style.background='rgba(255,255,255,.15)'" onmouseout="this.style.background='rgba(255,255,255,.07)'">‹</button>
-    <button onclick="nextSlide()" title="Next slide" style="background:#2563eb;color:white;width:36px;height:36px;border-radius:.75rem;font-size:1.1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 4px 14px rgba(37,99,235,.5)" onmouseover="this.style.background='#1d4ed8'" onmouseout="this.style.background='#2563eb'">›</button>
+    <button onclick="prevSlide()" title="Previous slide" style="background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.18);color:white;width:48px;height:48px;border-radius:.875rem;font-size:1.5rem;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0" onmouseover="this.style.background='rgba(255,255,255,.22)'" onmouseout="this.style.background='rgba(255,255,255,.1)'">&#8249;</button>
+    <button onclick="showHomeGateway()" title="Home / Hub" style="background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);color:#94a3b8;width:48px;height:48px;border-radius:.875rem;font-size:1.25rem;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0" onmouseover="this.style.background='rgba(255,255,255,.15)'" onmouseout="this.style.background='rgba(255,255,255,.07)'">🏠</button>
+    <button onclick="nextSlide()" title="Next slide" style="background:#2563eb;color:white;width:48px;height:48px;border-radius:.875rem;font-size:1.5rem;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 4px 14px rgba(37,99,235,.5)" onmouseover="this.style.background='#1d4ed8'" onmouseout="this.style.background='#2563eb'">&#8250;</button>
     <!-- My Account button -->
     <button onclick="openAccountModal()" title="My Account" style="display:flex;align-items:center;gap:.45rem;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);cursor:pointer;padding:.3rem .6rem .3rem .35rem;border-radius:.875rem;flex-shrink:0" onmouseover="this.style.background='rgba(255,255,255,.14)'" onmouseout="this.style.background='rgba(255,255,255,.07)'">
       <div style="width:30px;height:30px;background:linear-gradient(135deg,#2563eb,#7c3aed);border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:900;color:white;font-size:.8rem;flex-shrink:0" id="nav-avatar-initials"></div>
@@ -4107,6 +4150,68 @@ function openVideoModal() {
 function closeVideoModal() {
   const modal = document.getElementById('video-modal');
   if(modal) modal.style.display='none';
+}
+
+// ─── Lab Room Tabs ───────────────────────────────────────
+function switchLabTab(tab) {
+  ['scenarios','debrief','script'].forEach(t => {
+    const pane = document.getElementById('lab-tab-'+t);
+    const btn  = document.getElementById('lab-tab-btn-'+t);
+    if(pane) pane.style.display = t === tab ? 'block' : 'none';
+    if(btn) {
+      btn.style.borderBottomColor = t === tab ? '#2563eb' : 'transparent';
+      btn.style.color = t === tab ? '#2563eb' : '#64748b';
+    }
+  });
+}
+
+async function runDebrief() {
+  const btn = document.getElementById('debrief-btn');
+  const input = document.getElementById('debrief-input');
+  const output = document.getElementById('debrief-output');
+  const text = (input?.value||'').trim();
+  if(!text) { alert('Describe an incident first.'); return; }
+  if(btn) { btn.disabled=true; btn.textContent='Analyzing…'; }
+  if(output) output.innerHTML = '<span style="opacity:.6">Dr. Rivera is reviewing your incident…</span>';
+  const sys = `You are Dr. Rivera, clinical supervisor at Destiny Springs Healthcare. Review this real incident and provide structured clinical feedback. Format your response using these four sections: WHAT WENT WELL | MISSED OPPORTUNITIES | NEXT TIME TRY | COMPETENCY LEVEL. Be supportive and growth-focused. This is about learning, not judgment. Keep response under 250 words.`;
+  try {
+    const res = await fetch(CHAT_ENDPOINT, {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ system: sys, messages:[{role:'user',content:`Incident Debrief:\n${text}`}] })
+    });
+    const data = await res.json();
+    const reply = (data?.reply || data?.choices?.[0]?.message?.content || 'Unable to retrieve feedback.').trim();
+    if(output) output.textContent = reply;
+    awardXP(100);
+  } catch(e) {
+    if(output) output.textContent = 'Connection error. Make sure you have internet access and try again.';
+  } finally {
+    if(btn) { btn.disabled=false; btn.textContent='Get Clinical Feedback ✨'; }
+  }
+}
+
+async function buildScript() {
+  const btn = document.getElementById('script-btn');
+  const topicEl = document.getElementById('script-topic');
+  const output = document.getElementById('script-output');
+  const topic = (topicEl?.value||'').trim() || 'Medication refusal';
+  if(btn) { btn.disabled=true; btn.textContent='Building…'; }
+  if(output) output.innerHTML = '<span style="opacity:.5">Generating script…</span>';
+  const sys = `You are a clinical trainer writing roleplay scripts for psychiatric staff training. Write a 1–2 minute realistic roleplay script between a STAFF MEMBER and a PATIENT in a psychiatric unit. Include: Patient dialogue, Staff dialogue, and [Directions] for body language. Demonstrate de-escalation principles including validation and the Wait-5 Rule. Format clearly with speaker labels. Be realistic — something teams can do in a 5-minute huddle.`;
+  try {
+    const res = await fetch(CHAT_ENDPOINT, {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ system: sys, messages:[{role:'user',content:`Create a training script for this scenario: ${topic}`}] })
+    });
+    const data = await res.json();
+    const reply = (data?.reply || data?.choices?.[0]?.message?.content || 'Script generation failed.').trim();
+    if(output) output.innerHTML = reply.replace(/\n/g,'<br>').replace(/\[([^\]]+)\]/g,'[<em>$1</em>]');
+    awardXP(50);
+  } catch(e) {
+    if(output) output.textContent = 'Connection error. Make sure you have internet access and try again.';
+  } finally {
+    if(btn) { btn.disabled=false; btn.textContent='Build Script ✨'; }
+  }
 }
 
 function generateLabScenario() {
