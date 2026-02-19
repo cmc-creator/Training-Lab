@@ -2262,6 +2262,7 @@ function getSlides14to27() { return `
             <button class="hazard-dot" data-hid="hb" style="position:absolute;top:78%;left:55%;width:38px;height:38px;border-radius:50%;border:2px solid #fcd34d;background:rgba(251,191,36,.22);color:#fcd34d;font-weight:900;cursor:pointer;display:none" onclick="tapHazard('hb')">!</button>
           </div>
           <div id="hazard-status" style="color:#cbd5e1;font-weight:700;font-size:.88rem">Press start to reveal hazards.</div>
+          <img id="hazard-fail-img" src="failure.png" alt="De-escalation failure" style="width:100%;border-radius:.75rem;display:none;opacity:.92;margin-top:.1rem">
         </div>
       </div>
     </div>
@@ -2894,6 +2895,7 @@ function pickBranch(choice) {
     videoBox.style.padding = '0';
     videoBox.innerHTML = `<div style="position:relative;width:100%;padding-top:56.25%">
       <iframe style="position:absolute;inset:0;width:100%;height:100%;border:0;border-radius:.85rem" src="https://www.youtube.com/embed/cbQUrfYxNtg" allowfullscreen allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" title="What not to do — escalation example"></iframe>
+      <img src="failure.png" alt="Escalation failure" style="position:absolute;top:0;right:0;width:42%;z-index:2;pointer-events:none;opacity:.92;filter:drop-shadow(0 2px 8px rgba(0,0,0,.7))">
     </div>`;
   } else {
     videoBox.style.padding = '0';
@@ -2902,6 +2904,7 @@ function pickBranch(choice) {
         <source src="angrypt.mp4" type="video/mp4">
         Your browser does not support video playback.
       </video>
+      <img src="failure.png" alt="Escalation failure" style="position:absolute;top:0;right:0;width:42%;z-index:2;pointer-events:none;opacity:.92;filter:drop-shadow(0 2px 8px rgba(0,0,0,.7))">
     </div>`;
   }
 }
@@ -2925,6 +2928,8 @@ function startVitalsDrill() {
   const status = document.getElementById('vitals-status');
    const cue = document.getElementById('micro-cue');
   if(meter) meter.style.width = '0%';
+  const fimgV = document.getElementById('vitals-fail-img');
+  if(fimgV) fimgV.style.display = 'none';
   if(status) {
     status.textContent = 'Watching micro-signals. Tap when you see the jaw clench.';
     status.removeAttribute('data-triggered');
@@ -2951,6 +2956,8 @@ function startVitalsDrill() {
     }
     if(elapsed > delay + 2500) {
       if(status) status.textContent = 'Missed it — agitation rose. Reset and try again.';
+      const mfimg = document.getElementById('vitals-fail-img');
+      if(mfimg) mfimg.style.display = 'block';
       stopVitalsDrill();
     }
   }, 120);
@@ -2965,12 +2972,15 @@ function tapIntervene() {
     return;
   }
   const now = Date.now();
+  const tapFimg = document.getElementById('vitals-fail-img');
   if(now >= vitalsTargetTs) {
     if(status) status.textContent = 'Good catch — agitation contained.';
     if(meter) meter.style.width = '100%';
+    if(tapFimg) tapFimg.style.display = 'none';
   } else {
     if(status) status.textContent = 'Too early — wait for the jaw set before stepping in.';
     if(meter) meter.style.width = '45%';
+    if(tapFimg) tapFimg.style.display = 'block';
   }
   if(cue) {
     cue.style.opacity = '0';
@@ -3003,6 +3013,8 @@ function startHazardScan() {
   });
   const status = document.getElementById('hazard-status');
   if(status) status.textContent = 'Scan the room and tap hazards.';
+  const hfimgS = document.getElementById('hazard-fail-img');
+  if(hfimgS) hfimgS.style.display = 'none';
   updateHazardUI();
   hazardTimer = setInterval(()=>{
     hazardTimeLeft -= 1;
@@ -3035,13 +3047,17 @@ function endHazardScan(state='reset') {
     hazardTimer = null;
   }
   const status = document.getElementById('hazard-status');
+  const hfimg = document.getElementById('hazard-fail-img');
   if(state === 'win') {
     if(status) status.textContent = 'Nice scan — all hazards cleared.';
+    if(hfimg) hfimg.style.display = 'none';
   } else if(state === 'time') {
     hazardTimeLeft = 0;
     if(status) status.textContent = 'Time up — review what you missed and restart.';
+    if(hfimg) hfimg.style.display = 'block';
   } else {
     if(status) status.textContent = 'Press start to reveal hazards.';
+    if(hfimg) hfimg.style.display = 'none';
   }
   document.querySelectorAll('.hazard-dot').forEach(dot => dot.style.display = 'none');
   updateHazardUI();
