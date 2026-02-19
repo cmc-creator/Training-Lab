@@ -82,7 +82,8 @@ async function loadUserData(user) {
       email: fallbackEmail, phone: '', jobTitle: '', department: '', employeeId: '',
       xp: 0, level: 1, scenariosDone: 0, scoreTotal: 0,
       labCredits: 0, lastLabRun: {}, weekXP: 0,
-      startDate: Date.now(), lastLogin: Date.now(), trainingYear: new Date().getFullYear()
+      startDate: Date.now(), lastLogin: Date.now(), trainingYear: new Date().getFullYear(),
+      hasOnboarded: false, currentSlide: 0, sessionMode: 'training'
     };
     await set(ref(db, 'users/' + user.uid), window._userData);
   }
@@ -2288,16 +2289,25 @@ function initApp() {
   scoreTotal    = window._userData?.scoreTotal   || 0;
   completedTraining = !!window._userData?.completedTraining;
   finalQuizPassed   = !!window._userData?.finalQuizPassed;
-  sessionMode       = 'training'; // force landing choice; user can pick Lab from hub
+  sessionMode       = window._userData?.sessionMode || 'training';
   currentSlide      = Math.max(0, Number(window._userData?.currentSlide || 0));
+  const hasOnboarded = !!window._userData?.hasOnboarded;
 
-  showSlide(currentSlide);
+  if(!hasOnboarded){
+    sessionMode = 'training';
+    currentSlide = 0;
+    showSlide(0);
+    window._saveUserData({ sessionMode, currentSlide, hasOnboarded:true }).catch(()=>{});
+    hideHomeGateway();
+  } else {
+    showSlide(currentSlide);
+    showHomeGateway();
+  }
   updateNavUI();
   updateFinalStats();
   initPaxDrag();
   renderFinalQuiz();
   renderInlineLogos();
-  showHomeGateway();
   // Use stored firstName first, then displayName, then email prefix
   const ud = window._userData || {};
   const firstName = ud.firstName ||
