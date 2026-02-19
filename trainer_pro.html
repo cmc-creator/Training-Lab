@@ -10,7 +10,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, updateProfile, reauthenticateWithCredential, EmailAuthProvider, updatePassword, setPersistence, browserSessionPersistence } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, updateProfile, reauthenticateWithCredential, EmailAuthProvider, updatePassword, setPersistence, browserSessionPersistence, GoogleAuthProvider, signInWithPopup, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 import { getDatabase, ref, set, get, update, onValue, remove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 const firebaseConfig = {
   apiKey: "AIzaSyDVdGXUgxqsSZZiVoEjPL4DkDEMU29meMY",
@@ -25,6 +25,8 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 await setPersistence(auth, browserSessionPersistence); // sign out when tab/browser is closed
+const googleProvider = new GoogleAuthProvider();
+googleProvider.setCustomParameters({ prompt: 'select_account' });
 const db = getDatabase(app);
 window._auth = auth; window._db = db; window._ref = ref;
 window._set = set; window._get = get; window._update = update;
@@ -64,6 +66,7 @@ onAuthStateChanged(auth, user => {
   }
 });
 async function loadUserData(user) {
+  const fallbackEmail = user.email || `${user.uid}@guest.local`; // supports anonymous users
   const snap = await get(ref(db, 'users/' + user.uid));
   if (snap.exists()) {
     window._userData = snap.val();
@@ -73,10 +76,10 @@ async function loadUserData(user) {
     // Legacy / admin-created account fallback
     const parts = (user.displayName || '').split(' ');
     window._userData = {
-      name: user.displayName || user.email.split('@')[0],
-      firstName: parts[0] || user.email.split('@')[0],
+      name: user.displayName || fallbackEmail.split('@')[0],
+      firstName: parts[0] || fallbackEmail.split('@')[0],
       lastName: parts.slice(1).join(' ') || '',
-      email: user.email, phone: '', jobTitle: '', department: '', employeeId: '',
+      email: fallbackEmail, phone: '', jobTitle: '', department: '', employeeId: '',
       xp: 0, level: 1, scenariosDone: 0, scoreTotal: 0,
       labCredits: 0, lastLabRun: {}, weekXP: 0,
       startDate: Date.now(), lastLogin: Date.now(), trainingYear: new Date().getFullYear()
@@ -2217,6 +2220,28 @@ async function doSignUp() {
   }
 }
 
+async function doGoogleSignIn() {
+  const err = document.getElementById('auth-error');
+  err.style.display='none';
+  try {
+    await signInWithPopup(auth, googleProvider);
+  } catch(e){
+    err.textContent = e.message.replace('Firebase: ','');
+    err.style.display='block';
+  }
+}
+
+async function doAnonSignIn() {
+  const err = document.getElementById('auth-error');
+  err.style.display='none';
+  try {
+    await signInAnonymously(auth);
+  } catch(e){
+    err.textContent = e.message.replace('Firebase: ','');
+    err.style.display='block';
+  }
+}
+
 // ─── App Init ────────────────────────────────────────────
 function initApp() {
   // Slides 14-27 are injected on DOMContentLoaded — if not ready yet, queue and return
@@ -2231,7 +2256,7 @@ function initApp() {
   completedTraining = !!window._userData?.completedTraining;
   finalQuizPassed   = !!window._userData?.finalQuizPassed;
   sessionMode       = window._userData?.sessionMode || 'training';
-  currentSlide      = 0;
+  currentSlide      = Math.max(0, Number(window._userData?.currentSlide || 0));
 
   showSlide(currentSlide);
   updateNavUI();
@@ -2239,7 +2264,8 @@ function initApp() {
   initPaxDrag();
   renderFinalQuiz();
   renderInlineLogos();
-  showHomeGateway();
+  const hasProgress = completedTraining || currentSlide > 0;
+  if(hasProgress) showHomeGateway();
   // Use stored firstName first, then displayName, then email prefix
   const ud = window._userData || {};
   const firstName = ud.firstName ||
@@ -2490,12 +2516,12 @@ function submitFinalQuiz() {
     return;
   }
   finalQuizScore = score;
-  const pass = score >= 8;
+  const pass = score >= 9; // 90% threshold
   finalQuizPassed = pass;
   const certBtn = document.getElementById('cert-btn');
   if(certBtn) { certBtn.disabled = !pass; certBtn.style.opacity = pass ? '1' : '.8'; }
   const res = document.getElementById('final-quiz-result');
-  if(res) res.textContent = pass ? `Great work — you passed ${score}/10. Certificate unlocked.` : `Score ${score}/10. Need 8+ to unlock. Review and retry.`;
+  if(res) res.textContent = pass ? `Great work — you passed ${score}/10. Certificate unlocked.` : `Score ${score}/10. Need 9+ to unlock. Review and retry.`;
   window._saveUserData({ finalQuizPassed: pass, finalQuizScore: score, completedTraining:true }).catch(()=>{});
 }
 
