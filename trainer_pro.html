@@ -2267,6 +2267,14 @@ function getSlides14to27() { return `
         </div>
       </div>
     </div>
+    <!-- Lab debrief — shown after all 3 drills attempted -->
+    <div id="lab-debrief" style="grid-column:1/-1;display:none;background:linear-gradient(135deg,rgba(16,185,129,.12),rgba(99,102,241,.12));border:1px solid rgba(16,185,129,.3);border-radius:1.25rem;padding:1.5rem 1.25rem;text-align:center">
+      <div style="font-size:2.5rem;margin-bottom:.4rem">🏆</div>
+      <h3 style="margin:0 0 .35rem;font-size:1.1rem;font-weight:900;color:white">Lab Session Complete</h3>
+      <p style="margin:0 0 1rem;color:#a7f3d0;font-weight:700;font-size:.88rem">You've worked through all three practice drills. Review your stats and keep refining.</p>
+      <div id="lab-debrief-stats" style="display:grid;grid-template-columns:repeat(3,1fr);gap:.75rem;margin-bottom:1rem"></div>
+      <button class="btn btn-primary" onclick="startVitalsDrill();resetBranch();startHazardScan();document.getElementById('lab-debrief').style.display='none';drillStats={vitalsAttempts:0,vitalsPass:0,brancherPicks:{},hazardAttempts:0,hazardWins:0};">Run drills again</button>
+    </div>
   </div>
 </div>
 
@@ -2395,6 +2403,7 @@ let vitalsActive = false;
 let hazardTimer = null;
 let hazardTimeLeft = 30;
 let hazardsFound = 0;
+let drillStats = { vitalsAttempts:0, vitalsPass:0, brancherPicks:{}, hazardAttempts:0, hazardWins:0 };
 
 async function hashText(text) {
   const enc = new TextEncoder();
@@ -2880,10 +2889,13 @@ function pickBranch(choice) {
   const responses = {
     validate: 'Patient exhales, shoulders drop a bit. "Yeah… it is loud. Water would help."',
     command:  'Eyes narrow, tone sharpens: "Don\'t tell me what to do." Agitation spikes.',
-    debate:   'Patient crosses arms, voice rises: "You don\'t get it." Engagement drops.'
+    debate:   'Patient erupts — "You have no idea what I\'ve been through!" Situation rapidly escalates.'
   };
   reaction.textContent = responses[choice] || responses.validate;
   reaction.style.color = choice === 'validate' ? '#bbf7d0' : '#fecdd3';
+  drillStats.brancherPicks[choice] = (drillStats.brancherPicks[choice] || 0) + 1;
+  window._saveUserData && window._saveUserData({ drillStats }).catch(()=>{});
+  checkLabComplete();
   if(!videoBox) return;
   if(choice === 'validate') {
     videoBox.style.padding = '.9rem';
@@ -2921,6 +2933,31 @@ function resetBranch() {
     videoBox.style.padding = '.9rem';
     videoBox.innerHTML = '<div id="branch-video-label" style="color:#e2e8f0;font-weight:800;font-size:.9rem;text-align:center;line-height:1.4">Choose a response above to see the outcome video.</div>';
   }
+}
+
+function checkLabComplete() {
+  if(!drillStats.vitalsAttempts || !Object.keys(drillStats.brancherPicks).length || !drillStats.hazardAttempts) return;
+  const debrief = document.getElementById('lab-debrief');
+  if(!debrief || debrief.style.display !== 'none') return;
+  const vRate = drillStats.vitalsAttempts ? Math.round((drillStats.vitalsPass / drillStats.vitalsAttempts)*100) : 0;
+  const hRate = drillStats.hazardAttempts ? Math.round((drillStats.hazardWins / drillStats.hazardAttempts)*100) : 0;
+  const topPick = Object.entries(drillStats.brancherPicks).sort((a,b)=>b[1]-a[1])[0];
+  const pickLabel = {validate:'Validate',command:'Command',debate:'Debate'}[topPick[0]] || topPick[0];
+  const statsEl = document.getElementById('lab-debrief-stats');
+  if(statsEl) statsEl.innerHTML = `
+    <div style="background:rgba(255,255,255,.06);border-radius:.9rem;padding:.85rem;text-align:center">
+      <div style="font-size:1.5rem;font-weight:900;color:${vRate>=50?'#34d399':'#f87171'}">${vRate}%</div>
+      <div style="font-size:.75rem;color:#94a3b8;font-weight:700;margin-top:.2rem">Vitals accuracy</div>
+    </div>
+    <div style="background:rgba(255,255,255,.06);border-radius:.9rem;padding:.85rem;text-align:center">
+      <div style="font-size:1.5rem;font-weight:900;color:#a78bfa">${pickLabel}</div>
+      <div style="font-size:.75rem;color:#94a3b8;font-weight:700;margin-top:.2rem">Most-used line</div>
+    </div>
+    <div style="background:rgba(255,255,255,.06);border-radius:.9rem;padding:.85rem;text-align:center">
+      <div style="font-size:1.5rem;font-weight:900;color:${hRate>=50?'#34d399':'#f87171'}">${hRate}%</div>
+      <div style="font-size:.75rem;color:#94a3b8;font-weight:700;margin-top:.2rem">Hazard clear rate</div>
+    </div>`;
+  debrief.style.display = 'block';
 }
 
 function startVitalsDrill() {
@@ -2962,6 +2999,9 @@ function startVitalsDrill() {
       if(status) status.textContent = 'Missed it — agitation rose. Reset and try again.';
       const mfimg = document.getElementById('vitals-fail-img');
       if(mfimg) mfimg.style.display = 'block';
+      drillStats.vitalsAttempts += 1;
+      window._saveUserData && window._saveUserData({ drillStats }).catch(()=>{});
+      checkLabComplete();
       stopVitalsDrill();
     }
   }, 120);
@@ -2978,17 +3018,21 @@ function tapIntervene() {
   const now = Date.now();
   const tapFimg = document.getElementById('vitals-fail-img');
   const tapSimg = document.getElementById('vitals-success-img');
+  drillStats.vitalsAttempts += 1;
   if(now >= vitalsTargetTs) {
     if(status) status.textContent = 'Good catch — agitation contained.';
     if(meter) meter.style.width = '100%';
     if(tapFimg) tapFimg.style.display = 'none';
     if(tapSimg) tapSimg.style.display = 'block';
+    drillStats.vitalsPass += 1;
   } else {
     if(status) status.textContent = 'Too early — wait for the jaw set before stepping in.';
     if(meter) meter.style.width = '45%';
     if(tapFimg) tapFimg.style.display = 'block';
     if(tapSimg) tapSimg.style.display = 'none';
   }
+  window._saveUserData && window._saveUserData({ drillStats }).catch(()=>{});
+  checkLabComplete();
   if(cue) {
     cue.style.opacity = '0';
     setTimeout(()=>{ cue.style.display = 'none'; }, 200);
@@ -3062,11 +3106,18 @@ function endHazardScan(state='reset') {
     if(status) status.textContent = 'Nice scan — all hazards cleared.';
     if(hfimg) hfimg.style.display = 'none';
     if(hsimg) hsimg.style.display = 'block';
+    drillStats.hazardAttempts += 1;
+    drillStats.hazardWins += 1;
+    window._saveUserData && window._saveUserData({ drillStats }).catch(()=>{});
+    checkLabComplete();
   } else if(state === 'time') {
     hazardTimeLeft = 0;
     if(status) status.textContent = 'Time up — review what you missed and restart.';
     if(hfimg) hfimg.style.display = 'block';
     if(hsimg) hsimg.style.display = 'none';
+    drillStats.hazardAttempts += 1;
+    window._saveUserData && window._saveUserData({ drillStats }).catch(()=>{});
+    checkLabComplete();
   } else {
     if(status) status.textContent = 'Press start to reveal hazards.';
     if(hfimg) hfimg.style.display = 'none';
