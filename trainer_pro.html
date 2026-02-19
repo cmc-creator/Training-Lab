@@ -2181,6 +2181,7 @@ let chatApiKey = '';
 let chatLoading = false;
 let ambienceAudio = null;
 let ambienceEnabled = false;
+let ambiencePrimed = false;
 
 async function hashText(text) {
   const enc = new TextEncoder();
@@ -2510,6 +2511,25 @@ function ensureAmbienceAudio() {
   return ambienceAudio;
 }
 
+function primeAmbienceOnce() {
+  if(ambiencePrimed) return;
+  const audio = ensureAmbienceAudio();
+  const originalVolume = audio.volume;
+  audio.volume = 0;
+  audio.play().then(()=>{
+    audio.pause();
+    audio.currentTime = 0;
+    audio.volume = originalVolume;
+    ambiencePrimed = true;
+    document.removeEventListener('pointerdown', primeAmbienceOnce);
+    document.removeEventListener('keydown', primeAmbienceOnce);
+  }).catch(()=>{
+    audio.volume = originalVolume;
+  });
+}
+document.addEventListener('pointerdown', primeAmbienceOnce, { passive:true });
+document.addEventListener('keydown', primeAmbienceOnce, { passive:true });
+
 async function toggleAmbience(auto=false) {
   const btn = document.getElementById('ambience-btn');
   const audio = ensureAmbienceAudio();
@@ -2526,6 +2546,7 @@ async function toggleAmbience(auto=false) {
     ambienceEnabled = false;
   }
   if(btn) btn.textContent = ambienceEnabled ? '🎵 Ambience On' : '🎵 Ambience (tap to play)';
+  ambiencePrimed = ambiencePrimed || !audio.paused;
 }
 
 // ─── Final Quiz (Certificate Gate) ───────────────────────
