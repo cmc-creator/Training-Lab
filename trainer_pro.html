@@ -2509,18 +2509,18 @@ function initApp() {
   currentSlide      = Math.max(0, Number(window._userData?.currentSlide || 0));
   const completed   = !!window._userData?.completedTraining || !!window._userData?.finalQuizPassed;
   const hasProgress = currentSlide > 0;
-  const isNewUser   = !completed && !hasProgress;
+  const seenBefore  = !!window._userData?.hasOnboarded;
+  const isNewUser   = !completed && !hasProgress && !seenBefore;
 
   if(isNewUser) {
     sessionMode = 'training';
     currentSlide = 0;
   }
 
-  if(completed) {
-    showSlide(currentSlide);
+  showSlide(currentSlide);
+  if(completed || hasProgress || seenBefore) {
     showHomeGateway();
   } else {
-    showSlide(currentSlide);
     hideHomeGateway();
   }
 
