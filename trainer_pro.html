@@ -2238,8 +2238,7 @@ function getSlides14to27() { return `
             Choose a line to see the patient’s response.
           </div>
           <div id="branch-video" style="background:rgba(0,0,0,.5);border:1px dashed rgba(255,255,255,.15);border-radius:.9rem;padding:.9rem;display:flex;align-items:center;justify-content:center;min-height:140px;position:relative;overflow:hidden">
-            <div style="position:absolute;inset:0;opacity:.2;background:url('https://images.unsplash.com/photo-1526256262350-7da7584cf5eb?auto=format&fit=crop&w=1200&q=60') center/cover"></div>
-            <div id="branch-video-label" style="position:relative;z-index:1;color:#e2e8f0;font-weight:800;font-size:.9rem;text-align:center;line-height:1.4">Placeholder: reaction clip will appear here once provided.</div>
+            <div id="branch-video-label" style="color:#e2e8f0;font-weight:800;font-size:.9rem;text-align:center;line-height:1.4">Choose a response above to see the outcome video.</div>
           </div>
           <button class="btn" style="background:#e2e8f0;color:#0f172a;font-weight:900" onclick="resetBranch()">Reset</button>
         </div>
@@ -2874,32 +2873,46 @@ function resetMatchGame() {
 // ─── Interactive Drills ─────────────────────────────────
 function pickBranch(choice) {
   const reaction = document.getElementById('branch-reaction');
-  const videoLabel = document.getElementById('branch-video-label');
+  const videoBox  = document.getElementById('branch-video');
   if(!reaction) return;
   const responses = {
     validate: 'Patient exhales, shoulders drop a bit. "Yeah… it is loud. Water would help."',
-    command: 'Eyes narrow, tone sharpens: "Don\'t tell me what to do." Agitation spikes.',
-    debate: 'Patient crosses arms, voice rises: "You don\'t get it." Engagement drops.'
+    command:  'Eyes narrow, tone sharpens: "Don\'t tell me what to do." Agitation spikes.',
+    debate:   'Patient crosses arms, voice rises: "You don\'t get it." Engagement drops.'
   };
   reaction.textContent = responses[choice] || responses.validate;
   reaction.style.color = choice === 'validate' ? '#bbf7d0' : '#fecdd3';
-  if(videoLabel) {
-    const labels = {
-      validate: 'Placeholder: calming reaction clip will play here.',
-      command: 'Placeholder: escalation clip will play here.',
-      debate: 'Placeholder: disengaged/frustrated clip will play here.'
-    };
-    videoLabel.textContent = labels[choice] || labels.validate;
+  if(!videoBox) return;
+  if(choice === 'validate') {
+    videoBox.style.padding = '.9rem';
+    videoBox.innerHTML = `<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.75rem;min-height:120px;text-align:center">
+      <div style="color:#bbf7d0;font-weight:800;font-size:.8rem;text-transform:uppercase;letter-spacing:.07em">✓ Good example — de-escalation</div>
+      <a href="https://abc7chicago.com/post/franklin-park-police-cook-county-sheriffs-office-bodycam-video/11778196/" target="_blank" rel="noopener noreferrer" style="display:inline-flex;align-items:center;gap:.45rem;background:#0ea5e9;color:white;font-weight:900;font-size:.9rem;padding:.55rem 1.3rem;border-radius:.6rem;text-decoration:none">▶ Watch Video</a>
+      <div style="color:#94a3b8;font-size:.75rem">Opens in new tab</div>
+    </div>`;
+  } else if(choice === 'command') {
+    videoBox.style.padding = '0';
+    videoBox.innerHTML = `<div style="position:relative;width:100%;padding-top:56.25%">
+      <iframe style="position:absolute;inset:0;width:100%;height:100%;border:0;border-radius:.85rem" src="https://www.youtube.com/embed/cbQUrfYxNtg" allowfullscreen allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" title="What not to do — escalation example"></iframe>
+    </div>`;
+  } else {
+    videoBox.style.padding = '.9rem';
+    videoBox.innerHTML = `<div style="display:flex;align-items:center;justify-content:center;min-height:120px">
+      <div style="color:#fecdd3;font-weight:800;font-size:.9rem;text-align:center;line-height:1.4">⚠ Outcome: patient disengages — no clip yet for this scenario.</div>
+    </div>`;
   }
 }
 
 function resetBranch() {
   const reaction = document.getElementById('branch-reaction');
-  const videoLabel = document.getElementById('branch-video-label');
+  const videoBox  = document.getElementById('branch-video');
   if(!reaction) return;
   reaction.textContent = 'Choose a line to see the patient’s response.';
   reaction.style.color = '#cbd5e1';
-  if(videoLabel) videoLabel.textContent = 'Placeholder: reaction clip will appear here once provided.';
+  if(videoBox) {
+    videoBox.style.padding = '.9rem';
+    videoBox.innerHTML = '<div id="branch-video-label" style="color:#e2e8f0;font-weight:800;font-size:.9rem;text-align:center;line-height:1.4">Choose a response above to see the outcome video.</div>';
+  }
 }
 
 function startVitalsDrill() {
