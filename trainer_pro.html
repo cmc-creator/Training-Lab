@@ -2232,6 +2232,10 @@ function getSlides14to27() { return `
           <div id="branch-reaction" style="margin-top:.5rem;background:rgba(15,23,42,.6);border:1px solid rgba(255,255,255,.08);border-radius:.9rem;padding:1rem;color:#cbd5e1;font-weight:700;min-height:100px">
             Choose a line to see the patient’s response.
           </div>
+          <div id="branch-video" style="background:rgba(0,0,0,.5);border:1px dashed rgba(255,255,255,.15);border-radius:.9rem;padding:.9rem;display:flex;align-items:center;justify-content:center;min-height:140px;position:relative;overflow:hidden">
+            <div style="position:absolute;inset:0;opacity:.2;background:url('https://images.unsplash.com/photo-1526256262350-7da7584cf5eb?auto=format&fit=crop&w=1200&q=60') center/cover"></div>
+            <div id="branch-video-label" style="position:relative;z-index:1;color:#e2e8f0;font-weight:800;font-size:.9rem;text-align:center;line-height:1.4">Placeholder: reaction clip will appear here once provided.</div>
+          </div>
           <button class="btn" style="background:#e2e8f0;color:#0f172a;font-weight:900" onclick="resetBranch()">Reset</button>
         </div>
       </div>
@@ -2865,6 +2869,7 @@ function resetMatchGame() {
 // ─── Interactive Drills ─────────────────────────────────
 function pickBranch(choice) {
   const reaction = document.getElementById('branch-reaction');
+  const videoLabel = document.getElementById('branch-video-label');
   if(!reaction) return;
   const responses = {
     validate: 'Patient exhales, shoulders drop a bit. "Yeah… it is loud. Water would help."',
@@ -2873,13 +2878,23 @@ function pickBranch(choice) {
   };
   reaction.textContent = responses[choice] || responses.validate;
   reaction.style.color = choice === 'validate' ? '#bbf7d0' : '#fecdd3';
+  if(videoLabel) {
+    const labels = {
+      validate: 'Placeholder: calming reaction clip will play here.',
+      command: 'Placeholder: escalation clip will play here.',
+      debate: 'Placeholder: disengaged/frustrated clip will play here.'
+    };
+    videoLabel.textContent = labels[choice] || labels.validate;
+  }
 }
 
 function resetBranch() {
   const reaction = document.getElementById('branch-reaction');
+  const videoLabel = document.getElementById('branch-video-label');
   if(!reaction) return;
   reaction.textContent = 'Choose a line to see the patient’s response.';
   reaction.style.color = '#cbd5e1';
+  if(videoLabel) videoLabel.textContent = 'Placeholder: reaction clip will appear here once provided.';
 }
 
 function startVitalsDrill() {
