@@ -2176,6 +2176,7 @@ let paxMuted = false;
 let paxMinimized = false;
 let draggingPax = false;
 let dragOffset = {x:0,y:0};
+let paxDragged = false;
 let chatMessages = [];
 let chatApiKey = '';
 let chatLoading = false;
@@ -2767,6 +2768,7 @@ function initPaxDrag() {
   const move = e => {
     if(!draggingPax) return;
     e.preventDefault();
+    paxDragged = true;
     const newLeft = Math.min(window.innerWidth - cont.offsetWidth - 10, Math.max(10, e.clientX - offsetX));
     const newTop  = Math.min(window.innerHeight - cont.offsetHeight - 10, Math.max(10, e.clientY - offsetY));
     cont.style.left = `${newLeft}px`;
@@ -2778,6 +2780,7 @@ function initPaxDrag() {
     cont.style.cursor='grab';
     document.removeEventListener('pointermove', move);
     document.removeEventListener('pointerup', up);
+    setTimeout(()=>{ paxDragged = false; }, 80);
   };
   handle.addEventListener('pointerdown', e => {
     if(e.target && e.target.closest('button')) return;
@@ -2791,6 +2794,12 @@ function initPaxDrag() {
     document.addEventListener('pointermove', move);
     document.addEventListener('pointerup', up);
   });
+  handle.addEventListener('click', e => {
+    if(paxDragged) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+  }, true);
 }
 
 function showGuide() {
