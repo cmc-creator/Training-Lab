@@ -2210,8 +2210,11 @@ function getSlides14to27() { return `
         <p style="margin:0 0 .35rem;font-size:.8rem;color:#93c5fd;font-weight:800;letter-spacing:.08em;text-transform:uppercase">Vitals HUD</p>
         <h3 style="margin:0 0 .65rem;font-size:1.1rem;font-weight:900;color:white">Tap when the micro-aggression appears</h3>
         <div style="background:rgba(15,23,42,.6);border:1px solid rgba(255,255,255,.08);border-radius:1rem;padding:1rem;display:flex;flex-direction:column;gap:.65rem">
-          <div style="position:relative;padding-top:56%;border-radius:.75rem;overflow:hidden;background:#000;border:1px solid rgba(255,255,255,.12)">
-            <iframe src="https://www.youtube.com/embed/x7T5Eukokgs" title="Vitals HUD scenario" style="position:absolute;inset:0;width:100%;height:100%;border:0" allow="accelerometer;autoplay;clipboard-write;encrypted-media;gyroscope;picture-in-picture" allowfullscreen></iframe>
+          <div style="position:relative;padding-top:56%;border-radius:.75rem;overflow:hidden;background:#0b1224;border:1px solid rgba(255,255,255,.12)">
+            <img src="microexpressions.png" alt="Microexpression reference" loading="lazy" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:brightness(.96)">
+            <div style="position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.0),rgba(0,0,0,.35));"></div>
+            <div id="micro-cue" style="position:absolute;bottom:24%;left:50%;width:44px;height:44px;border-radius:999px;border:2px solid #fcd34d;background:rgba(251,191,36,.2);box-shadow:0 0 0 8px rgba(251,191,36,.08);display:none;transform:translate(-50%,50%);transition:opacity .2s ease;opacity:0;pointer-events:none"></div>
+            <div style="position:absolute;left:1rem;bottom:1rem;color:#e2e8f0;font-weight:800;font-size:.85rem;letter-spacing:.02em">Microexpression drill</div>
           </div>
           <div style="display:flex;align-items:center;gap:.6rem">
             <div style="flex:1;height:12px;background:rgba(255,255,255,.08);border-radius:999px;overflow:hidden">
@@ -2907,10 +2910,15 @@ function startVitalsDrill() {
   vitalsActive = true;
   const meter = document.getElementById('vitals-meter');
   const status = document.getElementById('vitals-status');
+   const cue = document.getElementById('micro-cue');
   if(meter) meter.style.width = '0%';
   if(status) {
     status.textContent = 'Watching micro-signals. Tap when you see the jaw clench.';
     status.removeAttribute('data-triggered');
+  }
+  if(cue) {
+    cue.style.display = 'none';
+    cue.style.opacity = '0';
   }
   const now = Date.now();
   const delay = 2400 + Math.random()*3200; // randomized trigger window
@@ -2923,6 +2931,10 @@ function startVitalsDrill() {
     if(Date.now() >= vitalsTargetTs && status && !status.dataset.triggered) {
       status.dataset.triggered = '1';
       status.textContent = 'Jaw clenched — give a calm redirect now.';
+      if(cue) {
+        cue.style.display = 'block';
+        requestAnimationFrame(()=> cue.style.opacity = '1');
+      }
     }
     if(elapsed > delay + 2500) {
       if(status) status.textContent = 'Missed it — agitation rose. Reset and try again.';
@@ -2934,6 +2946,7 @@ function startVitalsDrill() {
 function tapIntervene() {
   const status = document.getElementById('vitals-status');
   const meter = document.getElementById('vitals-meter');
+  const cue = document.getElementById('micro-cue');
   if(!vitalsActive) {
     if(status) status.textContent = 'Start the drill first, then watch for the cue.';
     return;
@@ -2946,6 +2959,10 @@ function tapIntervene() {
     if(status) status.textContent = 'Too early — wait for the jaw set before stepping in.';
     if(meter) meter.style.width = '45%';
   }
+  if(cue) {
+    cue.style.opacity = '0';
+    setTimeout(()=>{ cue.style.display = 'none'; }, 200);
+  }
   stopVitalsDrill();
 }
 
@@ -2956,6 +2973,11 @@ function stopVitalsDrill() {
   }
   vitalsActive = false;
   vitalsTargetTs = null;
+  const cue = document.getElementById('micro-cue');
+  if(cue) {
+    cue.style.opacity = '0';
+    setTimeout(()=>{ cue.style.display = 'none'; }, 150);
+  }
 }
 
 function startHazardScan() {
