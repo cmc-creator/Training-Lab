@@ -838,9 +838,9 @@ h1,h2,.font-display{font-family:'Montserrat',sans-serif}
 <div id="app" style="display:none">
 
 <!-- Professor Pax guide (draggable, top-right by default) -->
-<div id="avatar-container" style="position:fixed;top:5.5rem;right:1.25rem;z-index:90;display:none;flex-direction:column;align-items:flex-end;max-width:340px;cursor:grab">
+<div id="avatar-container" style="position:fixed;top:clamp(4.25rem,8vw,6rem);right:clamp(.85rem,calc((100vw - 1100px)/2 + 1rem),2.2rem);z-index:90;display:none;flex-direction:column;align-items:flex-end;max-width:min(340px,92vw);cursor:grab">
   <!-- Speech bubble -->
-  <div id="avatar-speech" style="position:relative;background:#fff;border-radius:1.1rem;border-bottom-right-radius:.3rem;padding:1rem 1.1rem;width:300px;box-shadow:0 8px 32px rgba(0,0,0,.2);font-size:.9rem;font-weight:600;color:#0f172a;display:none;line-height:1.65;margin-bottom:.6rem;cursor:pointer" title="Click to open chat">
+  <div id="avatar-speech" style="position:relative;background:#fff;border-radius:1.1rem;border-bottom-right-radius:.3rem;padding:1rem 1.1rem;width:min(320px,90vw);box-shadow:0 8px 32px rgba(0,0,0,.2);font-size:.9rem;font-weight:600;color:#0f172a;display:none;line-height:1.65;margin-bottom:.6rem;cursor:pointer;max-width:100%" title="Click to open chat">
     <div style="display:flex;align-items:center;justify-content:space-between;gap:.5rem;margin-bottom:.35rem">
       <div style="font-size:.65rem;font-weight:900;color:#2563eb;text-transform:uppercase;letter-spacing:.08em">Prof. Pax</div>
       <div style="display:flex;gap:.35rem">
@@ -1031,7 +1031,7 @@ h1,h2,.font-display{font-family:'Montserrat',sans-serif}
     <p style="color:#94a3b8;font-size:1.1rem;margin-bottom:.5rem;font-weight:300">Destiny Springs Healthcare</p>
     <p style="color:#475569;font-size:.8rem;margin-bottom:3rem">© 2026 De-escalation Mastery Lab™. All Rights Reserved. Proprietary Training Content.</p>
     <div id="welcome-card" style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:1.5rem;padding:2rem;max-width:520px;width:100%;margin-bottom:2.5rem;backdrop-filter:blur(12px)">
-      <p style="color:#94a3b8;font-size:.85rem;margin-bottom:.5rem">Welcome back,</p>
+      <p id="welcome-greeting" style="color:#94a3b8;font-size:.85rem;margin-bottom:.5rem">Welcome,</p>
       <p id="welcome-name" style="color:white;font-size:1.75rem;font-weight:900;font-family:Montserrat,sans-serif;margin-bottom:1rem">Trainee</p>
       <p style="color:#cbd5e1;font-size:.9rem;line-height:1.7">You're about to complete <strong style="color:white">27 evidence-based training modules</strong> covering de-escalation, crisis intervention, psychiatric diagnosis recognition, and real-time scenario practice. Let's build your clinical confidence.</p>
     </div>
@@ -2095,32 +2095,228 @@ function getSlides14to27() { return `
   </div>
 </div>
 
-<!-- SLIDE 27 — COMPLETION & CERTIFICATE -->
+<!-- SLIDE 27 — INTERACTIVE DEMOS + MATCHING -->
+<div class="slide" style="background:#0b172a;padding-bottom:5rem">
+  <div style="padding:2.5rem 2rem 1rem">
+    <span class="badge" style="background:rgba(59,130,246,.16);color:#bfdbfe;border:1px solid rgba(59,130,246,.3);margin-bottom:1rem">Module 9 · Practice & Play</span>
+    <h2 style="font-size:2rem;font-weight:900;color:white;font-family:Montserrat,sans-serif">🎬 Watch & Try: Do vs Don’t</h2>
+    <p style="color:#cbd5e1;font-weight:600;margin-top:.4rem;font-size:.9rem">View example clips, then test yourself by matching the best (and worst) moves.</p>
+  </div>
+  <div style="padding:0 2rem 2rem;display:grid;grid-template-columns:1.25fr 1fr;gap:1.25rem;align-items:start;flex-wrap:wrap">
+    <div class="card p-5" style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:1.25rem">
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:1rem">
+        <div style="display:flex;flex-direction:column;gap:.6rem">
+          <div style="font-weight:900;color:#cbd5e1;font-size:.95rem">De-escalation Example</div>
+          <div style="position:relative;padding-top:56.25%;border-radius:.85rem;overflow:hidden;border:1px solid rgba(255,255,255,.12);background:#000">
+            <iframe src="https://www.youtube.com/embed/x7T5Eukokgs" title="Staff safety scenario" style="position:absolute;inset:0;width:100%;height:100%;border:0" allow="accelerometer;autoplay;clipboard-write;encrypted-media;gyroscope;picture-in-picture" allowfullscreen></iframe>
+          </div>
+          <p style="color:#94a3b8;font-weight:700;font-size:.85rem;line-height:1.6">Watch how staff position themselves, speak slowly, and keep space open.</p>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:.6rem">
+          <div style="font-weight:900;color:#cbd5e1;font-size:.95rem">Trauma-Informed Example</div>
+          <div style="position:relative;padding-top:56.25%;border-radius:.85rem;overflow:hidden;border:1px solid rgba(255,255,255,.12);background:#000">
+            <iframe src="https://www.youtube.com/embed/Jit68JYo0Us" title="Trauma-informed example" style="position:absolute;inset:0;width:100%;height:100%;border:0" allow="accelerometer;autoplay;clipboard-write;encrypted-media;gyroscope;picture-in-picture" allowfullscreen></iframe>
+          </div>
+          <p style="color:#94a3b8;font-weight:700;font-size:.85rem;line-height:1.6">Notice the scripting: consent before touch, choices, and validation.</p>
+        </div>
+      </div>
+    </div>
+    <div class="card p-5" style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:1.25rem">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:.5rem;margin-bottom:.8rem">
+        <div>
+          <p style="margin:0;font-size:.78rem;color:#93c5fd;font-weight:800;letter-spacing:.08em;text-transform:uppercase">Mini-game</p>
+          <h3 style="margin:.15rem 0 0;font-size:1.1rem;font-weight:900;color:white">Match the Do vs Don’t</h3>
+        </div>
+        <button onclick="resetMatchGame()" style="border:none;background:#0ea5e9;color:white;font-weight:900;padding:.55rem .85rem;border-radius:.75rem;cursor:pointer">Reset</button>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:.75rem">
+        <div data-answer="do" class="match-card" style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.12);border-radius:.9rem;padding:.85rem">
+          <div style="display:flex;justify-content:space-between;align-items:center;gap:.5rem;margin-bottom:.5rem">
+            <p style="margin:0;color:#e2e8f0;font-weight:800;font-size:.95rem">Offer two safe choices to reduce power struggles.</p>
+            <span class="match-status" style="background:rgba(255,255,255,.08);color:#cbd5e1;font-weight:800;padding:.25rem .6rem;border-radius:.6rem;font-size:.78rem">—</span>
+          </div>
+          <div style="display:flex;gap:.5rem;flex-wrap:wrap">
+            <button onclick="markMatch(this,'do')" class="btn btn-success" style="padding:.45rem .8rem;font-size:.82rem">Do</button>
+            <button onclick="markMatch(this,'dont')" class="btn" style="padding:.45rem .8rem;font-size:.82rem;background:rgba(248,250,252,.1);color:#e2e8f0;border:1px solid rgba(226,232,240,.25)">Don't</button>
+          </div>
+          <div class="match-feedback" style="margin-top:.4rem;font-size:.82rem;color:#94a3b8;font-weight:700"></div>
+        </div>
+        <div data-answer="dont" class="match-card" style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.12);border-radius:.9rem;padding:.85rem">
+          <div style="display:flex;justify-content:space-between;align-items:center;gap:.5rem;margin-bottom:.5rem">
+            <p style="margin:0;color:#e2e8f0;font-weight:800;font-size:.95rem">Say “Calm down!” as a command when emotions spike.</p>
+            <span class="match-status" style="background:rgba(255,255,255,.08);color:#cbd5e1;font-weight:800;padding:.25rem .6rem;border-radius:.6rem;font-size:.78rem">—</span>
+          </div>
+          <div style="display:flex;gap:.5rem;flex-wrap:wrap">
+            <button onclick="markMatch(this,'do')" class="btn btn-success" style="padding:.45rem .8rem;font-size:.82rem">Do</button>
+            <button onclick="markMatch(this,'dont')" class="btn" style="padding:.45rem .8rem;font-size:.82rem;background:rgba(248,250,252,.1);color:#e2e8f0;border:1px solid rgba(226,232,240,.25)">Don't</button>
+          </div>
+          <div class="match-feedback" style="margin-top:.4rem;font-size:.82rem;color:#94a3b8;font-weight:700"></div>
+        </div>
+        <div data-answer="do" class="match-card" style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.12);border-radius:.9rem;padding:.85rem">
+          <div style="display:flex;justify-content:space-between;align-items:center;gap:.5rem;margin-bottom:.5rem">
+            <p style="margin:0;color:#e2e8f0;font-weight:800;font-size:.95rem">Name what you hear and validate (“It makes sense you’re upset”).</p>
+            <span class="match-status" style="background:rgba(255,255,255,.08);color:#cbd5e1;font-weight:800;padding:.25rem .6rem;border-radius:.6rem;font-size:.78rem">—</span>
+          </div>
+          <div style="display:flex;gap:.5rem;flex-wrap:wrap">
+            <button onclick="markMatch(this,'do')" class="btn btn-success" style="padding:.45rem .8rem;font-size:.82rem">Do</button>
+            <button onclick="markMatch(this,'dont')" class="btn" style="padding:.45rem .8rem;font-size:.82rem;background:rgba(248,250,252,.1);color:#e2e8f0;border:1px solid rgba(226,232,240,.25)">Don't</button>
+          </div>
+          <div class="match-feedback" style="margin-top:.4rem;font-size:.82rem;color:#94a3b8;font-weight:700"></div>
+        </div>
+        <div data-answer="dont" class="match-card" style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.12);border-radius:.9rem;padding:.85rem">
+          <div style="display:flex;justify-content:space-between;align-items:center;gap:.5rem;margin-bottom:.5rem">
+            <p style="margin:0;color:#e2e8f0;font-weight:800;font-size:.95rem">Argue with a delusion to prove it’s not real.</p>
+            <span class="match-status" style="background:rgba(255,255,255,.08);color:#cbd5e1;font-weight:800;padding:.25rem .6rem;border-radius:.6rem;font-size:.78rem">—</span>
+          </div>
+          <div style="display:flex;gap:.5rem;flex-wrap:wrap">
+            <button onclick="markMatch(this,'do')" class="btn btn-success" style="padding:.45rem .8rem;font-size:.82rem">Do</button>
+            <button onclick="markMatch(this,'dont')" class="btn" style="padding:.45rem .8rem;font-size:.82rem;background:rgba(248,250,252,.1);color:#e2e8f0;border:1px solid rgba(226,232,240,.25)">Don't</button>
+          </div>
+          <div class="match-feedback" style="margin-top:.4rem;font-size:.82rem;color:#94a3b8;font-weight:700"></div>
+        </div>
+        <div data-answer="do" class="match-card" style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.12);border-radius:.9rem;padding:.85rem">
+          <div style="display:flex;justify-content:space-between;align-items:center;gap:.5rem;margin-bottom:.5rem">
+            <p style="margin:0;color:#e2e8f0;font-weight:800;font-size:.95rem">Offer to dim lights / reduce noise during sensory overload.</p>
+            <span class="match-status" style="background:rgba(255,255,255,.08);color:#cbd5e1;font-weight:800;padding:.25rem .6rem;border-radius:.6rem;font-size:.78rem">—</span>
+          </div>
+          <div style="display:flex;gap:.5rem;flex-wrap:wrap">
+            <button onclick="markMatch(this,'do')" class="btn btn-success" style="padding:.45rem .8rem;font-size:.82rem">Do</button>
+            <button onclick="markMatch(this,'dont')" class="btn" style="padding:.45rem .8rem;font-size:.82rem;background:rgba(248,250,252,.1);color:#e2e8f0;border:1px solid rgba(226,232,240,.25)">Don't</button>
+          </div>
+          <div class="match-feedback" style="margin-top:.4rem;font-size:.82rem;color:#94a3b8;font-weight:700"></div>
+        </div>
+        <div data-answer="dont" class="match-card" style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.12);border-radius:.9rem;padding:.85rem">
+          <div style="display:flex;justify-content:space-between;align-items:center;gap:.5rem;margin-bottom:.5rem">
+            <p style="margin:0;color:#e2e8f0;font-weight:800;font-size:.95rem">Crowd the doorway or block exits during escalation.</p>
+            <span class="match-status" style="background:rgba(255,255,255,.08);color:#cbd5e1;font-weight:800;padding:.25rem .6rem;border-radius:.6rem;font-size:.78rem">—</span>
+          </div>
+          <div style="display:flex;gap:.5rem;flex-wrap:wrap">
+            <button onclick="markMatch(this,'do')" class="btn btn-success" style="padding:.45rem .8rem;font-size:.82rem">Do</button>
+            <button onclick="markMatch(this,'dont')" class="btn" style="padding:.45rem .8rem;font-size:.82rem;background:rgba(248,250,252,.1);color:#e2e8f0;border:1px solid rgba(226,232,240,.25)">Don't</button>
+          </div>
+          <div class="match-feedback" style="margin-top:.4rem;font-size:.82rem;color:#94a3b8;font-weight:700"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Interactive micro-drills -->
+    <div style="grid-column:1/-1;display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:1rem">
+      <div class="card p-5" style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:1.2rem">
+        <p style="margin:0 0 .35rem;font-size:.8rem;color:#93c5fd;font-weight:800;letter-spacing:.08em;text-transform:uppercase">Vitals HUD</p>
+        <h3 style="margin:0 0 .65rem;font-size:1.1rem;font-weight:900;color:white">Tap when the micro-aggression appears</h3>
+        <div style="background:rgba(15,23,42,.6);border:1px solid rgba(255,255,255,.08);border-radius:1rem;padding:1rem;display:flex;flex-direction:column;gap:.65rem">
+          <div style="position:relative;padding-top:56%;border-radius:.75rem;overflow:hidden;background:#000;border:1px solid rgba(255,255,255,.12)">
+            <iframe src="https://www.youtube.com/embed/x7T5Eukokgs" title="Vitals HUD scenario" style="position:absolute;inset:0;width:100%;height:100%;border:0" allow="accelerometer;autoplay;clipboard-write;encrypted-media;gyroscope;picture-in-picture" allowfullscreen></iframe>
+          </div>
+          <div style="display:flex;align-items:center;gap:.6rem">
+            <div style="flex:1;height:12px;background:rgba(255,255,255,.08);border-radius:999px;overflow:hidden">
+              <div id="vitals-meter" style="height:12px;width:0%;background:linear-gradient(90deg,#22c55e,#f97316,#ef4444);border-radius:999px;transition:width .12s ease"></div>
+            </div>
+            <span style="color:#cbd5e1;font-weight:800;font-size:.82rem">Agitation</span>
+          </div>
+          <div id="vitals-status" style="color:#cbd5e1;font-weight:700;font-size:.9rem">Press start, then tap “Intervene” when you see the jaw clench.</div>
+          <div style="display:flex;gap:.6rem;flex-wrap:wrap">
+            <button onclick="startVitalsDrill()" class="btn btn-primary" style="flex:1;min-width:160px">Start drill</button>
+            <button onclick="tapIntervene()" class="btn btn-success" style="flex:1;min-width:160px">Intervene now</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="card p-5" style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:1.2rem">
+        <p style="margin:0 0 .35rem;font-size:.8rem;color:#93c5fd;font-weight:800;letter-spacing:.08em;text-transform:uppercase">Verbal Brancher</p>
+        <h3 style="margin:0 0 .65rem;font-size:1.1rem;font-weight:900;color:white">Pick a line and see the reaction</h3>
+        <div style="display:flex;flex-direction:column;gap:.65rem">
+          <button class="btn" style="justify-content:flex-start;gap:.5rem;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.12);color:#e2e8f0;font-weight:800" onclick="pickBranch('validate')">"I can see this is a lot. Want a quieter space or some water?"</button>
+          <button class="btn" style="justify-content:flex-start;gap:.5rem;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.12);color:#e2e8f0;font-weight:800" onclick="pickBranch('command')">"Calm down and sit or I will have to call security."</button>
+          <button class="btn" style="justify-content:flex-start;gap:.5rem;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.12);color:#e2e8f0;font-weight:800" onclick="pickBranch('debate')">"You are overreacting. Nothing that bad happened."</button>
+          <div id="branch-reaction" style="margin-top:.5rem;background:rgba(15,23,42,.6);border:1px solid rgba(255,255,255,.08);border-radius:.9rem;padding:1rem;color:#cbd5e1;font-weight:700;min-height:100px">
+            Choose a line to see the patient’s response.
+          </div>
+          <button class="btn" style="background:#e2e8f0;color:#0f172a;font-weight:900" onclick="resetBranch()">Reset</button>
+        </div>
+      </div>
+
+      <div class="card p-5" style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:1.2rem">
+        <p style="margin:0 0 .35rem;font-size:.8rem;color:#93c5fd;font-weight:800;letter-spacing:.08em;text-transform:uppercase">360° Scan</p>
+        <h3 style="margin:0 0 .65rem;font-size:1.1rem;font-weight:900;color:white">Find 5 hazards before time runs out</h3>
+        <div style="background:rgba(15,23,42,.6);border:1px solid rgba(255,255,255,.08);border-radius:1rem;padding:1rem;display:flex;flex-direction:column;gap:.75rem">
+          <div style="display:flex;justify-content:space-between;align-items:center;gap:.75rem;flex-wrap:wrap">
+            <div style="color:#cbd5e1;font-weight:800;font-size:.9rem">Time: <span id="hazard-timer">30s</span></div>
+            <div style="color:#a7f3d0;font-weight:800;font-size:.9rem">Hazards found: <span id="hazard-found">0</span>/5</div>
+            <button class="btn btn-primary" onclick="startHazardScan()">Start scan</button>
+          </div>
+          <div id="hazard-wrap" style="position:relative;width:100%;padding-top:62%;border-radius:1rem;overflow:hidden;border:1px solid rgba(255,255,255,.12);background:#0b1224">
+            <img src="https://images.unsplash.com/photo-1504711331083-9c895941bf81?auto=format&fit=crop&w=1200&q=80" alt="Patient room" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:brightness(.85)">
+            <button class="hazard-dot" data-hid="hx" style="position:absolute;top:22%;left:38%;width:38px;height:38px;border-radius:50%;border:2px solid #fcd34d;background:rgba(251,191,36,.22);color:#fcd34d;font-weight:900;cursor:pointer;display:none" onclick="tapHazard('hx')">!</button>
+            <button class="hazard-dot" data-hid="hy" style="position:absolute;top:48%;left:62%;width:38px;height:38px;border-radius:50%;border:2px solid #fcd34d;background:rgba(251,191,36,.22);color:#fcd34d;font-weight:900;cursor:pointer;display:none" onclick="tapHazard('hy')">!</button>
+            <button class="hazard-dot" data-hid="hz" style="position:absolute;top:68%;left:24%;width:38px;height:38px;border-radius:50%;border:2px solid #fcd34d;background:rgba(251,191,36,.22);color:#fcd34d;font-weight:900;cursor:pointer;display:none" onclick="tapHazard('hz')">!</button>
+            <button class="hazard-dot" data-hid="ha" style="position:absolute;top:30%;left:78%;width:38px;height:38px;border-radius:50%;border:2px solid #fcd34d;background:rgba(251,191,36,.22);color:#fcd34d;font-weight:900;cursor:pointer;display:none" onclick="tapHazard('ha')">!</button>
+            <button class="hazard-dot" data-hid="hb" style="position:absolute;top:78%;left:55%;width:38px;height:38px;border-radius:50%;border:2px solid #fcd34d;background:rgba(251,191,36,.22);color:#fcd34d;font-weight:900;cursor:pointer;display:none" onclick="tapHazard('hb')">!</button>
+          </div>
+          <div id="hazard-status" style="color:#cbd5e1;font-weight:700;font-size:.88rem">Press start to reveal hazards.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 28 — FINAL KNOWLEDGE CHECK -->
 <div class="slide" style="background:linear-gradient(135deg,#0f172a 0%,#1e1b4b 50%,#0f172a 100%);padding-bottom:5rem">
   <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:3rem 2rem;text-align:center">
     <div style="font-size:5rem;margin-bottom:1rem;animation:bounce 1s ease infinite">🎓</div>
-    <h2 style="font-size:clamp(1.75rem,5vw,3rem);font-weight:900;color:white;font-family:Montserrat,sans-serif;margin-bottom:.75rem">Training Complete!</h2>
-    <p style="color:#a5b4fc;font-size:1rem;margin-bottom:2.5rem">You have completed the Destiny Springs De-escalation Mastery Lab™</p>
-    <div id="final-quiz-card" style="background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);border-radius:1rem;padding:1.25rem;max-width:720px;width:100%;margin-bottom:1.5rem">
-      <div style="display:flex;align-items:center;gap:.75rem;margin-bottom:.75rem"><div style="font-size:1.5rem">📝</div><div><div style="font-weight:900;color:white;font-size:1rem">10-question knowledge check</div><div style="color:#cbd5e1;font-size:.85rem;font-weight:600">Pass to unlock your certificate.</div></div></div>
-      <div id="final-quiz-questions" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:.75rem"></div>
-      <div style="display:flex;align-items:center;justify-content:space-between;gap:1rem;margin-top:1rem">
+    <h2 style="font-size:clamp(1.75rem,5vw,3rem);font-weight:900;color:white;font-family:Montserrat,sans-serif;margin-bottom:.75rem">Final Knowledge Check</h2>
+    <p style="color:#a5b4fc;font-size:1rem;margin-bottom:2.5rem">Score 90% or higher to unlock your certificate on the next slide.</p>
+    <div id="final-quiz-card" style="background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);border-radius:1rem;padding:1.25rem;max-width:960px;width:100%;margin-bottom:1.5rem">
+      <div style="display:flex;align-items:center;gap:.75rem;margin-bottom:.75rem"><div style="font-size:1.5rem">📝</div><div><div style="font-weight:900;color:white;font-size:1rem">10-question knowledge check</div><div style="color:#cbd5e1;font-size:.85rem;font-weight:600">Pass to continue.</div></div></div>
+      <div id="final-quiz-questions" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:.85rem"></div>
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:1rem;margin-top:1rem;flex-wrap:wrap">
         <div id="final-quiz-result" style="color:#cbd5e1;font-weight:700;font-size:.9rem">Answer all questions, then submit.</div>
         <button onclick="submitFinalQuiz()" style="background:#38bdf8;border:none;color:#0f172a;font-weight:900;padding:.65rem 1rem;border-radius:.75rem;cursor:pointer">Submit quiz</button>
       </div>
     </div>
-    <div style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:1.5rem;padding:2rem;max-width:600px;width:100%;margin-bottom:2rem;backdrop-filter:blur(12px)">
-      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-bottom:1.5rem">
+    <div style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:1.5rem;padding:2rem;max-width:640px;width:100%;margin-bottom:1.5rem;backdrop-filter:blur(12px)">
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-bottom:1.2rem">
         <div style="text-align:center"><div id="final-xp" style="font-size:2rem;font-weight:900;color:#60a5fa">0</div><p style="font-size:.7rem;color:#94a3b8;font-weight:700;margin-top:.25rem">Total XP</p></div>
         <div style="text-align:center"><div id="final-level" style="font-size:2rem;font-weight:900;color:#a78bfa">1</div><p style="font-size:.7rem;color:#94a3b8;font-weight:700;margin-top:.25rem">Level</p></div>
         <div style="text-align:center"><div id="final-scenarios" style="font-size:2rem;font-weight:900;color:#34d399">0</div><p style="font-size:.7rem;color:#94a3b8;font-weight:700;margin-top:.25rem">Scenarios</p></div>
         <div style="text-align:center"><div id="final-score" style="font-size:2rem;font-weight:900;color:#fb923c">—</div><p style="font-size:.7rem;color:#94a3b8;font-weight:700;margin-top:.25rem">Avg Score</p></div>
       </div>
-      <button id="cert-btn" onclick="downloadCertificate()" disabled style="width:100%;background:linear-gradient(135deg,#2563eb,#7c3aed);color:white;font-weight:900;font-size:1rem;padding:1rem;border-radius:1rem;border:none;cursor:pointer;font-family:Montserrat,sans-serif;letter-spacing:.02em;box-shadow:0 8px 24px rgba(37,99,235,.4);opacity:.8">
-        📜 Download Certificate of Completion (unlocked after quiz)
-      </button>
+      <p style="color:#cbd5e1;font-weight:700;font-size:.9rem;margin:0">Pass to unlock the certificate slide.</p>
     </div>
     <p style="color:#475569;font-size:.75rem;line-height:1.8">© 2026 De-escalation Mastery Lab™. Proprietary training content.<br>Unauthorized reproduction, distribution, or commercial use is prohibited.</p>
+  </div>
+</div>
+
+<!-- SLIDE 29 — CERTIFICATE DOWNLOAD (UNLOCKED AFTER QUIZ) -->
+<div class="slide" style="background:linear-gradient(135deg,#0b1224,#0f172a);padding-bottom:5rem">
+  <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:3rem 2rem;text-align:center">
+    <div style="font-size:4.5rem;margin-bottom:1rem">📜</div>
+    <h2 style="font-size:clamp(1.85rem,5vw,3rem);font-weight:900;color:white;font-family:Montserrat,sans-serif;margin-bottom:.5rem">Certificate of Completion</h2>
+    <p style="color:#a5b4fc;font-size:1rem;margin-bottom:2rem">Available after you score 90% or higher on the quiz.</p>
+    <div style="background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);border-radius:1.5rem;padding:2rem;max-width:640px;width:100%;backdrop-filter:blur(12px);box-shadow:0 14px 40px rgba(0,0,0,.25)">
+      <p id="cert-locked-msg" style="color:#cbd5e1;font-weight:700;font-size:.95rem;margin-bottom:1rem">Pass the quiz to unlock your certificate.</p>
+      <button id="cert-btn" onclick="downloadCertificate()" disabled style="width:100%;background:linear-gradient(135deg,#2563eb,#7c3aed);color:white;font-weight:900;font-size:1rem;padding:1rem;border-radius:1rem;border:none;cursor:pointer;font-family:Montserrat,sans-serif;letter-spacing:.02em;box-shadow:0 8px 24px rgba(37,99,235,.4);opacity:.8;margin-bottom:1rem">
+        📥 Download Certificate
+      </button>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:1rem;text-align:left;color:#cbd5e1;font-weight:700;font-size:.9rem">
+        <div style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:.9rem;padding:.9rem">
+          <div style="color:#60a5fa;font-size:.78rem;font-weight:900;text-transform:uppercase;letter-spacing:.08em;margin-bottom:.2rem">XP</div>
+          <div id="cert-xp" style="font-size:1.4rem;font-weight:900;color:white">0</div>
+        </div>
+        <div style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:.9rem;padding:.9rem">
+          <div style="color:#a78bfa;font-size:.78rem;font-weight:900;text-transform:uppercase;letter-spacing:.08em;margin-bottom:.2rem">Level</div>
+          <div id="cert-level" style="font-size:1.4rem;font-weight:900;color:white">1</div>
+        </div>
+        <div style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:.9rem;padding:.9rem">
+          <div style="color:#34d399;font-size:.78rem;font-weight:900;text-transform:uppercase;letter-spacing:.08em;margin-bottom:.2rem">Scenarios</div>
+          <div id="cert-scenarios" style="font-size:1.4rem;font-weight:900;color:white">0</div>
+        </div>
+        <div style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:.9rem;padding:.9rem">
+          <div style="color:#fbbf24;font-size:.78rem;font-weight:900;text-transform:uppercase;letter-spacing:.08em;margin-bottom:.2rem">Quiz</div>
+          <div id="cert-score" style="font-size:1.4rem;font-weight:900;color:white">—</div>
+        </div>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -2183,6 +2379,12 @@ let chatLoading = false;
 let ambienceAudio = null;
 let ambienceEnabled = false;
 let ambiencePrimed = false;
+let vitalsInterval = null;
+let vitalsTargetTs = null;
+let vitalsActive = false;
+let hazardTimer = null;
+let hazardTimeLeft = 30;
+let hazardsFound = 0;
 
 async function hashText(text) {
   const enc = new TextEncoder();
@@ -2293,18 +2495,24 @@ function initApp() {
   finalQuizPassed   = !!window._userData?.finalQuizPassed;
   sessionMode       = window._userData?.sessionMode || 'training';
   currentSlide      = Math.max(0, Number(window._userData?.currentSlide || 0));
-  const hasOnboarded = !!window._userData?.hasOnboarded;
+  const completed   = !!window._userData?.completedTraining || !!window._userData?.finalQuizPassed;
+  const hasProgress = currentSlide > 0;
+  const isNewUser   = !completed && !hasProgress;
 
-  if(!hasOnboarded){
+  if(isNewUser) {
     sessionMode = 'training';
     currentSlide = 0;
-    showSlide(0);
-    window._saveUserData({ sessionMode, currentSlide, hasOnboarded:true }).catch(()=>{});
-    hideHomeGateway();
-  } else {
+  }
+
+  if(completed) {
     showSlide(currentSlide);
     showHomeGateway();
+  } else {
+    showSlide(currentSlide);
+    hideHomeGateway();
   }
+
+  window._saveUserData({ sessionMode, currentSlide, hasOnboarded:true }).catch(()=>{});
   updateNavUI();
   updateFinalStats();
   initPaxDrag();
@@ -2316,6 +2524,8 @@ function initApp() {
     (window._currentUser?.displayName||'').split(' ')[0] ||
     (window._currentUser?.email||'').split('@')[0] ||
     'there';
+  const greetEl = document.getElementById('welcome-greeting');
+  if(greetEl) greetEl.textContent = completed ? 'Welcome back,' : 'Welcome,';
   const welEl = document.getElementById('welcome-name');
   if(welEl) welEl.textContent = firstName;
 }
@@ -2323,44 +2533,53 @@ function initApp() {
 // ─── Slide Navigation ────────────────────────────────────
 function showSlide(n) {
   const slides = document.querySelectorAll('.slide');
+  const certIndex = slides.length ? slides.length-1 : 0;
+  let target = Math.max(0, Math.min(n, slides.length-1));
+
+  // Gate certificate slide until quiz is passed
+  if(target === certIndex && !finalQuizPassed) {
+    alert('Score 90%+ on the quiz to unlock the certificate slide.');
+    target = Math.max(0, certIndex-1);
+  }
+
   slides.forEach((s,i)=>{
-    s.style.display = i===n ? 'block' : 'none';
-    s.classList.toggle('active', i===n);
-    if(i===n) s.scrollTop = 0;
+    s.style.display = i===target ? 'block' : 'none';
+    s.classList.toggle('active', i===target);
+    if(i===target) s.scrollTop = 0;
   });
-  currentSlide = n;
-  if(n===totalSlides-1){
-    completedTraining = true;
-    window._saveUserData({ completedTraining:true }).catch(()=>{});
+  currentSlide = target;
+  if(target===certIndex){
+    completedTraining = !!finalQuizPassed;
+    window._saveUserData({ completedTraining:completedTraining }).catch(()=>{});
     const certBtn = document.getElementById('cert-btn');
     if(certBtn && !finalQuizPassed) certBtn.disabled = true;
   }
   // Progress bar
-  const pct = totalSlides>1 ? (n/(totalSlides-1))*100 : 0;
+  const pct = totalSlides>1 ? (target/(totalSlides-1))*100 : 0;
   const pb = document.getElementById('progress-bar');
   if(pb) pb.style.width = pct+'%';
   // Counter
   const sc = document.getElementById('nav-slide-counter');
-  if(sc) sc.textContent = `${n+1} / ${totalSlides}`;
+  if(sc) sc.textContent = `${target+1} / ${totalSlides}`;
   // Award XP on first visit
-  const key = 'visited_'+n;
+  const key = 'visited_'+target;
   if(!window._userData || !window._userData[key]){
     awardXP(10, false);
     if(window._userData) window._userData[key]=true;
   }
   saveProgress();
   // Update final stats on last slide
-  if(n===totalSlides-1) updateFinalStats();
+  if(target>=totalSlides-2) updateFinalStats();
 
   // Auto guidance once per slide
-  if(lastSpokenSlide !== n) {
+  if(lastSpokenSlide !== target) {
     const ud = window._userData || {};
     const user = window._currentUser;
     const firstName = ud.firstName || (user?.displayName||'').split(' ')[0] || 'there';
-    const tipFn = slideTips[n] || slideTips[slideTips.length-1];
+    const tipFn = slideTips[target] || slideTips[slideTips.length-1];
     const msg = `${tipFn(firstName)} Any questions on this part?`;
     showAvatarAndSpeak('_direct_', firstName, msg);
-    lastSpokenSlide = n;
+    lastSpokenSlide = target;
   }
 }
 
@@ -2555,12 +2774,12 @@ const finalQuizQuestions = [
   {q:'First move when entering a tense room?', a:['Announce yourself calmly from the doorway','Stand close and speak firmly','Approach from behind to surprise'], correct:0},
   {q:'Best body angle to reduce threat perception?', a:['90° straight on','45° off-angle with space','Stand directly over the patient'], correct:1},
   {q:'What to remove first for autism sensory overload?', a:['Begin rapid questioning','Increase lighting','Remove the sensory trigger and lower stimulation'], correct:2},
-  {q:'When a patient is in CPI Stage 3 (Acceleration), you should…', a:['Debate the facts','Reduce verbal input and stimulation','Move closer to assert control'], correct:1},
+  {q:'Patient is pacing, swearing, and says "leave me alone" with no immediate threat. Your best first move?', a:['Stay close and increase verbal direction','Announce you will give space and return in a moment','Call a code team immediately'], correct:1},
   {q:'Trauma-informed touch requires…', a:['Touching only if others are present','Announcing and asking consent every time','Never touching in any situation'], correct:1},
   {q:'De-escalation language should be…', a:['Short, validating, offers choice','Complex, clinical, detailed','Directive and loud'], correct:0},
   {q:'If unsure or out of scope, Prof. Pax will…', a:['Give definitive clinical orders','Guess an answer','Recommend asking supervisor/leadership'], correct:2},
   {q:'Non-punitive limit setting sounds like…', a:['“If you do that, you’ll be punished.”','“I can’t let you do X because of safety. What I can do is Y.”','“Stop or I’ll call security.”'], correct:1},
-  {q:'Bipolar mania tone matching means…', a:['Suddenly going silent','Matching some energy then guiding it down','Speaking in monotone immediately'], correct:1},
+  {q:'During recovery after a crisis, when should you debrief?', a:['Immediately while adrenaline is high','After stabilization with consent and safety','Skip debrief unless forced by policy'], correct:1},
   {q:'Before certificate download you must…', a:['Finish quiz and pass threshold','Just click download anytime','Skip the quiz'], correct:0}
 ];
 
@@ -2576,6 +2795,8 @@ function renderFinalQuiz() {
   }).join('');
   const certBtn = document.getElementById('cert-btn');
   if(certBtn) certBtn.disabled = !finalQuizPassed;
+  const lockMsg = document.getElementById('cert-locked-msg');
+  if(lockMsg) lockMsg.textContent = finalQuizPassed ? 'Certificate unlocked — go to the next slide to download.' : 'Pass the quiz to unlock your certificate.';
   const res = document.getElementById('final-quiz-result');
   if(res && finalQuizPassed) res.textContent = `Passed ${finalQuizScore}/10 — certificate unlocked.`;
 }
@@ -2597,8 +2818,185 @@ function submitFinalQuiz() {
   const certBtn = document.getElementById('cert-btn');
   if(certBtn) { certBtn.disabled = !pass; certBtn.style.opacity = pass ? '1' : '.8'; }
   const res = document.getElementById('final-quiz-result');
-  if(res) res.textContent = pass ? `Great work — you passed ${score}/10. Certificate unlocked.` : `Score ${score}/10. Need 9+ to unlock. Review and retry.`;
-  window._saveUserData({ finalQuizPassed: pass, finalQuizScore: score, completedTraining:true }).catch(()=>{});
+  if(res) res.textContent = pass ? `Great work — you passed ${score}/10. Certificate unlocked on the next slide.` : `Score ${score}/10. Need 9+ to unlock. Review and retry.`;
+  const lockMsg = document.getElementById('cert-locked-msg');
+  if(lockMsg) lockMsg.textContent = pass ? 'Certificate unlocked — proceed to the next slide to download.' : 'Pass the quiz to unlock your certificate.';
+  completedTraining = pass;
+  window._saveUserData({ finalQuizPassed: pass, finalQuizScore: score, completedTraining: pass }).catch(()=>{});
+  if(pass) setTimeout(()=>showSlide(totalSlides-1), 350);
+}
+
+// ─── Matching Mini-Game ─────────────────────────────────
+function markMatch(btn, choice) {
+  const card = btn.closest('.match-card');
+  if(!card) return;
+  const correct = card.dataset.answer;
+  const status = card.querySelector('.match-status');
+  const fb = card.querySelector('.match-feedback');
+  const isCorrect = choice === correct;
+  if(status){
+    status.textContent = choice === 'do' ? 'Do' : "Don't";
+    status.style.background = isCorrect ? '#dcfce7' : '#fef2f2';
+    status.style.color = isCorrect ? '#166534' : '#991b1b';
+  }
+  if(fb){
+    fb.textContent = isCorrect ? 'Correct — this aligns with best practice.' : 'Try again — that move can escalate.';
+    fb.style.color = isCorrect ? '#22c55e' : '#f87171';
+  }
+}
+
+function resetMatchGame() {
+  document.querySelectorAll('.match-card').forEach(card => {
+    const status = card.querySelector('.match-status');
+    const fb = card.querySelector('.match-feedback');
+    if(status){
+      status.textContent = '—';
+      status.style.background = 'rgba(255,255,255,.08)';
+      status.style.color = '#cbd5e1';
+    }
+    if(fb){
+      fb.textContent = '';
+      fb.style.color = '#94a3b8';
+    }
+    card.dataset.selected = '';
+  });
+}
+
+// ─── Interactive Drills ─────────────────────────────────
+function pickBranch(choice) {
+  const reaction = document.getElementById('branch-reaction');
+  if(!reaction) return;
+  const responses = {
+    validate: 'Patient exhales, shoulders drop a bit. "Yeah… it is loud. Water would help."',
+    command: 'Eyes narrow, tone sharpens: "Don\'t tell me what to do." Agitation spikes.',
+    debate: 'Patient crosses arms, voice rises: "You don\'t get it." Engagement drops.'
+  };
+  reaction.textContent = responses[choice] || responses.validate;
+  reaction.style.color = choice === 'validate' ? '#bbf7d0' : '#fecdd3';
+}
+
+function resetBranch() {
+  const reaction = document.getElementById('branch-reaction');
+  if(!reaction) return;
+  reaction.textContent = 'Choose a line to see the patient’s response.';
+  reaction.style.color = '#cbd5e1';
+}
+
+function startVitalsDrill() {
+  stopVitalsDrill();
+  vitalsActive = true;
+  const meter = document.getElementById('vitals-meter');
+  const status = document.getElementById('vitals-status');
+  if(meter) meter.style.width = '0%';
+  if(status) {
+    status.textContent = 'Watching micro-signals. Tap when you see the jaw clench.';
+    status.removeAttribute('data-triggered');
+  }
+  const now = Date.now();
+  const delay = 2400 + Math.random()*3200; // randomized trigger window
+  vitalsTargetTs = now + delay;
+  vitalsInterval = setInterval(()=>{
+    if(!vitalsActive) { stopVitalsDrill(); return; }
+    const elapsed = Date.now() - now;
+    const pct = Math.min(100, (elapsed / (delay + 2000)) * 100);
+    if(meter) meter.style.width = `${pct}%`;
+    if(Date.now() >= vitalsTargetTs && status && !status.dataset.triggered) {
+      status.dataset.triggered = '1';
+      status.textContent = 'Jaw clenched — give a calm redirect now.';
+    }
+    if(elapsed > delay + 2500) {
+      if(status) status.textContent = 'Missed it — agitation rose. Reset and try again.';
+      stopVitalsDrill();
+    }
+  }, 120);
+}
+
+function tapIntervene() {
+  const status = document.getElementById('vitals-status');
+  const meter = document.getElementById('vitals-meter');
+  if(!vitalsActive) {
+    if(status) status.textContent = 'Start the drill first, then watch for the cue.';
+    return;
+  }
+  const now = Date.now();
+  if(now >= vitalsTargetTs) {
+    if(status) status.textContent = 'Good catch — agitation contained.';
+    if(meter) meter.style.width = '100%';
+  } else {
+    if(status) status.textContent = 'Too early — wait for the jaw set before stepping in.';
+    if(meter) meter.style.width = '45%';
+  }
+  stopVitalsDrill();
+}
+
+function stopVitalsDrill() {
+  if(vitalsInterval) {
+    clearInterval(vitalsInterval);
+    vitalsInterval = null;
+  }
+  vitalsActive = false;
+  vitalsTargetTs = null;
+}
+
+function startHazardScan() {
+  endHazardScan('reset');
+  hazardTimeLeft = 30;
+  hazardsFound = 0;
+  document.querySelectorAll('.hazard-dot').forEach(dot => {
+    dot.style.display = 'block';
+    dot.disabled = false;
+  });
+  const status = document.getElementById('hazard-status');
+  if(status) status.textContent = 'Scan the room and tap hazards.';
+  updateHazardUI();
+  hazardTimer = setInterval(()=>{
+    hazardTimeLeft -= 1;
+    if(hazardTimeLeft <= 0) {
+      endHazardScan('time');
+    } else {
+      updateHazardUI();
+    }
+  }, 1000);
+}
+
+function tapHazard(hid) {
+  if(!hazardTimer) {
+    const status = document.getElementById('hazard-status');
+    if(status) status.textContent = 'Press start to reveal hazards first.';
+    return;
+  }
+  const dot = Array.from(document.querySelectorAll('.hazard-dot')).find(d=>d.dataset.hid===hid);
+  if(dot && dot.style.display !== 'none') {
+    dot.style.display = 'none';
+    hazardsFound += 1;
+    updateHazardUI();
+    if(hazardsFound >= 5) endHazardScan('win');
+  }
+}
+
+function endHazardScan(state='reset') {
+  if(hazardTimer) {
+    clearInterval(hazardTimer);
+    hazardTimer = null;
+  }
+  const status = document.getElementById('hazard-status');
+  if(state === 'win') {
+    if(status) status.textContent = 'Nice scan — all hazards cleared.';
+  } else if(state === 'time') {
+    hazardTimeLeft = 0;
+    if(status) status.textContent = 'Time up — review what you missed and restart.';
+  } else {
+    if(status) status.textContent = 'Press start to reveal hazards.';
+  }
+  document.querySelectorAll('.hazard-dot').forEach(dot => dot.style.display = 'none');
+  updateHazardUI();
+}
+
+function updateHazardUI() {
+  const timer = document.getElementById('hazard-timer');
+  const found = document.getElementById('hazard-found');
+  if(timer) timer.textContent = `${hazardTimeLeft}s`;
+  if(found) found.textContent = hazardsFound.toString();
 }
 
 // ─── Save / Load Progress ────────────────────────────────
@@ -2642,8 +3040,10 @@ const slideTips = [
   ()=>'The role-play script builder helps your team practice together. Run it with a colleague this week — even 10 minutes builds skill.',
   ()=>'Box breathing for staff: try 4 counts before any difficult conversation. Your regulated nervous system helps regulate your patient\'s.',
   ()=>'Quick reference cards are yours to keep. Print the de-escalation phrases card and post it somewhere you\'ll see it every shift.',
+  ()=>'Test yourself in the Do vs Don\'t matching game — repetition builds automatic habits.',
   ()=>'You\'ve made it to the final module. This training counts — and your patients benefit every time you practice these skills.',
-  ()=>'Great work completing the training! Download your certificate and share it with your supervisor. These skills save lives.'
+  ()=>'Great work completing the training! Download your certificate and share it with your supervisor. These skills save lives.',
+  ()=>'Certificate unlocked — download it and send to your supervisor to log credit.'
 ];
 
 function renderChatMessages() {
@@ -4016,10 +4416,18 @@ function updateFinalStats() {
   const flv = document.getElementById('final-level');
   const fsc = document.getElementById('final-scenarios');
   const fsg = document.getElementById('final-score');
+  const cxp = document.getElementById('cert-xp');
+  const clv = document.getElementById('cert-level');
+  const csc = document.getElementById('cert-scenarios');
+  const cqs = document.getElementById('cert-score');
   if(fxp) fxp.textContent = xp.toLocaleString();
   if(flv) flv.textContent = level;
   if(fsc) fsc.textContent = scenariosDone;
   if(fsg) fsg.textContent = scenariosDone ? ['A','B','C','D'][Math.round(scoreTotal/scenariosDone)-1]||'—' : '—';
+  if(cxp) cxp.textContent = xp.toLocaleString();
+  if(clv) clv.textContent = level;
+  if(csc) csc.textContent = scenariosDone;
+  if(cqs) cqs.textContent = finalQuizPassed ? `${finalQuizScore}/10` : 'Locked';
 }
 
 // ─── Sign Out ─────────────────────────────────────────────
