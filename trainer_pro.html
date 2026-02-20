@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -8,11 +8,12 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<script src="tenant.config.js"></script>
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, updateProfile, reauthenticateWithCredential, EmailAuthProvider, updatePassword, setPersistence, browserSessionPersistence, GoogleAuthProvider, signInWithPopup, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 import { getDatabase, ref, set, get, update, onValue, remove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
-const firebaseConfig = {
+const firebaseConfig = (window.TENANT?.firebase) || {
   apiKey: "AIzaSyDVdGXUgxqsSZZiVoEjPL4DkDEMU29meMY",
   authDomain: "dsh-training-lab.firebaseapp.com",
   databaseURL: "https://dsh-training-lab-default-rtdb.firebaseio.com",
@@ -28,6 +29,8 @@ await setPersistence(auth, browserSessionPersistence); // sign out when tab/brow
 const googleProvider = new GoogleAuthProvider();
 googleProvider.setCustomParameters({ prompt: 'select_account' });
 const db = getDatabase(app);
+// Multi-tenant path helper — all Firebase data scoped under orgs/{orgId}/ for client isolation
+const _ref = path => ref(db, `orgs/${window.TENANT?.orgId || 'destiny-springs'}/${path}`);
 window._auth = auth; window._db = db; window._ref = ref;
 window._set = set; window._get = get; window._update = update;
 window._onValue = onValue; window._remove = remove;
@@ -67,11 +70,11 @@ onAuthStateChanged(auth, user => {
 });
 async function loadUserData(user) {
   const fallbackEmail = user.email || `${user.uid}@guest.local`; // supports anonymous users
-  const snap = await get(ref(db, 'users/' + user.uid));
+  const snap = await get(_ref('users/' + user.uid));
   if (snap.exists()) {
     window._userData = snap.val();
     // Update last login and training year each session
-    await update(ref(db, 'users/' + user.uid), { lastLogin: Date.now(), trainingYear: new Date().getFullYear() });
+    await update(_ref('users/' + user.uid), { lastLogin: Date.now(), trainingYear: new Date().getFullYear() });
   } else {
     // Legacy / admin-created account fallback
     const parts = (user.displayName || '').split(' ');
@@ -85,7 +88,7 @@ async function loadUserData(user) {
       startDate: Date.now(), lastLogin: Date.now(), trainingYear: new Date().getFullYear(),
       hasOnboarded: false, currentSlide: 0, sessionMode: 'training'
     };
-    await set(ref(db, 'users/' + user.uid), window._userData);
+    await set(_ref('users/' + user.uid), window._userData);
   }
   initApp();
 }
@@ -94,7 +97,7 @@ window._signUp = async function(fname, lname, email, pass, phone, title, dept, e
   const displayName = fname + ' ' + lname;
   await updateProfile(cred.user, { displayName });
   // Store extended profile in DB immediately
-  await set(ref(db, 'users/' + cred.user.uid), {
+  await set(_ref('users/' + cred.user.uid), {
     name: displayName, firstName: fname, lastName: lname,
     email, phone: phone||'', jobTitle: title||'', department: dept||'', employeeId: empid||'',
     xp: 0, level: 1, scenariosDone: 0, scoreTotal: 0,
@@ -108,42 +111,42 @@ window._signIn = async function(email, pass) {
 window._signOut = () => signOut(auth);
 window._saveUserData = async function(data) {
   if (!window._currentUser) return;
-  await update(ref(db, 'users/' + window._currentUser.uid), data);
+  await update(_ref('users/' + window._currentUser.uid), data);
   window._userData = Object.assign(window._userData || {}, data);
 };
 window._loadAllUsers = async function() {
-  const snap = await get(ref(db, 'users'));
+  const snap = await get(_ref('users'));
   return snap.exists() ? snap.val() : {};
 };
 window._deleteUser = async function(uid) {
-  await remove(ref(db, 'users/' + uid));
+  await remove(_ref('users/' + uid));
 };
 // ─── Admin role system ───────────────────────────────────
 window._getAdminRole = async function(uid) {
-  const snap = await get(ref(db, 'admins/' + uid));
+  const snap = await get(_ref('admins/' + uid));
   return snap.exists() ? snap.val().role : null; // 'owner' | 'admin' | null
 };
 window._setAdminRole = async function(uid, role) {
-  if(role) await set(ref(db, 'admins/' + uid), { role, grantedAt: Date.now() });
-  else await remove(ref(db, 'admins/' + uid));
+  if(role) await set(_ref('admins/' + uid), { role, grantedAt: Date.now() });
+  else await remove(_ref('admins/' + uid));
 };
 window._loadAllAdmins = async function() {
-  const snap = await get(ref(db, 'admins'));
+  const snap = await get(_ref('admins'));
   return snap.exists() ? snap.val() : {};
 };
 window._getSettings = async function() {
-  const snap = await get(ref(db, 'settings'));
+  const snap = await get(_ref('settings'));
   return snap.exists() ? snap.val() : {};
 };
 window._saveSettings = async function(data) {
-  await update(ref(db, 'settings'), data);
+  await update(_ref('settings'), data);
 };
 window._resetAllProgress = async function() {
-  const snap = await get(ref(db, 'users'));
+  const snap = await get(_ref('users'));
   if(!snap.exists()) return;
   const kids = snap.val();
   await Promise.all(Object.keys(kids).map(uid =>
-    update(ref(db, 'users/' + uid), { currentSlide:0, xp:0, level:1, scenariosCompleted:0 })
+    update(_ref('users/' + uid), { currentSlide:0, xp:0, level:1, scenariosCompleted:0 })
   ));
 };
 </script>
@@ -396,18 +399,18 @@ h1,h2,.font-display{font-family:'Montserrat',sans-serif}
           <span style="background:linear-gradient(90deg,#38bdf8,#818cf8);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">and Restoring</span><br>
           Lives.
         </h1>
-        <div style="margin-bottom:2.5rem;max-width:420px;color:#94a3b8;font-size:.95rem;line-height:1.75;font-weight:600">
+        <div id="auth-tagline" style="margin-bottom:2.5rem;max-width:420px;color:#94a3b8;font-size:.95rem;line-height:1.75;font-weight:600">
           Master psychiatric de-escalation techniques through immersive training built for Destiny Springs Healthcare staff.
         </div>
         <div style="max-width:520px;width:100%;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:1rem;padding:.85rem 1rem">
-          <img src="dsh.png" alt="Destiny Springs Healthcare" style="width:100%;height:auto;object-fit:contain;display:block">
+          <img id="auth-org-logo" src="dsh.png" alt="Destiny Springs Healthcare" style="width:100%;height:auto;object-fit:contain;display:block">
         </div>
       </div>
 
       <!-- Footer strip -->
       <div style="border-top:1px solid rgba(255,255,255,.15);padding-top:1.5rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.75rem">
         <div style="display:flex;align-items:center;gap:.6rem">
-          <span style="font-size:.82rem;color:#cbd5e1;font-weight:600">© 2026 De-escalation Mastery Lab™</span>
+          <span id="auth-copyright" style="font-size:.82rem;color:#cbd5e1;font-weight:600">© 2026 De-escalation Mastery Lab™</span>
           <span style="color:#475569;font-size:.9rem">·</span>
           <a href="https://www.destinyspringshealthcare.com/" target="_blank" style="font-size:.82rem;color:#7dd3fc;text-decoration:none;font-weight:700">destinyspringshealthcare.com</a>
         </div>
@@ -524,7 +527,7 @@ h1,h2,.font-display{font-family:'Montserrat',sans-serif}
           Create Account →
         </button>
         <p style="font-size:.68rem;color:#94a3b8;text-align:center;line-height:1.5">
-          Your information is stored securely and used only for Destiny Springs Healthcare training purposes.
+          <span id="auth-privacy">Your information is stored securely and used only for Destiny Springs Healthcare training purposes.</span>
         </p>
         <div style="display:flex;align-items:center;gap:.5rem;margin:1rem 0 .75rem">
           <div style="flex:1;height:1px;background:#e2e8f0"></div>
@@ -605,17 +608,17 @@ h1,h2,.font-display{font-family:'Montserrat',sans-serif}
   <div style="width:100%;max-width:1100px;display:grid;grid-template-columns:1.1fr 1fr;gap:1.75rem;align-items:center;color:#e2e8f0">
     <div style="display:flex;flex-direction:column;gap:1.1rem">
       <div class="logo-inline" aria-label="Destiny Springs Healthcare logo" style="max-width:360px;width:100%"></div>
-      <div style="font-family:Montserrat,sans-serif;font-weight:900;font-size:clamp(2rem,4vw,2.7rem);line-height:1.05;color:white">Welcome back to the Destiny Springs De-escalation Mastery Lab™</div>
+      <div id="hub-heading" style="font-family:Montserrat,sans-serif;font-weight:900;font-size:clamp(2rem,4vw,2.7rem);line-height:1.05;color:white">Welcome back to the Destiny Springs De-escalation Mastery Lab™</div>
       <p style="color:#cbd5e1;font-size:1rem;line-height:1.7;max-width:640px;font-weight:600">Pick where you want to go. Restart the full training from slide one, or jump straight into the live Lab to practice scenarios. Your XP, level, and lab credits stay with you.</p>
       <div style="display:flex;flex-wrap:wrap;gap:1rem;color:#94a3b8;font-weight:700;font-size:.9rem">
-        <div style="display:flex;align-items:center;gap:.5rem;padding:.65rem 1rem;border-radius:.9rem;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08)">Destiny Springs Healthcare</div>
+        <div id="hub-org-pill" style="display:flex;align-items:center;gap:.5rem;padding:.65rem 1rem;border-radius:.9rem;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08)">Destiny Springs Healthcare</div>
         <div style="display:flex;align-items:center;gap:.5rem;padding:.65rem 1rem;border-radius:.9rem;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08)">Interactive Module Training</div>
         <div style="display:flex;align-items:center;gap:.5rem;padding:.65rem 1rem;border-radius:.9rem;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08)">Lab simulations</div>
       </div>
     </div>
     <div style="display:grid;grid-template-columns:1fr;gap:1rem">
       <button onclick="resumeTrainingFromHub()" style="border:none;cursor:pointer;padding:0;border-radius:1.1rem;text-align:left;overflow:hidden;position:relative;box-shadow:0 20px 50px rgba(34,197,94,.28);transition:transform .2s,box-shadow .2s;min-height:110px">
-        <img src="lab.png" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:brightness(.45)">
+        <img src="lab.png" class="tenant-lab-bg" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:brightness(.45)">
         <div style="position:absolute;inset:0;background:linear-gradient(135deg,rgba(22,163,74,.7),rgba(34,197,94,.5))"></div>
         <div style="position:relative;z-index:1;padding:1.4rem 1.2rem;color:white">
           <div style="display:flex;flex-direction:column;gap:.45rem">
@@ -626,7 +629,7 @@ h1,h2,.font-display{font-family:'Montserrat',sans-serif}
         </div>
       </button>
       <button onclick="startTrainingFromHub()" style="border:none;cursor:pointer;padding:0;border-radius:1.1rem;text-align:left;overflow:hidden;position:relative;box-shadow:0 20px 50px rgba(79,70,229,.35);transition:transform .2s,box-shadow .2s;min-height:110px">
-        <img src="lab.png" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:brightness(.35)">
+        <img src="lab.png" class="tenant-lab-bg" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:brightness(.35)">
         <div style="position:absolute;inset:0;background:linear-gradient(135deg,rgba(37,99,235,.72),rgba(124,58,237,.6))"></div>
         <div style="position:relative;z-index:1;padding:1.4rem 1.2rem;color:white">
           <div style="display:flex;flex-direction:column;gap:.45rem">
@@ -637,7 +640,7 @@ h1,h2,.font-display{font-family:'Montserrat',sans-serif}
         </div>
       </button>
       <button onclick="enterLabFromHub()" style="border:none;cursor:pointer;padding:0;border-radius:1.1rem;text-align:left;overflow:hidden;position:relative;box-shadow:0 20px 50px rgba(16,185,129,.28);transition:transform .2s,box-shadow .2s;min-height:110px">
-        <img src="lab.png" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:brightness(.55)">
+        <img src="lab.png" class="tenant-lab-bg" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:brightness(.55)">
         <div style="position:absolute;inset:0;background:linear-gradient(135deg,rgba(14,165,233,.55),rgba(34,197,94,.45))"></div>
         <div style="position:relative;z-index:1;padding:1.4rem 1.2rem;color:white">
           <div style="display:flex;flex-direction:column;gap:.45rem">
@@ -707,7 +710,7 @@ h1,h2,.font-display{font-family:'Montserrat',sans-serif}
           <img src="prof.png" style="width:36px;height:36px;border-radius:50%;object-fit:cover;object-position:top;border:2px solid #2563eb;flex-shrink:0" alt="">
           <div style="flex:1">
             <div style="font-size:.68rem;font-weight:900;text-transform:uppercase;letter-spacing:.1em;color:#475569">Patient Status</div>
-            <div style="font-weight:800;color:white;font-size:.9rem">Marcus <span style="font-size:.75rem;font-weight:600;color:#94a3b8">— Combat PTSD, evaluation pending</span></div>
+            <div id="lab-patient-name" style="font-weight:800;color:white;font-size:.9rem">Marcus <span style="font-size:.75rem;font-weight:600;color:#94a3b8">— Combat PTSD, evaluation pending</span></div>
           </div>
           <div id="marcus-state-badge" style="padding:.3rem .85rem;border-radius:1rem;font-weight:900;font-size:.8rem;background:#dcfce7;color:#166534;border:1px solid #bbf7d0">&#x26AB; Neutral</div>
         </div>
@@ -2498,9 +2501,31 @@ const LOGO_SVG = `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 900 300' 
   </g>
 </svg>`;
 function renderInlineLogos() {
-  document.querySelectorAll('.logo-inline').forEach(el => { el.innerHTML = LOGO_SVG; });
+  const t = window.TENANT;
+  document.querySelectorAll('.logo-inline').forEach(el => {
+    if(t?.logoUrl) {
+      el.innerHTML = `<img src="${t.logoUrl}" alt="${t.orgName || ''}" style="width:100%;height:auto;object-fit:contain;display:block;max-height:80px">`;
+    } else {
+      el.innerHTML = LOGO_SVG;
+    }
+  });
 }
-document.addEventListener('DOMContentLoaded', renderInlineLogos);
+function applyTenantContent() {
+  const T = window.TENANT;
+  if(!T) return;
+  const el = id => document.getElementById(id);
+  document.title = `${T.orgName} \u2014 ${T.brandName}`;
+  if(el('auth-tagline'))    el('auth-tagline').textContent   = `Master psychiatric de-escalation techniques through immersive training built for ${T.orgName} staff.`;
+  if(el('auth-org-logo'))  { el('auth-org-logo').src = T.logoUrl; el('auth-org-logo').alt = T.orgName; }
+  if(el('auth-privacy'))   el('auth-privacy').textContent   = `Your information is stored securely and used only for ${T.orgName} training purposes.`;
+  if(el('auth-copyright')) el('auth-copyright').textContent = `\u00A9 ${T.copyrightYear} ${T.brandName}`;
+  if(el('hub-heading'))    el('hub-heading').textContent    = `Welcome back to the ${T.orgName} ${T.brandName}`;
+  if(el('hub-org-pill'))   el('hub-org-pill').textContent   = T.orgName;
+  if(el('admin-role-badge')) el('admin-role-badge').textContent = `${T.orgName} \u2014 Training Management`;
+  if(el('lab-patient-name')) el('lab-patient-name').innerHTML = `${T.patientName} <span style="font-size:.75rem;font-weight:600;color:#94a3b8">\u2014 ${T.patientDx}</span>`;
+  document.querySelectorAll('.tenant-lab-bg').forEach(img => { img.src = T.labImageUrl; });
+}
+document.addEventListener('DOMContentLoaded', () => { renderInlineLogos(); applyTenantContent(); });
 const CHAT_ENDPOINT = '/api/pax-chat';
 let currentSlide = 0;
 let totalSlides  = 0;
@@ -3442,9 +3467,10 @@ async function sendChatMessage() {
   if(sendBtn) { sendBtn.disabled=true; sendBtn.textContent='Sending...'; }
   const mode = sessionMode || 'training';
   const sys = mode === 'lab'
-    ? `You are Professor Vance, an expert Clinical Mentor for Behavioral Health Technicians (BHTs) in a high-acuity psychiatric crisis unit. You are coaching a trainee through a simulation involving a patient named Marcus. You have access to the user's progress through the training. When the user is on a slide, narrate key points and provide Pro-Tips. When the user types a response, evaluate it based on de-escalation criteria and award XP verbally for strong clinical points. Tone: calm, authoritative, deeply empathetic — unshakable in a crisis. Maximum THREE short conversational sentences per reply. Use 'we' to foster teamwork. Safety rules: Reaction Gap (6-10 feet), validate feelings before asserting authority, offer forced choices (Choice Architecture), scan for environmental hazards. If trainee's response would escalate Marcus: 'That's a common mistake, but in this environment it's a dangerous one. Let's look at why Marcus felt threatened.' If they choose well: 'Excellent work. By validating his frustration, you've lowered the room's temperature.' Link feedback to concepts from the slides they just completed. Avoid PHI and definitive clinical orders.`
-    : `You are Professor Vance, an expert Clinical Mentor for Behavioral Health Technicians at Destiny Springs Healthcare, coaching through an interactive de-escalation training involving a patient named Marcus. You serve dual roles: (1) when asked about slides or content, narrate and give Pro-Tips linked to what was just covered; (2) when the user types a clinical response, evaluate it against de-escalation best practices and provide immediate coaching. Keep replies to maximum THREE short sentences. Use 'we' to build teamwork. Always connect feedback to the slides. If unsure or outside training scope, recommend the supervisor or clinical leadership. Avoid PHI.`;
-  const _mStateNote = (typeof marcusState !== 'undefined' && marcusState !== 'Neutral') ? ` [ALERT: Patient Marcus current state is ${marcusState} — calibrate your coaching accordingly.]` : '';
+    ? `You are Professor Vance, an expert Clinical Mentor for Behavioral Health Technicians (BHTs) in a high-acuity psychiatric crisis unit. You are coaching a trainee through a simulation involving a patient named ${window.TENANT?.patientName||'Marcus'}. You have access to the user's progress through the training. When the user is on a slide, narrate key points and provide Pro-Tips. When the user types a response, evaluate it based on de-escalation criteria and award XP verbally for strong clinical points. Tone: calm, authoritative, deeply empathetic — unshakable in a crisis. Maximum THREE short conversational sentences per reply. Use 'we' to foster teamwork. Safety rules: Reaction Gap (6-10 feet), validate feelings before asserting authority, offer forced choices (Choice Architecture), scan for environmental hazards. If the trainee's response would escalate the patient: 'That's a common mistake, but in this environment it's a dangerous one. Let's look at what went wrong.' If they choose well: 'Excellent work. By validating his frustration, you've lowered the room's temperature.' Link feedback to concepts from the slides they just completed. Avoid PHI and definitive clinical orders.`
+    : `You are Professor Vance, an expert Clinical Mentor for Behavioral Health Technicians at ${window.TENANT?.orgName||'Destiny Springs Healthcare'}, coaching through an interactive de-escalation training involving a patient named ${window.TENANT?.patientName||'Marcus'}. You serve dual roles: (1) when asked about slides or content, narrate and give Pro-Tips linked to what was just covered; (2) when the user types a clinical response, evaluate it against de-escalation best practices and provide immediate coaching. Keep replies to maximum THREE short sentences. Use 'we' to build teamwork. Always connect feedback to the slides. If unsure or outside training scope, recommend the supervisor or clinical leadership. Avoid PHI.`;
+  const _pName = window.TENANT?.patientName || 'Marcus';
+  const _mStateNote = (typeof marcusState !== 'undefined' && marcusState !== 'Neutral') ? ` [ALERT: Patient ${_pName} current state is ${marcusState} — calibrate your coaching accordingly.]` : '';
   const body = { system: sys + _mStateNote, messages: chatMessages.slice(-8) };
   let reply = '';
   try {
@@ -3648,14 +3674,15 @@ const TUTORIAL_STEPS = [
     icon: '🎓',
     title: 'Welcome to the Lab',
     subtitle: 'De-escalation Training Simulation',
-    body: "I'm Professor Vance, your Clinical Mentor. Today we're working with Marcus — a patient who's been waiting a long time for his evaluation and the tension is rising. Before we step into the unit, let's cover your three core tools.",
-    tip: "Welcome to the Lab, Trainee. Your goal isn't to control Marcus — it's to help him regain control of himself. Accuracy is better than speed, but in a crisis you'll need both. Let's begin."
+    body: `I'm Professor Vance, your Clinical Mentor. Today we're working with ${window.TENANT?.patientName||'Marcus'} — a patient who's been waiting a long time for his evaluation and the tension is rising. Before we step into the unit, let's cover your three core tools.`,
+    tip: `Welcome to the Lab, Trainee. Your goal isn't to control ${window.TENANT?.patientName||'Marcus'} — it's to help him regain control of himself. Accuracy is better than speed, but in a crisis you'll need both. Let's begin.`
   },
   {
     icon: '🔍',
     title: 'Step 1 — Environmental Hazard Scan',
-    subtitle: 'Secure the room before you engage Marcus',
-    body: "Before approaching Marcus, tap every object in the room that could be used as a weapon or projectile — water pitchers, loose cords, heavy books. Always secure the environment first; then engage the patient.",
+    subtitle: `Secure the room before you engage ${window.TENANT?.patientName||'Marcus'}`,
+    body: `Before approaching ${window.TENANT?.patientName||'Marcus'}, tap every object in the room that could be used as a weapon or projectile — water pitchers, loose cords, heavy books. Always secure the environment first; then engage the patient.`,
+
     tip: "A safe room makes for a safe conversation. Don't let a heavy book or a loose cord turn a talk into a crisis."
   },
   {
@@ -4871,21 +4898,21 @@ function downloadCertificate() {
     <div style="margin-bottom:1.25rem;max-width:360px;width:100%;margin-left:auto;margin-right:auto">
       <div class="logo-inline" aria-label="Destiny Springs Healthcare logo" style="width:100%;display:block"></div>
     </div>
-    <div style="font-size:.78rem;letter-spacing:.32em;color:#475569;text-transform:uppercase;margin-bottom:1rem">Destiny Springs Healthcare</div>
+    <div style="font-size:.78rem;letter-spacing:.32em;color:#475569;text-transform:uppercase;margin-bottom:1rem">${(window.TENANT?.orgName||'Destiny Springs Healthcare')}</div>
     <div style="font-size:.68rem;letter-spacing:.28em;color:#64748b;text-transform:uppercase;margin-bottom:2rem">Certificate of Completion</div>
     <div style="width:120px;height:4px;background:linear-gradient(90deg,#1e3a8a,#7c3aed);margin:0 auto 2.2rem;border-radius:2px"></div>
     <div style="font-size:1rem;color:#334155;margin-bottom:.85rem">This certifies that</div>
     <div style="font-size:2.8rem;font-weight:700;color:#0f172a;font-family:Georgia,serif;margin-bottom:1rem;font-style:italic">${name}</div>
     <div style="font-size:1rem;color:#334155;margin-bottom:2.2rem">has successfully completed</div>
-    <div style="font-size:1.6rem;font-weight:700;color:#0f172a;margin-bottom:.6rem">De-escalation Mastery Lab™</div>
-    <div style="font-size:.92rem;color:#475569;margin-bottom:.45rem">27-Module Inpatient Psychiatric Crisis Intervention Training</div>
-    <div style="font-size:.82rem;color:#94a3b8;margin-bottom:2rem">Covering CPI Model · Diagnosis-Specific Care · Trauma-Informed Practice · Safety Protocols</div>
+    <div style="font-size:1.6rem;font-weight:700;color:#0f172a;margin-bottom:.6rem">${(window.TENANT?.brandName||'De-escalation Mastery Lab™')}</div>
+    <div style="font-size:.92rem;color:#475569;margin-bottom:.45rem">${(window.TENANT?.tagline||'27-Module Inpatient Psychiatric Crisis Intervention Training')}</div>
+    <div style="font-size:.82rem;color:#94a3b8;margin-bottom:2rem">${(window.TENANT?.subtopics||'CPI Model · Diagnosis-Specific Care · Trauma-Informed Practice · Safety Protocols')}</div>
     <div style="width:120px;height:4px;background:linear-gradient(90deg,#7c3aed,#1e3a8a);margin:0 auto 2rem;border-radius:2px"></div>
     <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-top:1.5rem;gap:1.5rem">
       <div style="text-align:center;flex:1">
         <div style="border-top:2px solid #0f172a;width:220px;margin:0 auto .45rem"></div>
         <div style="font-size:.85rem;color:#475569;font-weight:700">Training Administrator</div>
-        <div style="font-size:.72rem;color:#94a3b8">Destiny Springs Healthcare</div>
+        <div style="font-size:.72rem;color:#94a3b8">${(window.TENANT?.orgName||'Destiny Springs Healthcare')}</div>
       </div>
       <div style="text-align:center;flex:.6">
         <div style="font-size:3.2rem;margin-bottom:.25rem">🎓</div>
@@ -4898,7 +4925,7 @@ function downloadCertificate() {
       </div>
     </div>
     <div style="margin-top:2.2rem;font-size:.7rem;color:#94a3b8;border-top:1px solid #e2e8f0;padding-top:1rem">
-      © 2026 De-escalation Mastery Lab™. All Rights Reserved. Proprietary training content.
+      © ${(window.TENANT?.copyrightYear||'2026')} ${(window.TENANT?.brandName||'De-escalation Mastery Lab™')}. All Rights Reserved.
     </div>
   </div>`;
   const d = document.createElement('div');
@@ -4936,7 +4963,7 @@ function downloadCertificate() {
   if(window.html2pdf && certEl){
     window.html2pdf().from(certEl).set({
       margin:0,
-      filename:`DSH-Certificate-${name.replace(/\s+/g,'-')}.pdf`,
+      filename:`${(window.TENANT?.orgId||'cert').toUpperCase()}-Certificate-${name.replace(/\s+/g,'-')}.pdf`,
       html2canvas:{scale:2,useCORS:true,backgroundColor:'#ffffff'},
       jsPDF:{unit:'in',format:'letter',orientation:'landscape'}
     }).save().then(()=>{ cleanup(); celebrate(); finishFlow(); }).catch(()=>cleanup());
