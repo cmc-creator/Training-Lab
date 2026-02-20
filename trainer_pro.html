@@ -963,8 +963,8 @@ h1,h2,.font-display{font-family:'Montserrat',sans-serif}
 </div>
 
 <!-- floating slide edge nav arrows -->
-<button onclick="prevSlide()" title="Previous slide" style="position:fixed;left:0;top:50%;transform:translateY(-50%);z-index:79;width:52px;height:80px;background:rgba(10,15,30,.65);border:none;color:white;font-size:1.6rem;cursor:pointer;border-radius:0 .75rem .75rem 0;backdrop-filter:blur(8px);transition:background .2s" onmouseover="this.style.background='rgba(37,99,235,.7)'" onmouseout="this.style.background='rgba(10,15,30,.65)'">&#8249;</button>
-<button onclick="nextSlide()" title="Next slide" style="position:fixed;right:0;top:50%;transform:translateY(-50%);z-index:79;width:52px;height:80px;background:rgba(37,99,235,.7);border:none;color:white;font-size:1.6rem;cursor:pointer;border-radius:.75rem 0 0 .75rem;backdrop-filter:blur(8px);transition:background .2s" onmouseover="this.style.background='rgba(37,99,235,.92)'" onmouseout="this.style.background='rgba(37,99,235,.7)'">&#8250;</button>
+<button id="side-arrow-prev" onclick="prevSlide()" title="Previous slide" style="position:fixed;left:0;top:50%;transform:translateY(-50%);z-index:79;width:52px;height:80px;background:rgba(10,15,30,.65);border:none;color:white;font-size:1.6rem;cursor:pointer;border-radius:0 .75rem .75rem 0;backdrop-filter:blur(8px);transition:background .2s" onmouseover="this.style.background='rgba(37,99,235,.7)'" onmouseout="this.style.background='rgba(10,15,30,.65)'">&#8249;</button>
+<button id="side-arrow-next" onclick="nextSlide()" title="Next slide" style="position:fixed;right:0;top:50%;transform:translateY(-50%);z-index:79;width:52px;height:80px;background:rgba(37,99,235,.7);border:none;color:white;font-size:1.6rem;cursor:pointer;border-radius:.75rem 0 0 .75rem;backdrop-filter:blur(8px);transition:background .2s" onmouseover="this.style.background='rgba(37,99,235,.92)'" onmouseout="this.style.background='rgba(37,99,235,.7)'">&#8250;</button>
 
 <nav style="position:fixed;bottom:0;left:0;right:0;background:rgba(10,15,30,.97);backdrop-filter:blur(16px);border-top:1px solid rgba(255,255,255,.07);padding:.6rem 1rem;display:flex;align-items:center;gap:.5rem;z-index:80;flex-wrap:wrap;row-gap:.35rem">
   <!-- Left: slide counter + XP -->
@@ -2721,11 +2721,30 @@ function showHomeGateway() {
   }
   const hub = document.getElementById('home-gateway');
   if(hub) hub.style.display = 'flex';
+  // Hide slide navigation — not needed on the hub choice screen
+  const pa = document.getElementById('side-arrow-prev');
+  const na = document.getElementById('side-arrow-next');
+  if(pa) pa.style.display = 'none';
+  if(na) na.style.display = 'none';
+  // Dismiss Professor Vance — he'll speak after a path is chosen
+  const avatarCont = document.getElementById('avatar-container');
+  const avatarMini = document.getElementById('avatar-mini');
+  const speech     = document.getElementById('avatar-speech');
+  if(avatarCont) avatarCont.style.display = 'none';
+  if(avatarMini) avatarMini.style.display = 'none';
+  if(speech)     speech.style.display     = 'none';
+  if(window._vanceAudio) { window._vanceAudio.pause(); window._vanceAudio.currentTime = 0; }
+  avatarActive = false;
 }
 
 function hideHomeGateway() {
   const hub = document.getElementById('home-gateway');
   if(hub) hub.style.display = 'none';
+  // Restore slide navigation arrows
+  const pa = document.getElementById('side-arrow-prev');
+  const na = document.getElementById('side-arrow-next');
+  if(pa) pa.style.display = '';
+  if(na) na.style.display = '';
 }
 
 function startTrainingFromHub() {
@@ -3597,6 +3616,10 @@ function showXPToast(amount, label='') {
 }
 
 function showAvatarAndSpeak(context, name, directText) {
+  // Don't interrupt with Vance tips while the hub choice screen is open
+  const hub = document.getElementById('home-gateway');
+  if(hub && hub.style.display === 'flex') return;
+
   const cont   = document.getElementById('avatar-container');
   const bubble = document.getElementById('avatar-speech');
   const mouth  = document.getElementById('avatar-mouth');
