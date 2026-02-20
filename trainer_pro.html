@@ -2518,6 +2518,7 @@ let sessionMode = 'training'; // training | review | lab | prompt
 let scenarioActive= false;
 let adminCodeHash = null; // stored hash from settings
 let lastSpokenSlide = -1; // ensure Pax speaks once per slide
+const _spokenSlides = new Set(); // track every slide Vance has already spoken about (prevents repeats on back-nav)
 let labCredits = 0;
 let currentLabScenarioId = null;
 let currentLabDx = null;
@@ -2727,10 +2728,11 @@ function showSlide(n) {
   // Update final stats on last slide
   if(target>=totalSlides-2) updateFinalStats();
 
-  // First-visit tracking: milestone XP
-  if(lastSpokenSlide !== target) {
+  // First-visit only: XP milestone + Vance speaks (never repeats on back-nav)
+  if(!_spokenSlides.has(target)) {
+    _spokenSlides.add(target);
     lastSpokenSlide = target;
-    // Section milestone: +50 XP every 5 slides (first visit only)
+    // Section milestone: +50 XP every 5 slides
     if(target > 0 && target % 5 === 0) {
       const mKey = 'milestone_' + target;
       if(!window._userData?.[mKey]) {
@@ -2739,6 +2741,16 @@ function showSlide(n) {
         if(window._userData) window._userData[mKey] = true;
         window._saveUserData({ [mKey]: true }).catch(()=>{});
       }
+    }
+    // Vance speaks about this slide
+    const _ud = window._userData || {};
+    const _u  = window._currentUser;
+    const _fn = _ud.firstName || (_u?.displayName||'').split(' ')[0] || 'there';
+    if(target === 0) {
+      setTimeout(()=>showAvatarAndSpeak('_direct_', _fn, `Welcome, ${_fn}! Are you ready to begin? I’m here to help and guide you through every module on this journey.`), 400);
+    } else {
+      const tipFn = slideTips[target] || slideTips[slideTips.length-1];
+      setTimeout(()=>showAvatarAndSpeak('_direct_', _fn, tipFn(_fn)), 400);
     }
   }
   // Reset idle nudge timer on every slide navigation
@@ -2817,15 +2829,14 @@ function showHomeGateway() {
   const na = document.getElementById('side-arrow-next');
   if(pa) pa.style.display = 'none';
   if(na) na.style.display = 'none';
-  // Dismiss Professor Vance — he'll speak after a path is chosen
-  const avatarCont = document.getElementById('avatar-container');
-  const avatarMini = document.getElementById('avatar-mini');
-  const speech     = document.getElementById('avatar-speech');
-  if(avatarCont) avatarCont.style.display = 'none';
-  if(avatarMini) avatarMini.style.display = 'none';
-  if(speech)     speech.style.display     = 'none';
+  // Show Professor Vance on the hub with a welcome greeting
+  const fname = currentFirstName();
+  const isReturning = !!(window._userData?.currentSlide > 0 || window._userData?.completedTraining);
+  const hubMsg = isReturning
+    ? `Welcome back, ${fname}! Pick where you want to go today — I’ll be right here with you.`
+    : `Welcome, ${fname}! I’m Professor Vance. When you’re ready, choose a path and we’ll get started.`;
   if(window._vanceAudio) { window._vanceAudio.pause(); window._vanceAudio.currentTime = 0; }
-  avatarActive = false;
+  setTimeout(()=>showAvatarAndSpeak('_direct_', fname, hubMsg), 300);
 }
 
 function hideHomeGateway() {
@@ -2848,10 +2859,9 @@ function startTrainingFromHub() {
   finalQuizScore = 0;
   finalQuizResponses = {};
   currentSlide = 0;
+  _spokenSlides.clear(); // fresh session — let Vance speak each slide again
   showSlide(0);
   renderFinalQuiz();
-   const fname = currentFirstName();
-   setTimeout(()=>showAvatarAndSpeak('_direct_', fname, 'Welcome back. Restarting from slide 1 — I am here if you need me.'), 500);
   window._saveUserData({ sessionMode, currentSlide:0, completedTraining:false, finalQuizPassed:false, finalQuizScore:0 }).catch(()=>{});
 }
 
@@ -2864,7 +2874,7 @@ function resumeTrainingFromHub() {
   renderFinalQuiz();
   window._saveUserData({ sessionMode, currentSlide }).catch(()=>{});
   const fname = currentFirstName();
-  setTimeout(()=>showAvatarAndSpeak('_direct_', fname, `Resuming at slide ${resumeSlide+1}. Let me know if you want to jump to the lab.`), 500);
+  // Vance will auto-speak via showSlide if it's a new slide; no redundant greeting needed
 }
 
 function enterLabFromHub() {
@@ -3336,7 +3346,8 @@ function saveProgress() {
 // ─── Avatar & Voice ──────────────────────────────────────
 // Per-slide tips (0-indexed slide number)
 const slideTips = [
-  n=>`Welcome back. I'm here if you want guidance — start when you're ready.`,
+  n=>`This is where it all begins. Take a breath and read through — when you’re ready, hit the arrow and we’ll dive in.`,
+
   ()=>'De-escalation is a skill, not a personality trait. Every technique you learn here can be practiced until it becomes instinct.',
   ()=>'The CPI model has 4 key pillars: Care, Welfare, Safety, and Security. Keep all four in mind for every patient interaction.',
   ()=>'Remember: behavior is communication. Ask yourself — what is this patient trying to tell me with this behavior?',
