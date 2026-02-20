@@ -208,9 +208,12 @@ window._writeAudit = async function(action, meta) {
 };
 // ─── UI Polish Helpers ────────────────────────────────────────
 window._typewrite = function(el, text, speed=20) {
+  // Cancel any in-flight typewrite on this element
+  const token = (el._twToken = (el._twToken || 0) + 1);
   el.textContent = '';
   let i = 0;
   const tick = () => {
+    if(el._twToken !== token) return; // superseded
     if(i < text.length) {
       el.textContent += text[i++];
       setTimeout(tick, speed);
@@ -3360,10 +3363,14 @@ function awardXP(amount, save=true) {
     if(xp>=thresholds[i]){ level=i+1; break; }
   }
   updateNavUI();
-  // Animate the XP counter rolling up
+  // Animate the XP counter rolling up (runs after updateNavUI sets the final value)
   if(amount > 0 && window._animCounter) {
     const navXpEl = document.getElementById('nav-xp');
-    if(navXpEl) window._animCounter(navXpEl, prevXP, xp, 900);
+    if(navXpEl) {
+      // Small rAF delay so updateNavUI's synchronous textContent set is painted first,
+      // then we immediately overwrite with the animation start value
+      requestAnimationFrame(() => window._animCounter(navXpEl, prevXP, xp, 900));
+    }
   }
   // Level-up flash
   if(level > prevLevel) {
@@ -4495,6 +4502,9 @@ async function loadLeaderboard() {
       <div class="skel" style="width:60px;height:1.2rem"></div>
     </div>`).join('')}</div>`;
   try {
+    const users = await window._loadAllUsers();
+    if(!users||!Object.keys(users).length){
+      el.innerHTML='<p style="color:#94a3b8;font-size:.875rem;padding:1rem">No users yet.</p>'; return;
     }
     const sorted = Object.entries(users).map(([uid,d])=>({uid,...d}))
       .sort((a,b)=>(b.xp||0)-(a.xp||0));
