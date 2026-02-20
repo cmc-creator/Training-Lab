@@ -560,6 +560,45 @@ h1,h2,.font-display{font-family:'Montserrat',sans-serif}
 
 </div>
 
+<!-- ═══════════════ 3-STEP ONBOARDING TUTORIAL ═══════════════ -->
+<div id="tutorial-overlay" style="display:none;position:fixed;inset:0;z-index:200;background:rgba(5,10,24,.95);backdrop-filter:blur(12px);align-items:center;justify-content:center;padding:1rem">
+  <div style="width:100%;max-width:520px;background:white;border-radius:1.4rem;overflow:hidden;box-shadow:0 28px 70px rgba(0,0,0,.6);position:relative">
+    <!-- Skip button -->
+    <button onclick="closeTutorial()" style="position:absolute;top:.8rem;right:.8rem;background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.25);padding:.3rem .7rem;border-radius:.6rem;color:rgba(255,255,255,.85);font-weight:800;font-size:.78rem;cursor:pointer;z-index:2">Skip</button>
+    <!-- Portrait header -->
+    <div style="background:linear-gradient(135deg,#0f1f5c,#1d4ed8,#6d28d9);padding:1.5rem 1.5rem .9rem;display:flex;align-items:center;gap:1rem">
+      <img src="prof.png" id="tut-portrait" style="width:76px;height:76px;border-radius:50%;object-fit:cover;object-position:top center;border:3px solid rgba(255,255,255,.55);flex-shrink:0;box-shadow:0 4px 16px rgba(0,0,0,.35)" alt="Professor Vance">
+      <div style="color:white;flex:1;min-width:0">
+        <div style="font-size:.6rem;font-weight:900;text-transform:uppercase;letter-spacing:.14em;opacity:.75">Professor Vance &middot; Clinical Mentor</div>
+        <div id="tut-title" style="font-size:1.12rem;font-weight:900;line-height:1.25;margin-top:.25rem">Welcome to the Lab</div>
+        <div id="tut-subtitle" style="font-size:.8rem;font-weight:600;opacity:.75;margin-top:.1rem">De-escalation Training Unit</div>
+      </div>
+    </div>
+    <!-- Step dots -->
+    <div style="display:flex;justify-content:center;gap:.55rem;padding:.65rem 1.5rem .1rem;background:#f8fafc">
+      <div id="tut-dot-0" style="width:9px;height:9px;border-radius:50%;background:#2563eb;transition:background .3s"></div>
+      <div id="tut-dot-1" style="width:9px;height:9px;border-radius:50%;background:#cbd5e1;transition:background .3s"></div>
+      <div id="tut-dot-2" style="width:9px;height:9px;border-radius:50%;background:#cbd5e1;transition:background .3s"></div>
+      <div id="tut-dot-3" style="width:9px;height:9px;border-radius:50%;background:#cbd5e1;transition:background .3s"></div>
+    </div>
+    <!-- Body -->
+    <div style="padding:1.2rem 1.5rem 0">
+      <div id="tut-icon" style="font-size:2rem;margin-bottom:.4rem">&#127891;</div>
+      <p id="tut-body" style="color:#374151;font-weight:600;font-size:.96rem;line-height:1.72;margin:0 0 .9rem"></p>
+      <div style="background:#eff6ff;border-left:4px solid #2563eb;border-radius:0 .6rem .6rem 0;padding:.7rem 1rem;margin-bottom:1.1rem">
+        <div style="font-size:.6rem;font-weight:900;text-transform:uppercase;letter-spacing:.1em;color:#1d4ed8;margin-bottom:.25rem">&#127891; Prof. Vance says</div>
+        <p id="tut-tip" style="color:#1e3a8a;font-weight:700;font-size:.87rem;line-height:1.65;margin:0;font-style:italic"></p>
+      </div>
+    </div>
+    <!-- Nav -->
+    <div style="display:flex;align-items:center;gap:.75rem;padding:.7rem 1.5rem 1.2rem">
+      <button id="tut-back-btn" onclick="tutStep(-1)" style="border:1px solid #e2e8f0;background:#f8fafc;color:#475569;padding:.6rem 1rem;border-radius:.85rem;font-weight:800;font-size:.88rem;cursor:pointer;display:none">&larr; Back</button>
+      <div style="flex:1"></div>
+      <button id="tut-next-btn" style="border:none;background:#2563eb;color:white;padding:.7rem 1.5rem;border-radius:.9rem;font-weight:900;font-size:.95rem;cursor:pointer;box-shadow:0 4px 14px rgba(37,99,235,.4)">Next &rarr;</button>
+    </div>
+  </div>
+</div>
+
 <!-- Home gateway overlay -->
 <div id="home-gateway">
   <div style="width:100%;max-width:1100px;display:grid;grid-template-columns:1.1fr 1fr;gap:1.75rem;align-items:center;color:#e2e8f0">
@@ -605,6 +644,9 @@ h1,h2,.font-display{font-family:'Montserrat',sans-serif}
           </div>
           <div style="font-size:1.8rem">🚀</div>
         </div>
+      </button>
+      <button onclick="openTutorial()" style="border:none;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);cursor:pointer;padding:.7rem 1.2rem;border-radius:.9rem;text-align:center;color:#94a3b8;font-weight:800;font-size:.82rem;letter-spacing:.04em" onmouseover="this.style.color='white'" onmouseout="this.style.color='#94a3b8'">
+        🎓 Replay Tutorial
       </button>
     </div>
   </div>
@@ -954,6 +996,9 @@ h1,h2,.font-display{font-family:'Montserrat',sans-serif}
   </div>
 </nav>
 
+<!-- XP Toast notification -->
+<div id="xp-toast" style="display:none;position:fixed;bottom:6.5rem;left:50%;transform:translateX(-50%);z-index:300;background:linear-gradient(135deg,#1d4ed8,#7c3aed);color:white;font-weight:900;font-size:.95rem;padding:.5rem 1.3rem;border-radius:2rem;box-shadow:0 6px 20px rgba(37,99,235,.45);pointer-events:none;white-space:nowrap">+XP</div>
+
 <!-- Completion options modal -->
 <div id="completion-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:120;align-items:center;justify-content:center;padding:1rem">
   <div style="background:white;border-radius:1rem;max-width:520px;width:100%;padding:1.5rem;box-shadow:0 16px 48px rgba(0,0,0,.35)">
@@ -986,7 +1031,7 @@ h1,h2,.font-display{font-family:'Montserrat',sans-serif}
   </div>
   <div id="chat-messages" style="flex:1;overflow-y:auto;padding:1rem;background:#fff"></div>
   <div style="padding:.6rem 1rem;border-top:1px solid #e2e8f0;background:#f8fafc;display:flex;gap:.5rem;flex-direction:column">
-    <textarea id="chat-input" rows="2" placeholder="Ask a question about de-escalation, policy, safety..." style="width:100%;border:1px solid #e2e8f0;border-radius:.75rem;padding:.7rem;font-size:.95rem;font-weight:700;resize:vertical;background:white"></textarea>
+    <textarea id="chat-input" rows="2" placeholder="Type how you'd respond to Marcus, or ask Professor Vance a clinical question..." style="width:100%;border:1px solid #e2e8f0;border-radius:.75rem;padding:.7rem;font-size:.95rem;font-weight:700;resize:vertical;background:white"></textarea>
     <div style="display:flex;gap:.5rem;align-items:center;justify-content:space-between">
       <span style="font-size:.8rem;color:#64748b;font-weight:700">If I'm unsure, I'll suggest asking a supervisor/leadership.</span>
       <button id="chat-send-btn" onclick="sendChatMessage()" style="border:none;background:#2563eb;color:white;font-weight:900;padding:.6rem 1rem;border-radius:.85rem;font-size:.9rem;cursor:pointer">Send</button>
@@ -2669,6 +2714,11 @@ function currentFirstName() {
 }
 
 function showHomeGateway() {
+  // First-time users get the tutorial automatically
+  if(window._userData && !window._userData.hasOnboarded) {
+    openTutorial();
+    return;
+  }
   const hub = document.getElementById('home-gateway');
   if(hub) hub.style.display = 'flex';
 }
@@ -3271,8 +3321,8 @@ async function sendChatMessage() {
   if(sendBtn) { sendBtn.disabled=true; sendBtn.textContent='Sending...'; }
   const mode = sessionMode || 'training';
   const sys = mode === 'lab'
-    ? `You are Professor Vance, an expert Clinical Mentor for Behavioral Health Technicians (BHTs) in a high-acuity psychiatric crisis unit. You are coaching a trainee through a simulation involving a patient named Marcus. Tone: calm, authoritative, deeply empathetic — a veteran clinician who is unshakable in a crisis. Keep responses to a maximum of THREE short, conversational sentences so audio playback stays concise. Use "we" to foster professional teamwork. Safety principles: always prioritize the Reaction Gap (6-10 feet), validate feelings before authority, offer forced choices, scan for environmental hazards. If the trainee's response would escalate Marcus, say: "That's a common mistake, but in this environment, it's a dangerous one. Let's look at why Marcus felt threatened." If they choose well, say: "Excellent work. By validating his frustration, you've lowered the room's temperature." Marcus current state context clue: Neutral → Frustrated → Rage. Avoid PHI and definitive clinical orders.`
-    : `You are Professor Vance, an expert Clinical Mentor for Behavioral Health Technicians (BHTs) in a high-acuity psychiatric crisis unit coaching a trainee through a simulation involving a patient named Marcus. Tone: calm, authoritative, deeply empathetic. Keep responses to a maximum of THREE short conversational sentences. Use "we" to foster teamwork. Safety first: Reaction Gap (6-10 ft), validate over authority, forced choices, scan for hazards. If unsure or outside scope, recommend they ask their supervisor or leadership. Avoid PHI.`;
+    ? `You are Professor Vance, an expert Clinical Mentor for Behavioral Health Technicians (BHTs) in a high-acuity psychiatric crisis unit. You are coaching a trainee through a simulation involving a patient named Marcus. You have access to the user's progress through the training. When the user is on a slide, narrate key points and provide Pro-Tips. When the user types a response, evaluate it based on de-escalation criteria and award XP verbally for strong clinical points. Tone: calm, authoritative, deeply empathetic — unshakable in a crisis. Maximum THREE short conversational sentences per reply. Use 'we' to foster teamwork. Safety rules: Reaction Gap (6-10 feet), validate feelings before asserting authority, offer forced choices (Choice Architecture), scan for environmental hazards. If trainee's response would escalate Marcus: 'That's a common mistake, but in this environment it's a dangerous one. Let's look at why Marcus felt threatened.' If they choose well: 'Excellent work. By validating his frustration, you've lowered the room's temperature.' Link feedback to concepts from the slides they just completed. Avoid PHI and definitive clinical orders.`
+    : `You are Professor Vance, an expert Clinical Mentor for Behavioral Health Technicians at Destiny Springs Healthcare, coaching through an interactive de-escalation training involving a patient named Marcus. You serve dual roles: (1) when asked about slides or content, narrate and give Pro-Tips linked to what was just covered; (2) when the user types a clinical response, evaluate it against de-escalation best practices and provide immediate coaching. Keep replies to maximum THREE short sentences. Use 'we' to build teamwork. Always connect feedback to the slides. If unsure or outside training scope, recommend the supervisor or clinical leadership. Avoid PHI.`;
   const body = { system: sys, messages: chatMessages.slice(-8) };
   let reply = '';
   try {
@@ -3294,6 +3344,8 @@ async function sendChatMessage() {
   const typingEl = document.getElementById('vance-typing');
   if(typingEl) typingEl.remove();
   renderChatMessages();
+  // Award XP for engagement — +40 per substantive Vance reply
+  if(reply && reply.length > 30) { awardXP(40); showXPToast(40, 'Chat Reflection'); }
   // Play Professor Vance voice for this reply
   speakWithVance(reply);
 }
@@ -3442,6 +3494,106 @@ async function speakWithVance(text) {
   } catch(e) {
     // TTS failure is non-fatal — training continues without audio
   }
+}
+
+// ─── Tutorial ────────────────────────────────────────────
+const TUTORIAL_STEPS = [
+  {
+    icon: '🎓',
+    title: 'Welcome to the Lab',
+    subtitle: 'De-escalation Training Simulation',
+    body: "I'm Professor Vance, your Clinical Mentor. Today we're working with Marcus — a patient who's been waiting a long time for his evaluation and the tension is rising. Before we step into the unit, let's cover your three core tools.",
+    tip: "Welcome to the Lab, Trainee. Your goal isn't to control Marcus — it's to help him regain control of himself. Accuracy is better than speed, but in a crisis you'll need both. Let's begin."
+  },
+  {
+    icon: '🔍',
+    title: 'Step 1 — Environmental Hazard Scan',
+    subtitle: 'Secure the room before you engage Marcus',
+    body: "Before approaching Marcus, tap every object in the room that could be used as a weapon or projectile — water pitchers, loose cords, heavy books. Always secure the environment first; then engage the patient.",
+    tip: "A safe room makes for a safe conversation. Don't let a heavy book or a loose cord turn a talk into a crisis."
+  },
+  {
+    icon: '👁',
+    title: 'Step 2 — Micro-Expression Training',
+    subtitle: "Read what Marcus won't say out loud",
+    body: "You'll have 2 seconds to identify Marcus's hidden emotion: Anger, Fear, Sadness, or Neutral. His face gives away what his words won't. Build this skill until it's automatic — it could be the first warning you get.",
+    tip: "The eyes tell the truth before the voice does. Flared nostrils and narrowed eyes mean it's time to back up and give Marcus more space."
+  },
+  {
+    icon: '💬',
+    title: 'Step 3 — Live Interaction',
+    subtitle: 'Practice verbal de-escalation with Marcus',
+    body: "When Marcus speaks, type your response in the chat. I'll analyze your words and coach you in real-time. There's no pre-set script — this is live practice. Every response you type earns XP based on your clinical judgment.",
+    tip: "Think before you type. Avoid 'Why' questions — they sound like accusations. Instead, validate what Marcus is feeling."
+  }
+];
+let tutCurrentStep = 0;
+
+function openTutorial() {
+  const overlay = document.getElementById('tutorial-overlay');
+  if(!overlay) return;
+  tutCurrentStep = 0;
+  overlay.style.display = 'flex';
+  renderTutStep();
+}
+
+function renderTutStep() {
+  const step = TUTORIAL_STEPS[tutCurrentStep];
+  if(!step) return;
+  const el = (id) => document.getElementById(id);
+  el('tut-icon').textContent    = step.icon;
+  el('tut-title').textContent   = step.title;
+  el('tut-subtitle').textContent = step.subtitle;
+  el('tut-body').textContent    = step.body;
+  el('tut-tip').textContent     = step.tip;
+  // Dots
+  TUTORIAL_STEPS.forEach((_,i) => {
+    const d = el(`tut-dot-${i}`);
+    if(d) d.style.background = i === tutCurrentStep ? '#2563eb' : '#cbd5e1';
+  });
+  // Back button
+  const back = el('tut-back-btn');
+  if(back) back.style.display = tutCurrentStep > 0 ? 'inline-block' : 'none';
+  // Next/finish button
+  const next = el('tut-next-btn');
+  if(next) {
+    const isLast = tutCurrentStep === TUTORIAL_STEPS.length - 1;
+    next.textContent = isLast ? '🚀 Begin Training' : 'Next →';
+    next.onclick = isLast ? closeTutorial : () => tutStep(1);
+  }
+  // TTS narration of Professor tip
+  speakWithVance(step.tip);
+}
+
+function tutStep(dir) {
+  tutCurrentStep = Math.max(0, Math.min(TUTORIAL_STEPS.length - 1, tutCurrentStep + dir));
+  renderTutStep();
+}
+
+function closeTutorial() {
+  const overlay = document.getElementById('tutorial-overlay');
+  if(overlay) overlay.style.display = 'none';
+  if(window._currentUser) _saveUserData({ hasOnboarded: true });
+  if(window._vanceAudio) { window._vanceAudio.pause(); window._vanceAudio.currentTime = 0; }
+  // After tutorial, show the hub so they can choose where to go
+  const hub = document.getElementById('home-gateway');
+  if(hub) hub.style.display = 'flex';
+}
+
+// ─── XP Toast ────────────────────────────────────────────
+function showXPToast(amount, label='') {
+  const toast = document.getElementById('xp-toast');
+  if(!toast) return;
+  toast.textContent = `+${amount} XP${label ? ' · ' + label : ''}`;
+  toast.style.display = 'block';
+  toast.style.opacity = '1';
+  toast.style.transition = '';
+  clearTimeout(window._xpToastTimer);
+  window._xpToastTimer = setTimeout(() => {
+    toast.style.transition = 'opacity .65s ease';
+    toast.style.opacity = '0';
+    setTimeout(() => { toast.style.display = 'none'; toast.style.transition = ''; }, 700);
+  }, 1900);
 }
 
 function showAvatarAndSpeak(context, name, directText) {

@@ -14,7 +14,8 @@ export default async function handler(req, res) {
   const clean = text.replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim().slice(0, 500);
 
   // Voice ID can be overridden via env var; default = Josh (calm, professional male)
-  const voiceId = process.env.ELEVENLABS_VOICE_ID || 'TxGEqnHWrfWFTfGW9XjX';
+  // Use voice set in Vercel env, fallback to Professor Vance (custom)
+  const voiceId = process.env.ELEVENLABS_VOICE_ID || 'NFG5qt843uXKj4pFvR7C';
 
   try {
     const upstream = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`, {
