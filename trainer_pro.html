@@ -118,6 +118,7 @@ async function loadUserData(user) {
     window._userData = snap.val();
     // Update last login and training year each session
     await update(_ref('users/' + user.uid), { lastLogin: Date.now(), trainingYear: new Date().getFullYear() });
+    window._writeAudit('login', { slide: window._userData?.currentSlide || 0 });
   } else {
     // Legacy / admin-created account fallback
     const parts = (user.displayName || '').split(' ');
@@ -186,6 +187,23 @@ window._getSettings = async function() {
 };
 window._saveSettings = async function(data) {
   await update(_ref('settings'), data);
+};
+// ─── Audit log ───────────────────────────────────────────
+window._writeAudit = async function(action, meta) {
+  try {
+    const user = window._currentUser;
+    const key = Date.now() + '_' + (user?.uid || 'anon').slice(0, 8);
+    await set(_ref('audit/' + key), {
+      action,
+      uid:         user?.uid         || null,
+      email:       user?.email       || (window._userData?.email) || null,
+      displayName: user?.displayName || (window._userData?.name) || null,
+      ts:          Date.now(),
+      iso:         new Date().toISOString(),
+      ua:          navigator.userAgent.slice(0, 120),
+      ...(meta || {})
+    });
+  } catch(_e) { /* never block UI for audit failures */ }
 };
 window._resetAllProgress = async function() {
   const snap = await get(_ref('users'));
@@ -787,6 +805,7 @@ h1,h2,.font-display{font-family:'Montserrat',sans-serif}
       <button class="admin-tab-btn py-3 px-4 text-xs font-black uppercase tracking-widest border-b-2 border-transparent text-slate-400 whitespace-nowrap" onclick="adminTab('reports',this)">📋 Reports</button>
       <button class="admin-tab-btn py-3 px-4 text-xs font-black uppercase tracking-widest border-b-2 border-transparent text-slate-400 whitespace-nowrap" onclick="adminTab('completion',this)">✅ Completion</button>
       <button id="settings-tab-btn" class="admin-tab-btn py-3 px-4 text-xs font-black uppercase tracking-widest border-b-2 border-transparent text-slate-400 whitespace-nowrap" onclick="adminTab('settings',this)" style="display:none">⚙️ Settings</button>
+      <button id="audit-tab-btn" class="admin-tab-btn py-3 px-4 text-xs font-black uppercase tracking-widest border-b-2 border-transparent text-slate-400 whitespace-nowrap" onclick="adminTab('audit',this)" style="display:none">🔍 Audit Log</button>
     </div>
     <div class="flex-1 overflow-y-auto p-6">
       <div id="at-leaderboard"></div>
@@ -795,6 +814,7 @@ h1,h2,.font-display{font-family:'Montserrat',sans-serif}
       <div id="at-reports" style="display:none"></div>
       <div id="at-completion" style="display:none"></div>
       <div id="at-settings" style="display:none"></div>
+      <div id="at-audit" style="display:none"></div>
     </div>
   </div>
 </div>
@@ -4293,7 +4313,9 @@ async function claimOwnerAccount() {
 function openAdminDashboard() {
   const badge = document.getElementById('admin-role-badge');
   if(badge) badge.textContent = `Destiny Springs Healthcare — Signed in as ${currentAdminRole==='owner' ? '🔑 Owner' : '🛡️ Admin'}`;
-  // Show/hide settings tab based on role
+  // Show/hide owner-only tabs based on role
+  const auditBtn = document.getElementById('audit-tab-btn');
+  if(auditBtn) auditBtn.style.display = currentAdminRole==='owner' ? '' : 'none';
   const stBtn = document.getElementById('settings-tab-btn');
   if(stBtn) stBtn.style.display = currentAdminRole==='owner' ? 'block' : 'none';
   document.getElementById('admin-modal').style.display='flex';
@@ -4329,7 +4351,7 @@ function adminTab(name, el) {
     t.className='admin-tab-btn py-3 px-4 text-xs font-black uppercase tracking-widest border-b-2 border-transparent text-slate-400 whitespace-nowrap';
   });
   if(el){ el.className='admin-tab-btn py-3 px-4 text-xs font-black uppercase tracking-widest border-b-2 border-blue-600 text-blue-600 whitespace-nowrap'; }
-  ['leaderboard','users','analytics','reports','completion','settings'].forEach(t=>{
+  ['leaderboard','users','analytics','reports','completion','settings','audit'].forEach(t=>{
     const d=document.getElementById('at-'+t);
     if(d) d.style.display=(t===name)?'block':'none';
   });
@@ -4339,6 +4361,7 @@ function adminTab(name, el) {
   if(name==='reports')     loadReports();
   if(name==='completion')  loadCompletion();
   if(name==='settings')    loadSettings();
+  if(name==='audit')       loadAudit();
 }
 
 async function loadLeaderboard() {
@@ -5262,6 +5285,89 @@ async function importRosterCSV(input) {
     </div>`;
   input.value = '';
 }
+// ─── Audit Log ──────────────────────────────────────────
+async function loadAudit() {
+  if(currentAdminRole !== 'owner') return;
+  const el = document.getElementById('at-audit');
+  if(!el) return;
+  el.innerHTML = `<div class="flex items-center justify-between mb-4">
+    <h3 style="font-size:1.1rem;font-weight:900;color:#0f172a">🔍 Audit Log</h3>
+    <button onclick="exportAuditCSV()" style="background:#0f172a;color:#fff;font-size:.75rem;font-weight:700;padding:.45rem .9rem;border-radius:.5rem;border:none;cursor:pointer">⬇ Export CSV</button>
+  </div>
+  <div id="audit-table-wrap"><div style="color:#64748b;font-size:.85rem;padding:2rem;text-align:center">Loading audit events…</div></div>`;
+  try {
+    const snap = await get(_ref('audit'));
+    const raw = snap.val() || {};
+    const rows = Object.entries(raw)
+      .map(([k,v]) => ({...v, _key: k}))
+      .sort((a,b) => b.ts - a.ts)
+      .slice(0, 300);
+    window._auditRows = rows;
+    const COLOR = {
+      login:           'background:#dbeafe;color:#1d4ed8',
+      logout:          'background:#f1f5f9;color:#475569',
+      cert_downloaded: 'background:#fef9c3;color:#92400e',
+      lab_completed:   'background:#dcfce7;color:#166534',
+      drill_completed: 'background:#fef3c7;color:#92400e',
+      admin_access:    'background:#f3e8ff;color:#6b21a8',
+    };
+    if(!rows.length) {
+      document.getElementById('audit-table-wrap').innerHTML =
+        '<div style="color:#64748b;font-size:.85rem;padding:2rem;text-align:center">No audit events recorded yet.</div>';
+      return;
+    }
+    const tbl = `<div style="overflow-x:auto">
+      <table style="width:100%;border-collapse:collapse;font-size:.77rem">
+        <thead><tr style="background:#f8fafc;border-bottom:2px solid #e2e8f0">
+          <th style="text-align:left;padding:.55rem .75rem;font-weight:800;color:#475569">Time</th>
+          <th style="text-align:left;padding:.55rem .75rem;font-weight:800;color:#475569">User</th>
+          <th style="text-align:left;padding:.55rem .75rem;font-weight:800;color:#475569">Action</th>
+          <th style="text-align:left;padding:.55rem .75rem;font-weight:800;color:#475569">Details</th>
+        </tr></thead>
+        <tbody>${rows.map(r=>{
+          const dt = new Date(r.ts).toLocaleString();
+          const badge = COLOR[r.action] || 'background:#e2e8f0;color:#334155';
+          const det = Object.entries(r)
+            .filter(([k])=>!['ts','iso','uid','email','displayName','action','ua','_key'].includes(k))
+            .map(([k,v])=>`${k}: ${v}`).join(' · ');
+          return `<tr style="border-bottom:1px solid #f1f5f9;transition:background .15s" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background=''">
+            <td style="padding:.5rem .75rem;color:#64748b;white-space:nowrap">${dt}</td>
+            <td style="padding:.5rem .75rem"><div style="font-weight:700;color:#0f172a">${r.displayName||''}</div><div style="color:#64748b">${r.email||''}</div></td>
+            <td style="padding:.5rem .75rem"><span style="${badge};padding:.2rem .55rem;border-radius:.4rem;font-weight:800;font-size:.72rem">${r.action}</span></td>
+            <td style="padding:.5rem .75rem;color:#475569">${det}</td>
+          </tr>`;
+        }).join('')}</tbody>
+      </table></div>`;
+    document.getElementById('audit-table-wrap').innerHTML = tbl;
+  } catch(e) {
+    document.getElementById('audit-table-wrap').innerHTML =
+      `<div style="color:#dc2626;font-size:.85rem;padding:2rem;text-align:center">Error loading audit log: ${e.message}</div>`;
+  }
+}
+function exportAuditCSV() {
+  const rows = window._auditRows || [];
+  if(!rows.length) { alert('No audit data to export.'); return; }
+  const headers = ['timestamp','email','displayName','action','uid','details'];
+  const lines = rows.map(r => {
+    const det = Object.entries(r)
+      .filter(([k])=>!['ts','iso','uid','email','displayName','action','ua','_key'].includes(k))
+      .map(([k,v])=>`${k}=${v}`).join('; ');
+    return [
+      new Date(r.ts).toISOString(),
+      r.email||'',
+      r.displayName||'',
+      r.action||'',
+      r.uid||'',
+      det
+    ].map(v=>`"${String(v).replace(/"/g,'""')}"`).join(',');
+  });
+  const csv = [headers.join(','), ...lines].join('\n');
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([csv], {type:'text/csv'}));
+  a.download = `audit_log_${new Date().toISOString().slice(0,10)}.csv`;
+  a.click();
+}
+
 // ─── Daily Drill ─────────────────────────────────────────
 function refreshDrillStreak() {
   const streak = window._userData?.drillStreak || 0;
@@ -5441,6 +5547,7 @@ async function submitDrill() {
     email: window._currentUser?.email,
     grade, xpEarned: finalXP, streak: drillStreak, timestamp: new Date().toISOString()
   }).catch(() => {});
+  window._writeAudit('drill_completed', { grade, xpEarned: finalXP, streak: drillStreak }).catch(() => {});
 }
 
 function startBoxBreathing() {
@@ -5741,6 +5848,12 @@ function submitLabScenario() {
     grade,
     lcEarned,
     timestamp: new Date().toISOString()
+  }).catch(()=>{});
+  window._writeAudit('lab_completed', {
+    patient: (typeof activePatient !== 'undefined' ? activePatient.name : 'Marcus'),
+    diagnosis: currentLabDx,
+    grade,
+    lcEarned
   }).catch(()=>{});
   window._emitXAPI('experienced', { completion:true, success: grade==='A'||grade==='B', score:{ raw:xpGain,min:0,max:250 } }).catch(()=>{});
 
@@ -6043,6 +6156,7 @@ function downloadCertificate() {
       };
       window._fireWebhook('training_completed', _compPayload).catch(()=>{});
       window._fireWebhook('cert_downloaded', _compPayload).catch(()=>{});
+      window._writeAudit('cert_downloaded', { xp, level, completedAt: new Date().toISOString() }).catch(()=>{});
       window._emitXAPI('completed', { completion:true, success:true, duration:'PT0S', extensions:{ 'https://www.destinysprings.com/extensions/xp': xp, 'https://www.destinysprings.com/extensions/level': level } }).catch(()=>{});
       window._emitXAPI('passed', { completion:true, success:true, score:{ raw:xp, min:0 } }).catch(()=>{});
       currentSlide = 0;
@@ -6212,6 +6326,7 @@ function updateFinalStats() {
 function doSignOut() {
   if(breathInterval) clearInterval(breathInterval);
   if(window.speechSynthesis) window.speechSynthesis.cancel();
+  window._writeAudit('logout', {}).catch(()=>{});
   window._signOut();
 }
 
