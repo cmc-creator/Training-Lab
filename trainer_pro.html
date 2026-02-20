@@ -195,6 +195,62 @@ window._resetAllProgress = async function() {
     update(_ref('users/' + uid), { currentSlide:0, xp:0, level:1, scenariosCompleted:0 })
   ));
 };
+
+// ─── HR Integration Helpers ──────────────────────────────
+// Fires an outbound webhook (proxied server-side for HMAC signing + CORS bypass)
+window._fireWebhook = async function(event, payload) {
+  try {
+    const cfg = window._settingsCache || {};
+    const url = cfg.webhookUrl;
+    if (!url || !url.startsWith('http')) return;
+    const enabledEvents = cfg.webhookEvents || ['training_completed','cert_downloaded','lab_completed'];
+    if (!enabledEvents.includes(event)) return;
+    const body = JSON.stringify({
+      event,
+      timestamp: new Date().toISOString(),
+      orgId: (typeof TENANT_ID !== 'undefined' ? TENANT_ID : null) || window.TENANT?.orgId || 'unknown',
+      orgName: window.TENANT?.orgName || 'Unknown Org',
+      ...payload
+    });
+    await fetch('/api/webhook-proxy', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ url, event, secret: cfg.webhookSecret || '', body })
+    });
+  } catch(_e) { /* silent — never block UI for webhook failure */ }
+};
+
+// Emits an xAPI / Tin Can statement to a configured LRS
+window._emitXAPI = async function(verb, resultData) {
+  try {
+    const cfg = window._settingsCache || {};
+    const endpoint = cfg.xapiEndpoint;
+    if (!endpoint) return;
+    const user = window._currentUser;
+    const activityId = cfg.xapiActivityId || 'https://www.destinysprings.com/training/de-escalation';
+    const verbMap = {
+      completed:   { id:'http://adlnet.gov/expapi/verbs/completed',   display:{'en-US':'completed'} },
+      passed:      { id:'http://adlnet.gov/expapi/verbs/passed',      display:{'en-US':'passed'} },
+      attempted:   { id:'http://adlnet.gov/expapi/verbs/attempted',   display:{'en-US':'attempted'} },
+      experienced: { id:'http://adlnet.gov/expapi/verbs/experienced', display:{'en-US':'experienced'} }
+    };
+    const statement = {
+      actor: { objectType:'Agent', name: user?.displayName || user?.email || 'Unknown', mbox:`mailto:${user?.email||'unknown@unknown.com'}` },
+      verb: verbMap[verb] || { id:`https://www.destinysprings.com/verbs/${verb}`, display:{'en-US':verb} },
+      object: {
+        objectType:'Activity', id: activityId,
+        definition: { name:{'en-US':'De-escalation Mastery Training'}, description:{'en-US':'27-module psychiatric crisis intervention training for BHTs'}, type:'http://adlnet.gov/expapi/activities/course' }
+      },
+      result: resultData || {},
+      timestamp: new Date().toISOString(),
+      context: { platform:'De-escalation Mastery Lab', language:'en-US', extensions: { 'https://www.destinysprings.com/extensions/orgId': window.TENANT?.orgId || 'unknown' } }
+    };
+    const headers = { 'Content-Type':'application/json', 'X-Experience-API-Version':'1.0.3' };
+    if (cfg.xapiUsername) headers['Authorization'] = 'Basic ' + btoa((cfg.xapiUsername||'') + ':' + (cfg.xapiPassword||''));
+    const lrsUrl = endpoint.replace(/\/$/, '') + '/statements';
+    await fetch(lrsUrl, { method:'POST', headers, body: JSON.stringify(statement) });
+  } catch(_e) { /* silent */ }
+};
 </script>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800;900&family=Montserrat:wght@700;800;900&display=swap" rel="stylesheet">
 <style>
@@ -4783,6 +4839,78 @@ async function loadSettings() {
         <button onclick="saveLabSettings()" class="btn btn-primary" style="margin-top:1rem;font-size:.82rem;padding:.55rem 1.2rem;font-weight:800">Save Lab Settings</button>
       </div>
 
+      <!-- HR Integrations -->
+      <div style="background:linear-gradient(135deg,#f0f9ff,#eff6ff);border:2px solid #bfdbfe;border-radius:1.25rem;padding:1.5rem;margin-bottom:1.5rem">
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.75rem;margin-bottom:.5rem">
+          <h3 style="font-weight:900;font-size:.875rem;color:#1e3a8a;text-transform:uppercase;letter-spacing:.07em;margin:0">🔗 HR System Integrations</h3>
+          <div style="display:flex;flex-wrap:wrap;gap:.4rem">
+            ${['ADP','Paycom','Paycor','Workday','BambooHR','UKG','Cornerstone','SAP SF'].map(p=>`<span style="background:white;border:1px solid #bfdbfe;border-radius:999px;padding:.15rem .55rem;font-size:.65rem;font-weight:800;color:#1d4ed8">${p}</span>`).join('')}
+          </div>
+        </div>
+        <p style="font-size:.78rem;color:#3b82f6;margin:0 0 1.25rem;font-weight:700">Connect via outbound webhooks → Zapier/Make → any HR platform, xAPI for LMS/LRS, or let HR systems pull completion data via REST API.</p>
+
+        <!-- Outbound Webhook -->
+        <div style="background:white;border:1px solid #e2e8f0;border-radius:1rem;padding:1.1rem;margin-bottom:1rem">
+          <h4 style="font-weight:900;font-size:.82rem;color:#0f172a;margin:0 0 .35rem">📡 Outbound Webhook <span style="font-weight:600;font-size:.72rem;color:#64748b">— fires to Zapier, Make.com, or your HR endpoint on training events</span></h4>
+          <div style="display:grid;gap:.6rem;margin-bottom:.75rem">
+            <input id="setting-webhook-url" class="input-field" style="font-size:.82rem" placeholder="https://hooks.zapier.com/hooks/catch/…  or  https://your-hr-api.com/training-webhook" value="${settings?.webhookUrl||''}">
+            <input id="setting-webhook-secret" class="input-field" type="password" style="font-size:.82rem" placeholder="Signing secret (optional — HMAC-SHA256 sent as X-DSH-Signature header)" value="${settings?.webhookSecret||''}">
+          </div>
+          <div style="margin-bottom:.75rem">
+            <div style="font-size:.72rem;font-weight:800;color:#475569;margin-bottom:.4rem">Fire on events:</div>
+            <div style="display:flex;flex-wrap:wrap;gap:.5rem">
+              ${['training_completed','cert_downloaded','lab_completed','user_created'].map(ev=>{
+                const on = (settings?.webhookEvents||['training_completed','cert_downloaded','lab_completed']).includes(ev);
+                return `<label style="display:flex;align-items:center;gap:.3rem;font-size:.78rem;font-weight:700;color:#374151;cursor:pointer"><input type="checkbox" id="wh-ev-${ev}" ${on?'checked':''} style="accent-color:#2563eb"> ${ev}</label>`;
+              }).join('')}
+            </div>
+          </div>
+          <div style="display:flex;gap:.6rem;flex-wrap:wrap">
+            <button onclick="saveIntegrationSettings()" class="btn btn-primary" style="font-size:.78rem;padding:.45rem 1rem">Save Webhook</button>
+            <button onclick="testWebhook()" style="border:1px solid #bfdbfe;background:#eff6ff;color:#1d4ed8;border-radius:.65rem;padding:.45rem 1rem;font-size:.78rem;font-weight:800;cursor:pointer">🧪 Send Test Ping</button>
+          </div>
+        </div>
+
+        <!-- xAPI / Tin Can -->
+        <div style="background:white;border:1px solid #e2e8f0;border-radius:1rem;padding:1.1rem;margin-bottom:1rem">
+          <h4 style="font-weight:900;font-size:.82rem;color:#0f172a;margin:0 0 .35rem">📊 xAPI / Tin Can LRS <span style="font-weight:600;font-size:.72rem;color:#64748b">— Cornerstone, Workday Learning, SAP SuccessFactors, UKG, SCORM Cloud</span></h4>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:.6rem;margin-bottom:.75rem">
+            <input id="setting-xapi-endpoint" class="input-field" style="font-size:.82rem;grid-column:1/-1" placeholder="LRS endpoint  e.g. https://lrs.yourcompany.com/xapi/" value="${settings?.xapiEndpoint||''}">
+            <input id="setting-xapi-user" class="input-field" style="font-size:.82rem" placeholder="LRS username / client key" value="${settings?.xapiUsername||''}">
+            <input id="setting-xapi-pass" class="input-field" type="password" style="font-size:.82rem" placeholder="LRS password / client secret" value="${settings?.xapiPassword||''}">
+            <input id="setting-xapi-activity" class="input-field" style="font-size:.82rem;grid-column:1/-1" placeholder="Activity ID  e.g. https://yourorg.com/training/de-escalation" value="${settings?.xapiActivityId||''}">
+          </div>
+          <div style="display:flex;gap:.6rem;flex-wrap:wrap">
+            <button onclick="saveIntegrationSettings()" class="btn btn-primary" style="font-size:.78rem;padding:.45rem 1rem">Save xAPI</button>
+            <button onclick="testXAPI()" style="border:1px solid #bfdbfe;background:#eff6ff;color:#1d4ed8;border-radius:.65rem;padding:.45rem 1rem;font-size:.78rem;font-weight:800;cursor:pointer">🧪 Send Test Statement</button>
+          </div>
+        </div>
+
+        <!-- REST Pull API -->
+        <div style="background:white;border:1px solid #e2e8f0;border-radius:1rem;padding:1.1rem;margin-bottom:1rem">
+          <h4 style="font-weight:900;font-size:.82rem;color:#0f172a;margin:0 0 .35rem">🔌 REST Completion API <span style="font-weight:600;font-size:.72rem;color:#64748b">— ADP, Paycom, Paycor, or any system that can make HTTP GET requests</span></h4>
+          <p style="font-size:.75rem;color:#64748b;margin:0 0 .65rem">HR systems can poll this endpoint to get completion status for any employee by email.</p>
+          <div style="background:#0f172a;border-radius:.75rem;padding:.75rem 1rem;font-family:monospace;font-size:.72rem;color:#4ade80;margin-bottom:.75rem;word-break:break-all">GET /api/hr/completion?orgId=<span style="color:#f9a8d4">${(typeof TENANT_ID!=='undefined'?TENANT_ID:settings?.orgId||'YOUR_ORG_ID')}</span>&amp;email=employee@company.com&amp;apiKey=<span style="color:#fbbf24">${settings?.apiKey ? settings.apiKey.slice(0,8)+'…' : 'YOUR_API_KEY'}</span></div>
+          <div style="display:flex;align-items:center;gap:.6rem;flex-wrap:wrap">
+            <div style="font-size:.78rem;font-weight:800;color:#0f172a">API Key: </div>
+            <code style="background:#f1f5f9;border:1px solid #e2e8f0;border-radius:.45rem;padding:.25rem .65rem;font-size:.75rem;color:#0f172a;font-weight:700;letter-spacing:.05em">${settings?.apiKey || '— not generated —'}</code>
+            <button onclick="generateApiKey()" style="border:1px solid #bfdbfe;background:#eff6ff;color:#1d4ed8;border-radius:.65rem;padding:.4rem .9rem;font-size:.75rem;font-weight:800;cursor:pointer">🔄 Regenerate</button>
+          </div>
+          <p style="font-size:.72rem;color:#94a3b8;margin:.65rem 0 0">⚙️ One-time Vercel setup required: add <code style="background:#f1f5f9;padding:.1rem .3rem;border-radius:.25rem">FIREBASE_DB_SECRET</code> and <code style="background:#f1f5f9;padding:.1rem .3rem;border-radius:.25rem">FIREBASE_DB_URL</code> as environment variables in your Vercel project settings.</p>
+        </div>
+
+        <!-- CSV Roster Import -->
+        <div style="background:white;border:1px solid #e2e8f0;border-radius:1rem;padding:1.1rem">
+          <h4 style="font-weight:900;font-size:.82rem;color:#0f172a;margin:0 0 .35rem">📁 CSV Roster Import <span style="font-weight:600;font-size:.72rem;color:#64748b">— bulk-provision accounts from an ADP/Paycom employee export</span></h4>
+          <p style="font-size:.75rem;color:#64748b;margin:0 0 .65rem">Required columns: <strong>firstName, lastName, email</strong>. Optional: <em>department, employeeId, dueDate (YYYY-MM-DD)</em>. Accounts will be staged for self-activation via the sign-up flow.</p>
+          <div style="display:flex;gap:.6rem;align-items:center;flex-wrap:wrap">
+            <label style="display:inline-flex;align-items:center;gap:.5rem;background:#eff6ff;border:1px solid #bfdbfe;border-radius:.65rem;padding:.5rem 1rem;font-size:.8rem;font-weight:800;color:#1d4ed8;cursor:pointer">📂 Choose CSV <input type="file" id="roster-csv-input" accept=".csv,.txt" style="display:none" onchange="importRosterCSV(this)"></label>
+            <span style="font-size:.75rem;color:#94a3b8" id="roster-file-name">No file selected</span>
+          </div>
+          <div id="roster-import-log" style="margin-top:.65rem"></div>
+        </div>
+      </div>
+
       <!-- Admin List -->
       <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:1.25rem;padding:1.5rem;margin-bottom:1.5rem">
         <h3 style="font-weight:900;font-size:.875rem;color:#0f172a;text-transform:uppercase;letter-spacing:.07em;margin-bottom:1rem">👤 Current Admins</h3>
@@ -4872,6 +5000,132 @@ async function resetAllTraining() {
   await window._resetAllProgress();
   alert('All training progress has been reset for the new year.');
   loadSettings();
+}
+
+// ─── Integration Settings ────────────────────────────────
+async function saveIntegrationSettings() {
+  if(currentAdminRole!=='owner') { alert('Only owners can change integration settings.'); return; }
+  const webhookUrl    = document.getElementById('setting-webhook-url')?.value.trim() || '';
+  const webhookSecret = document.getElementById('setting-webhook-secret')?.value.trim() || '';
+  const xapiEndpoint  = document.getElementById('setting-xapi-endpoint')?.value.trim() || '';
+  const xapiUsername  = document.getElementById('setting-xapi-user')?.value.trim() || '';
+  const xapiPassword  = document.getElementById('setting-xapi-pass')?.value.trim() || '';
+  const xapiActivityId= document.getElementById('setting-xapi-activity')?.value.trim() || '';
+  const webhookEvents = ['training_completed','cert_downloaded','lab_completed','user_created']
+    .filter(ev => document.getElementById(`wh-ev-${ev}`)?.checked);
+  const payload = { webhookUrl, webhookSecret, xapiEndpoint, xapiUsername, xapiPassword, xapiActivityId, webhookEvents };
+  await window._saveSettings(payload);
+  Object.assign(window._settingsCache||{}, payload);
+  alert('Integration settings saved.');
+}
+
+async function generateApiKey() {
+  if(currentAdminRole!=='owner') { alert('Only owners can regenerate the API key.'); return; }
+  if(!confirm('Regenerate the REST API key? Any systems currently using the old key will need to be updated.')) return;
+  const arr = new Uint8Array(24);
+  crypto.getRandomValues(arr);
+  const key = Array.from(arr).map(b=>b.toString(16).padStart(2,'0')).join('');
+  await window._saveSettings({ apiKey: key });
+  if(window._settingsCache) window._settingsCache.apiKey = key;
+  alert(`New API key: ${key}\n\nCopy this now — it is shown once in plain text and then stored in Firebase.`);
+  loadSettings();
+}
+
+async function testWebhook() {
+  const url = document.getElementById('setting-webhook-url')?.value.trim();
+  if(!url) { alert('Enter a webhook URL first.'); return; }
+  const user = window._currentUser;
+  const payload = {
+    event:'test_ping',
+    timestamp: new Date().toISOString(),
+    orgId: window.TENANT?.orgId||'test',
+    orgName: window.TENANT?.orgName||'DSH Training',
+    message:'This is a test ping from DSH Training Platform.',
+    user: { email: user?.email||'admin@test.com', name: user?.displayName||'Admin' }
+  };
+  try {
+    const secret = document.getElementById('setting-webhook-secret')?.value.trim()||'';
+    const body = JSON.stringify(payload);
+    const res = await fetch('/api/webhook-proxy', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ url, event:'test_ping', secret, body })
+    });
+    const data = await res.json();
+    alert(data.ok ? `✅ Webhook delivered! HTTP ${data.status}` : `⚠️ Webhook sent but destination returned an error: ${data.error||data.status}`);
+  } catch(e) { alert(`❌ Failed to send webhook: ${e.message}`); }
+}
+
+async function testXAPI() {
+  const endpoint = document.getElementById('setting-xapi-endpoint')?.value.trim();
+  if(!endpoint) { alert('Enter an LRS endpoint URL first.'); return; }
+  const tmpSettings = {
+    xapiEndpoint: endpoint,
+    xapiUsername: document.getElementById('setting-xapi-user')?.value.trim()||'',
+    xapiPassword: document.getElementById('setting-xapi-pass')?.value.trim()||'',
+    xapiActivityId: document.getElementById('setting-xapi-activity')?.value.trim()||''
+  };
+  const orig = window._settingsCache;
+  window._settingsCache = Object.assign({}, orig||{}, tmpSettings);
+  await window._emitXAPI('attempted', { completion: false });
+  window._settingsCache = orig;
+  alert('✅ xAPI statement sent. Check your LRS dashboard to confirm receipt.');
+}
+
+async function importRosterCSV(input) {
+  const file = input?.files?.[0];
+  if(!file) return;
+  document.getElementById('roster-file-name').textContent = file.name;
+  const text = await file.text();
+  const lines = text.trim().split(/\r?\n/);
+  if(lines.length < 2) { alert('CSV must have a header row and at least one data row.'); return; }
+
+  // Parse header
+  const headers = lines[0].split(',').map(h=>h.trim().toLowerCase().replace(/[^a-z]/g,''));
+  const get = (row, ...keys) => { for(const k of keys) { const i = headers.indexOf(k); if(i>=0) return (row[i]||'').trim(); } return ''; };
+
+  const log = document.getElementById('roster-import-log');
+  log.innerHTML = '<p style="font-size:.78rem;color:#64748b">Processing…</p>';
+
+  let created=0, skipped=0, errors=0;
+  const results = [];
+  const existingUsers = await window._loadAllUsers().catch(()=>({}));
+
+  for(let i=1;i<lines.length;i++) {
+    const row = lines[i].split(',').map(c=>c.trim().replace(/^"|"$/g,''));
+    const email     = get(row,'email').toLowerCase();
+    const firstName = get(row,'firstname','first_name','first');
+    const lastName  = get(row,'lastname','last_name','last');
+    if(!email||!firstName||!lastName) { skipped++; results.push(`<span style="color:#f59e0b">⚠️ Row ${i+1}: missing required fields (email, firstName, lastName)</span>`); continue; }
+
+    // Check if already exists
+    const exists = Object.values(existingUsers||{}).some(u=>(u.email||'').toLowerCase()===email);
+    if(exists) { skipped++; results.push(`<span style="color:#94a3b8">— ${email}: already has an account</span>`); continue; }
+
+    // Stage invite record in Firebase
+    try {
+      const dept    = get(row,'department','dept','division');
+      const empId   = get(row,'employeeid','employee_id','employeenumber','id','empid');
+      const dueStr  = get(row,'duedate','due_date','due','deadline');
+      const dueTs   = dueStr ? new Date(dueStr).getTime() : null;
+      await update(_ref('invites/' + btoa(email).replace(/=/g,'')), {
+        email, firstName, lastName,
+        ...(dept  ? { department: dept } : {}),
+        ...(empId ? { employeeId: empId } : {}),
+        ...(dueTs && !isNaN(dueTs) ? { dueDate: dueTs } : {}),
+        createdAt: Date.now(), source:'csv_import'
+      });
+      created++;
+      results.push(`<span style="color:#16a34a">✅ ${firstName} ${lastName} (${email}) — staged</span>`);
+    } catch(e) { errors++; results.push(`<span style="color:#dc2626">❌ ${email}: ${e.message}</span>`); }
+  }
+
+  log.innerHTML = `
+    <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:.75rem;padding:.85rem;margin-top:.5rem">
+      <div style="font-size:.8rem;font-weight:900;color:#0f172a;margin-bottom:.4rem">Import complete: <span style="color:#16a34a">${created} staged</span> · <span style="color:#f59e0b">${skipped} skipped</span>${errors?` · <span style="color:#dc2626">${errors} errors</span>`:''}</div>
+      <div style="font-size:.75rem;color:#475569;margin-bottom:.5rem">Staged users will see their pre-filled profile when they sign up with the matching email.</div>
+      <div style="max-height:160px;overflow-y:auto;font-size:.72rem;line-height:1.7;font-family:monospace">${results.join('<br>')}</div>
+    </div>`;
+  input.value = '';
 }
 function startBoxBreathing() {
   if(breathInterval) clearInterval(breathInterval);
@@ -5160,6 +5414,19 @@ function submitLabScenario() {
   scoreTotal += ['A','B','C','D'].indexOf(grade)+1;
   awardXP(xpGain);
   updateFinalStats();
+
+  // Fire lab webhook (non-blocking)
+  window._fireWebhook('lab_completed', {
+    email: window._currentUser?.email,
+    displayName: window._currentUser?.displayName||window._currentUser?.email,
+    scenarioId: currentLabScenarioId,
+    diagnosis: currentLabDx,
+    patient: (typeof activePatient !== 'undefined' ? activePatient.name : 'Marcus'),
+    grade,
+    lcEarned,
+    timestamp: new Date().toISOString()
+  }).catch(()=>{});
+  window._emitXAPI('experienced', { completion:true, success: grade==='A'||grade==='B', score:{ raw:xpGain,min:0,max:250 } }).catch(()=>{});
 
   // Marcus in-character reply
   const scenarioText = document.getElementById('lab-scenario-box')?.textContent || '';
@@ -5451,6 +5718,17 @@ function downloadCertificate() {
       if(!window._userData?.completedAt) {
         window._saveUserData({ completedAt: Date.now() }).catch(()=>{});
       }
+      // Fire HR integrations
+      const _compUser = window._currentUser;
+      const _compPayload = {
+        email: _compUser?.email, displayName: _compUser?.displayName||_compUser?.email,
+        completedAt: new Date().toISOString(), xp, level,
+        department: window._userData?.department||null, employeeId: window._userData?.employeeId||null
+      };
+      window._fireWebhook('training_completed', _compPayload).catch(()=>{});
+      window._fireWebhook('cert_downloaded', _compPayload).catch(()=>{});
+      window._emitXAPI('completed', { completion:true, success:true, duration:'PT0S', extensions:{ 'https://www.destinysprings.com/extensions/xp': xp, 'https://www.destinysprings.com/extensions/level': level } }).catch(()=>{});
+      window._emitXAPI('passed', { completion:true, success:true, score:{ raw:xp, min:0 } }).catch(()=>{});
       currentSlide = 0;
       showSlide(0);
       window._saveUserData({ currentSlide:0 }).catch(()=>{});
