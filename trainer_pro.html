@@ -755,9 +755,13 @@ h1,h2,.font-display{font-family:'Montserrat',sans-serif}
 
       <!-- TAB: Scenarios -->
       <div id="lab-tab-scenarios">
-        <!-- Marcus State Tracker -->
+        <!-- Patient Selector -->
+        <div id="patient-selector" style="display:flex;gap:.5rem;margin-bottom:.65rem;flex-wrap:wrap"></div>
+        <!-- Patient Status Bar -->
         <div style="display:flex;align-items:center;gap:.75rem;margin-bottom:.85rem;background:#0f172a;border-radius:.875rem;padding:.6rem 1rem">
-          <img src="prof.png" style="width:36px;height:36px;border-radius:50%;object-fit:cover;object-position:top;border:2px solid #2563eb;flex-shrink:0" alt="">
+          <div id="lab-patient-avatar-wrap" style="width:36px;height:36px;border-radius:50%;border:2px solid #2563eb;flex-shrink:0;overflow:hidden;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:.75rem;color:white;background:#2563eb">
+            <img id="lab-patient-avatar-img" src="prof.png" style="width:100%;height:100%;object-fit:cover;object-position:top;display:block" alt="">
+          </div>
           <div style="flex:1">
             <div style="font-size:.68rem;font-weight:900;text-transform:uppercase;letter-spacing:.1em;color:#475569">Patient Status</div>
             <div id="lab-patient-name" style="font-weight:800;color:white;font-size:.9rem">Marcus <span style="font-size:.75rem;font-weight:600;color:#94a3b8">— Combat PTSD, evaluation pending</span></div>
@@ -809,8 +813,10 @@ h1,h2,.font-display{font-family:'Montserrat',sans-serif}
             <!-- Marcus in-character reply -->
             <div id="marcus-reply-wrap" style="display:none;margin-top:.85rem;background:#0f172a;border-radius:.875rem;overflow:hidden">
               <div style="padding:.4rem .85rem;background:#1e293b;display:flex;align-items:center;gap:.6rem">
-                <img src="prof.png" style="width:24px;height:24px;border-radius:50%;object-fit:cover;object-position:top;border:2px solid #475569;flex-shrink:0" alt="">
-                <span style="font-size:.68rem;font-weight:900;text-transform:uppercase;letter-spacing:.1em;color:#94a3b8">Marcus responds</span>
+                <div id="reply-patient-avatar-wrap" style="width:24px;height:24px;border-radius:50%;border:2px solid #475569;flex-shrink:0;overflow:hidden;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:.6rem;color:white;background:#475569">
+                  <img id="reply-patient-avatar-img" src="prof.png" style="width:100%;height:100%;object-fit:cover;object-position:top;display:block" alt="">
+                </div>
+                <span id="reply-patient-label" style="font-size:.68rem;font-weight:900;text-transform:uppercase;letter-spacing:.1em;color:#94a3b8">Marcus responds</span>
                 <span id="marcus-reply-state-dot" style="margin-left:auto;font-size:.72rem;font-weight:800;padding:.15rem .55rem;border-radius:1rem"></span>
               </div>
               <div style="padding:.75rem 1rem">
@@ -2618,6 +2624,38 @@ let hazardsFound = 0;
 let drillStats = { vitalsAttempts:0, vitalsPass:0, brancherPicks:{}, hazardAttempts:0, hazardWins:0 };
 let marcusState = 'Neutral'; // Neutral, Frustrated, Rage
 
+// ─── Lab Patients ────────────────────────────────────────
+const LAB_PATIENTS = [
+  {
+    id:'marcus',  name:'Marcus',  age:38, gender:'M',
+    dx:'Combat PTSD',
+    dxKey:'ptsd',
+    bio:'Veteran · acute flashback episode · evaluation pending',
+    avatar:'prof.png',
+    initials:'MR', color:'#2563eb',
+    persona:`You are Marcus, 38, a military veteran admitted to a psychiatric unit with combat PTSD. You do NOT know you are in a training simulation. Respond in first person, in character, exactly as Marcus would in this moment.`
+  },
+  {
+    id:'delilah', name:'Delilah', age:25, gender:'F',
+    dx:'Bipolar I — Acute Mania',
+    dxKey:'bipolar',
+    bio:'First hospitalization · manic episode day 3 · flight of ideas',
+    avatar:null,
+    initials:'DL', color:'#7c3aed',
+    persona:`You are Delilah, 25, admitted for a first psychiatric hospitalization in the middle of a severe manic episode — day 3, little to no sleep. You are racing with ideas, feel invincible and misunderstood, and do NOT know you are in a training simulation. Respond in first person with rapid, pressured speech. You are not hostile by default but feel deeply that no one understands your brilliance right now.`
+  },
+  {
+    id:'raymond', name:'Raymond', age:52, gender:'M',
+    dx:'Schizophrenia (Paranoid Type)',
+    dxKey:'schizophrenia',
+    bio:'Paranoid ideation · refusing medications · hearing voices',
+    avatar:null,
+    initials:'RM', color:'#dc2626',
+    persona:`You are Raymond, 52, a patient admitted with paranoid schizophrenia who believes the staff are part of a coordinated effort to silence him. You have been refusing your antipsychotic for 2 days. You hear a voice warning you not to trust anyone in the room. You do NOT know you are in a training simulation. Respond in first person — guarded, suspicious, low-trust. Statements from staff may feel like coded threats.`
+  }
+];
+let activePatient = LAB_PATIENTS[0];
+
 async function hashText(text) {
   const enc = new TextEncoder();
   const buf = await crypto.subtle.digest('SHA-256', enc.encode(text));
@@ -3525,11 +3563,12 @@ async function sendChatMessage() {
   chatLoading = true;
   const sendBtn = document.getElementById('chat-send-btn');
   if(sendBtn) { sendBtn.disabled=true; sendBtn.textContent='Sending...'; }
+  const _pName = (typeof activePatient !== 'undefined' ? activePatient.name : null) || window.TENANT?.patientName || 'Marcus';
+  const _pDx   = (typeof activePatient !== 'undefined' ? activePatient.dx   : null) || 'Combat PTSD';
   const mode = sessionMode || 'training';
   const sys = mode === 'lab'
-    ? `You are Professor Vance, an expert Clinical Mentor for Behavioral Health Technicians (BHTs) in a high-acuity psychiatric crisis unit. You are coaching a trainee through a simulation involving a patient named ${window.TENANT?.patientName||'Marcus'}. You have access to the user's progress through the training. When the user is on a slide, narrate key points and provide Pro-Tips. When the user types a response, evaluate it based on de-escalation criteria and award XP verbally for strong clinical points. Tone: calm, authoritative, deeply empathetic — unshakable in a crisis. Maximum THREE short conversational sentences per reply. Use 'we' to foster teamwork. Safety rules: Reaction Gap (6-10 feet), validate feelings before asserting authority, offer forced choices (Choice Architecture), scan for environmental hazards. If the trainee's response would escalate the patient: 'That's a common mistake, but in this environment it's a dangerous one. Let's look at what went wrong.' If they choose well: 'Excellent work. By validating his frustration, you've lowered the room's temperature.' Link feedback to concepts from the slides they just completed. Avoid PHI and definitive clinical orders.`
-    : `You are Professor Vance, an expert Clinical Mentor for Behavioral Health Technicians at ${window.TENANT?.orgName||'Destiny Springs Healthcare'}, coaching through an interactive de-escalation training involving a patient named ${window.TENANT?.patientName||'Marcus'}. You serve dual roles: (1) when asked about slides or content, narrate and give Pro-Tips linked to what was just covered; (2) when the user types a clinical response, evaluate it against de-escalation best practices and provide immediate coaching. Keep replies to maximum THREE short sentences. Use 'we' to build teamwork. Always connect feedback to the slides. If unsure or outside training scope, recommend the supervisor or clinical leadership. Avoid PHI.`;
-  const _pName = window.TENANT?.patientName || 'Marcus';
+    ? `You are Professor Vance, an expert Clinical Mentor for Behavioral Health Technicians (BHTs) in a high-acuity psychiatric crisis unit. You are coaching a trainee through a simulation involving a patient named ${_pName} (${_pDx}). You have access to the user's progress through the training. When the user is on a slide, narrate key points and provide Pro-Tips. When the user types a response, evaluate it based on de-escalation criteria and award XP verbally for strong clinical points. Tone: calm, authoritative, deeply empathetic — unshakable in a crisis. Maximum THREE short conversational sentences per reply. Use 'we' to foster teamwork. Safety rules: Reaction Gap (6-10 feet), validate feelings before asserting authority, offer forced choices (Choice Architecture), scan for environmental hazards. If the trainee's response would escalate the patient: 'That's a common mistake, but in this environment it's a dangerous one. Let's look at what went wrong.' If they choose well: 'Excellent work. By validating their frustration, you've lowered the room's temperature.' Link feedback to concepts from the slides they just completed. Avoid PHI and definitive clinical orders.`
+    : `You are Professor Vance, an expert Clinical Mentor for Behavioral Health Technicians at ${window.TENANT?.orgName||'Destiny Springs Healthcare'}, coaching through an interactive de-escalation training involving a patient named ${_pName}. You serve dual roles: (1) when asked about slides or content, narrate and give Pro-Tips linked to what was just covered; (2) when the user types a clinical response, evaluate it against de-escalation best practices and provide immediate coaching. Keep replies to maximum THREE short sentences. Use 'we' to build teamwork. Always connect feedback to the slides. If unsure or outside training scope, recommend the supervisor or clinical leadership. Avoid PHI.`;
   const _mStateNote = (typeof marcusState !== 'undefined' && marcusState !== 'Neutral') ? ` [ALERT: Patient ${_pName} current state is ${marcusState} — calibrate your coaching accordingly.]` : '';
   const body = { system: sys + _mStateNote, messages: chatMessages.slice(-8) };
   let reply = '';
@@ -4864,6 +4903,14 @@ function openLabRoom() {
   document.getElementById('lab-response').value='';
   const mrw = document.getElementById('marcus-reply-wrap');
   if(mrw) mrw.style.display='none';
+  // Sync patient UI (name/avatar/badge/selector)
+  _setPatientAvatarEl('lab-patient-avatar-wrap', 'lab-patient-avatar-img', activePatient);
+  _setPatientAvatarEl('reply-patient-avatar-wrap', 'reply-patient-avatar-img', activePatient);
+  const nameEl = document.getElementById('lab-patient-name');
+  if (nameEl) nameEl.innerHTML = `${activePatient.name} <span style="font-size:.75rem;font-weight:600;color:#94a3b8">\u2014 ${activePatient.dx}, ${activePatient.bio}</span>`;
+  const rl = document.getElementById('reply-patient-label');
+  if (rl) rl.textContent = `${activePatient.name} responds`;
+  renderPatientSelector();
   updateMarcusStateBadge();
 }
 function closeLabRoom() {
@@ -4893,6 +4940,77 @@ function updateMarcusStateBadge() {
   badge.style.color = s.color;
   badge.style.borderColor = s.border;
   badge.innerHTML = s.dot + ' ' + marcusState;
+}
+
+// ─── Patient selector helpers ─────────────────────────────
+function _setPatientAvatarEl(wrapId, imgId, patient) {
+  const wrap = document.getElementById(wrapId);
+  const img  = document.getElementById(imgId);
+  if (!wrap) return;
+  // Remove old initials span if any
+  const old = wrap.querySelector('.pat-initials');
+  if (old) old.remove();
+  if (patient.avatar) {
+    wrap.style.background = 'transparent';
+    if (img) { img.style.display = 'block'; img.src = patient.avatar; }
+  } else {
+    wrap.style.background = patient.color;
+    if (img) img.style.display = 'none';
+    const t = document.createElement('span');
+    t.className = 'pat-initials';
+    t.style.cssText = 'pointer-events:none;font-size:.68rem;font-weight:900;color:white';
+    t.textContent = patient.initials;
+    wrap.appendChild(t);
+  }
+  wrap.style.borderColor = patient.color;
+}
+
+function renderPatientSelector() {
+  const sel = document.getElementById('patient-selector');
+  if (!sel) return;
+  sel.innerHTML = LAB_PATIENTS.map(p => {
+    const isActive = p.id === activePatient.id;
+    const avatarHtml = p.avatar
+      ? `<img src="${p.avatar}" style="width:24px;height:24px;border-radius:50%;object-fit:cover;object-position:top;border:2px solid ${isActive?'white':p.color};flex-shrink:0" alt="">`
+      : `<div style="width:24px;height:24px;border-radius:50%;background:${p.color};display:flex;align-items:center;justify-content:center;font-weight:900;font-size:.58rem;color:white;flex-shrink:0;border:2px solid ${isActive?'white':'transparent'}">${p.initials}</div>`;
+    return `<button onclick="selectLabPatient('${p.id}')" style="display:flex;align-items:center;gap:.45rem;padding:.3rem .65rem .3rem .38rem;border-radius:2rem;border:2px solid ${isActive?p.color:'#e2e8f0'};background:${isActive?p.color+'22':'white'};cursor:pointer;font-size:.77rem;font-weight:${isActive?'900':'700'};color:${isActive?p.color:'#475569'};transition:all .15s;white-space:nowrap">${avatarHtml}<span>${p.name}</span><span style="font-size:.64rem;color:${isActive?p.color:'#94a3b8'};font-weight:600;display:none" class="pat-sel-dx">${p.dx}</span></button>`;
+  }).join('');
+}
+
+function selectLabPatient(id) {
+  const p = LAB_PATIENTS.find(x => x.id === id);
+  if (!p) return;
+  activePatient = p;
+  marcusState = 'Neutral';
+
+  // Status bar — name/bio
+  const nameEl = document.getElementById('lab-patient-name');
+  if (nameEl) nameEl.innerHTML = `${p.name} <span style="font-size:.75rem;font-weight:600;color:#94a3b8">\u2014 ${p.dx}, ${p.bio}</span>`;
+
+  // Avatars
+  _setPatientAvatarEl('lab-patient-avatar-wrap',  'lab-patient-avatar-img',  p);
+  _setPatientAvatarEl('reply-patient-avatar-wrap', 'reply-patient-avatar-img', p);
+
+  // Reply label
+  const label = document.getElementById('reply-patient-label');
+  if (label) label.textContent = `${p.name} responds`;
+
+  // Auto-set dx dropdown
+  const dxSel = document.getElementById('lab-dx');
+  if (dxSel) dxSel.value = p.dxKey;
+
+  // Reset scenario UI
+  const scenBox = document.getElementById('lab-scenario-box');
+  if (scenBox) scenBox.textContent = `Patient loaded: ${p.name} (${p.dx}). Click \u{1F3B2} New Scenario to begin.`;
+  const respEl = document.getElementById('lab-response');
+  if (respEl) respEl.value = '';
+  const panel = document.getElementById('lab-score-panel');
+  if (panel) panel.style.display = 'none';
+  const mrw = document.getElementById('marcus-reply-wrap');
+  if (mrw) mrw.style.display = 'none';
+
+  renderPatientSelector();
+  updateMarcusStateBadge();
 }
 
 function switchLabTab(tab) {
@@ -4958,12 +5076,15 @@ async function buildScript() {
 }
 
 function generateLabScenario() {
-  const dx = document.getElementById('lab-dx').value;
-  // PTSD always uses Marcus scenarios (indices 1-5 are all Marcus)
+  // Use active patient's dx key; sync the dropdown to match
+  const dxSel = document.getElementById('lab-dx');
+  if (dxSel) dxSel.value = activePatient.dxKey;
+  const dx = activePatient.dxKey;
   let pool;
-  if(dx === 'ptsd') {
+  if (dx === 'ptsd') {
+    // Keep Marcus-specific pool for PTSD patient
     pool = scenarios.ptsd.filter(s => s.includes('Marcus'));
-    if(!pool.length) pool = scenarios.ptsd;
+    if (!pool.length) pool = scenarios.ptsd;
   } else {
     pool = scenarios[dx] || scenarios.general || [];
   }
@@ -5069,7 +5190,7 @@ async function generateMarcusReply(grade, scenario, staffResponse) {
   };
   const gradeContext = { A: 'The staff member responded well — they gave you space, validated your feelings, and offered a choice. You are slightly less tense.', B: 'The staff response was okay. Not great, but not threatening. You are still unsure.', C: 'The staff response felt robotic or clinical. It did not land for you. You feel unheard.', D: 'The staff response made things worse — too directive, too close, or dismissive. You feel cornered.' };
 
-  const sys = `You are Marcus, 38, a military veteran admitted to a psychiatric unit with combat PTSD. You do NOT know you are in a training simulation. Respond in first person, in character, exactly as Marcus would in this moment. Current emotional state: ${marcusState}. ${toneMap[marcusState]} Keep your reply to 1-3 short sentences. No explanations, no narration — just Marcus speaking. Do not use quotation marks.`;
+  const sys = `${activePatient.persona} Current emotional state: ${marcusState}. ${toneMap[marcusState]} Keep your reply to 1-3 short sentences. No explanations, no narration — just ${activePatient.name} speaking. Do not use quotation marks.`;
   const userMsg = `Clinical scenario: ${scenario.slice(0,300)}
 
 A staff member just responded to you by saying: "${staffResponse.slice(0,250)}"
@@ -5077,6 +5198,9 @@ A staff member just responded to you by saying: "${staffResponse.slice(0,250)}"
 ${gradeContext[grade]}
 
 How do you respond right now?`;
+  // Also update the reply header label dynamically in case it wasn't set yet
+  const rlDyn = document.getElementById('reply-patient-label');
+  if (rlDyn) rlDyn.textContent = `${activePatient.name} responds`;
 
   try {
     const res = await fetch(CHAT_ENDPOINT, {
