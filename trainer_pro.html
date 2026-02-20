@@ -154,6 +154,7 @@ html,body{height:100%}
 body{font-family:'Inter',sans-serif;background:#0f172a;overflow:hidden;margin:0}
 .slide{display:none;width:100vw;height:100vh;overflow-y:auto;flex-direction:column;padding-bottom:5rem}
 .slide.active{display:block}
+.slide>div{max-width:900px;margin-left:auto;margin-right:auto;width:100%;box-sizing:border-box}
 h1,h2,.font-display{font-family:'Montserrat',sans-serif}
 .progress-bar{transition:width .4s cubic-bezier(.4,0,.2,1)}
 .card{background:#fff;border-radius:1.5rem;box-shadow:0 10px 40px rgba(0,0,0,.08)}
@@ -2726,28 +2727,22 @@ function showSlide(n) {
   // Update final stats on last slide
   if(target>=totalSlides-2) updateFinalStats();
 
-  // Auto guidance once per slide
+  // First-visit tracking: milestone XP
   if(lastSpokenSlide !== target) {
-    const ud = window._userData || {};
-    const user = window._currentUser;
-    const firstName = ud.firstName || (user?.displayName||'').split(' ')[0] || 'there';
-    const tipFn = slideTips[target] || slideTips[slideTips.length-1];
-    const msg = `${tipFn(firstName)} Any questions on this part?`;
-    showAvatarAndSpeak('_direct_', firstName, msg);
     lastSpokenSlide = target;
-  // Section milestone: +50 XP every 5 slides (first visit only)
-  if(target > 0 && target % 5 === 0) {
-    const mKey = 'milestone_' + target;
-    if(!window._userData?.[mKey]) {
-      awardXP(50);
-      showXPToast(50, '5-Slide Section Complete');
-      if(window._userData) window._userData[mKey] = true;
-      window._saveUserData({ [mKey]: true }).catch(()=>{});
+    // Section milestone: +50 XP every 5 slides (first visit only)
+    if(target > 0 && target % 5 === 0) {
+      const mKey = 'milestone_' + target;
+      if(!window._userData?.[mKey]) {
+        awardXP(50);
+        showXPToast(50, '5-Slide Section Complete');
+        if(window._userData) window._userData[mKey] = true;
+        window._saveUserData({ [mKey]: true }).catch(()=>{});
+      }
     }
   }
-  // Reset idle nudge timer each slide
+  // Reset idle nudge timer on every slide navigation
   resetSlideIdleTimer();
-  }
 }
 
 // -- Idle nudge timer: Vance speaks if trainee lingers 45s without navigating --
