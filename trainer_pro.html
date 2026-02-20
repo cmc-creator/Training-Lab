@@ -164,6 +164,9 @@ window._loadAllUsers = async function() {
 window._deleteUser = async function(uid) {
   await remove(_ref('users/' + uid));
 };
+window._updateUserData = async function(uid, data) {
+  await update(_ref('users/' + uid), data);
+};
 // ─── Admin role system ───────────────────────────────────
 window._getAdminRole = async function(uid) {
   const snap = await get(_ref('admins/' + uid));
@@ -648,6 +651,8 @@ h1,h2,.font-display{font-family:'Montserrat',sans-serif}
 
 <!-- Home gateway overlay -->
 <div id="home-gateway">
+  <!-- Due-date notification banner (populated by JS) -->
+  <div id="due-date-banner" style="display:none;width:100%;max-width:1100px;margin-bottom:1rem"></div>
   <div style="width:100%;max-width:1100px;display:grid;grid-template-columns:1.1fr 1fr;gap:1.75rem;align-items:center;color:#e2e8f0">
     <div style="display:flex;flex-direction:column;gap:1.1rem">
       <div class="logo-inline" aria-label="Destiny Springs Healthcare logo" style="max-width:360px;width:100%"></div>
@@ -2904,7 +2909,7 @@ function showHomeGateway() {
   }
   const hub = document.getElementById('home-gateway');
   if(hub) hub.style.display = 'flex';
-  // Hide slide navigation — not needed on the hub choice screen
+  refreshDueDateBanner(); // show/hide training deadline notification
   const pa = document.getElementById('side-arrow-prev');
   const na = document.getElementById('side-arrow-next');
   if(pa) pa.style.display = 'none';
@@ -4177,6 +4182,7 @@ function _renderUsersGrid(users) {
       <input id="user-search-box" type="text" placeholder="🔍 Search name, email or department…"
         oninput="filterAdminUsers(this.value)"
         style="flex:1;min-width:200px;padding:.55rem .9rem;border:1px solid #e2e8f0;border-radius:.65rem;font-size:.85rem;font-weight:600;color:#0f172a;outline:none">
+      <button onclick="openBulkDueDateModal()" style="background:linear-gradient(135deg,#2563eb,#7c3aed);color:white;border:none;padding:.5rem 1rem;border-radius:.65rem;font-size:.8rem;font-weight:800;cursor:pointer;white-space:nowrap">📅 Bulk Deadline</button>
       <span id="user-count-badge" style="font-size:.8rem;color:#94a3b8;font-weight:700">${entries.length} user${entries.length!==1?'s':''}</span>
     </div>
     <div id="user-cards-wrap">
@@ -4186,6 +4192,17 @@ function _renderUsersGrid(users) {
         const done = (u.currentSlide||0) >= totalSl-1;
         const lastSeen = u.lastLogin ? new Date(u.lastLogin).toLocaleDateString() : 'Never';
         const searchKey = (name+' '+(u.email||'')+' '+(u.department||'')).toLowerCase();
+        // Due-date badge
+        let dueBadge = '';
+        if (u.dueDate && !done) {
+          const dLeft = Math.ceil((u.dueDate - Date.now()) / 864e5);
+          const isOD  = dLeft < 0;
+          const isSoon = dLeft >= 0 && dLeft <= 3;
+          const dueBg  = isOD ? '#fef2f2' : isSoon ? '#fff7ed' : '#eff6ff';
+          const dueClr = isOD ? '#dc2626' : isSoon ? '#d97706' : '#2563eb';
+          const dueLabel = isOD ? `⚠️ Overdue ${Math.abs(dLeft)}d` : dLeft === 0 ? '🚨 Due today' : `📅 ${dLeft}d left`;
+          dueBadge = `<span style="background:${dueBg};color:${dueClr};padding:.2rem .6rem;border-radius:999px;font-size:.72rem;font-weight:800">${dueLabel}</span>`;
+        }
         return `<div data-uid="${uid}" data-search="${searchKey}"
           style="background:#f8fafc;border-radius:1rem;padding:.875rem 1rem;display:flex;align-items:center;justify-content:space-between;border:1px solid #e2e8f0;margin-bottom:.65rem;gap:1rem;flex-wrap:wrap">
           <div style="display:flex;align-items:center;gap:.875rem;flex:1;min-width:0">
@@ -4198,8 +4215,10 @@ function _renderUsersGrid(users) {
           <div style="display:flex;align-items:center;gap:.75rem;flex-wrap:wrap">
             <span style="font-size:.78rem;font-weight:700;color:#2563eb">Lvl ${u.level||1} · ${(u.xp||0).toLocaleString()} XP</span>
             <span style="background:${done?'#dcfce7':'#fef9c3'};color:${done?'#15803d':'#92400e'};padding:.2rem .6rem;border-radius:999px;font-size:.72rem;font-weight:800">${done?'✅ Done':'⏳ Slide '+(u.currentSlide||0)}</span>
+            ${dueBadge}
             <span style="font-size:.72rem;color:#94a3b8;font-weight:600">Last: ${lastSeen}</span>
-            <button onclick="confirmDeleteUser('${uid}','${name.replace(/'/g,"\\\'")}')" style="background:#fef2f2;color:#dc2626;border:1px solid #fecaca;border-radius:.5rem;padding:.3rem .7rem;font-size:.72rem;font-weight:700;cursor:pointer">Remove</button>
+            <button onclick="openSetDueDateModal('${uid}','${name.replace(/'/g,"\\'")}',${u.dueDate||'null'})" style="background:#eff6ff;color:#2563eb;border:1px solid #bfdbfe;border-radius:.5rem;padding:.3rem .7rem;font-size:.72rem;font-weight:700;cursor:pointer">📅 Deadline</button>
+            <button onclick="confirmDeleteUser('${uid}','${name.replace(/'/g,"\\'")}' )" style="background:#fef2f2;color:#dc2626;border:1px solid #fecaca;border-radius:.5rem;padding:.3rem .7rem;font-size:.72rem;font-weight:700;cursor:pointer">Remove</button>
           </div>
         </div>`;
       }).join('')}
@@ -4356,12 +4375,14 @@ async function loadReports() {
         <td style="padding:.6rem 1rem;text-align:center;font-weight:700;color:#7c3aed">${(u.xp||0).toLocaleString()}</td>
         <td style="padding:.6rem 1rem;text-align:center;font-weight:700;color:${u.finalQuizScore>=9?'#15803d':u.finalQuizScore>0?'#92400e':'#94a3b8'}">${quizScore}</td>
         <td style="padding:.6rem 1rem;text-align:center;color:#475569;font-size:.8rem">${completedDate}</td>
+        <td style="padding:.6rem 1rem;text-align:center;font-size:.8rem;font-weight:700">${u.dueDate&&!done?`<span style="color:${Math.ceil((u.dueDate-Date.now())/864e5)<0?'#dc2626':Math.ceil((u.dueDate-Date.now())/864e5)<=3?'#d97706':'#2563eb'};">${Math.ceil((u.dueDate-Date.now())/864e5)<0?'⚠️ Overdue':'📅 '+new Date(u.dueDate).toLocaleDateString()}</span>`:done?'—':'Not set'}</td>
         <td style="padding:.6rem 1rem;text-align:center;color:${loginColor};font-size:.8rem;font-weight:${daysAgo>7&&!done?'800':'400'}">${loginStr}</td>
       </tr>`;
     }).join('');
 
     el.innerHTML = `
-      <div style="display:flex;justify-content:flex-end;margin-bottom:1.25rem">
+      <div style="display:flex;justify-content:flex-end;gap:.75rem;margin-bottom:1.25rem;flex-wrap:wrap">
+        <button onclick="openBulkDueDateModal()" class="btn" style="background:linear-gradient(135deg,#2563eb,#7c3aed);color:white;border:none;font-size:.8rem;padding:.5rem 1rem">📅 Bulk Deadline</button>
         <button onclick="exportCSV()" class="btn btn-primary" style="font-size:.8rem;padding:.5rem 1.25rem">⬇️ Export CSV</button>
       </div>
       <h3 style="font-weight:900;font-size:.85rem;color:#0f172a;text-transform:uppercase;letter-spacing:.07em;margin-bottom:.75rem">Completion by Department</h3>
@@ -4388,6 +4409,7 @@ async function loadReports() {
             <th style="padding:.6rem 1rem;text-align:center;font-weight:900;color:#0f172a">XP</th>
             <th style="padding:.6rem 1rem;text-align:center;font-weight:900;color:#0f172a">Quiz</th>
             <th style="padding:.6rem 1rem;text-align:center;font-weight:900;color:#0f172a">Completed</th>
+            <th style="padding:.6rem 1rem;text-align:center;font-weight:900;color:#0f172a">Due Date</th>
             <th style="padding:.6rem 1rem;text-align:center;font-weight:900;color:#0f172a">Last Login</th>
           </tr></thead>
           <tbody>${userRows}</tbody>
@@ -4423,6 +4445,135 @@ async function exportCSV() {
   a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
   a.download = `${(window.TENANT?.orgId||'training').toUpperCase()}_Report_${new Date().toISOString().slice(0,10)}.csv`;
   a.click();
+}
+
+// ─── Due-date / Assignment system ─────────────────────────
+
+function refreshDueDateBanner() {
+  const banner = document.getElementById('due-date-banner');
+  if (!banner) return;
+  const ud = window._userData;
+  if (!ud?.dueDate) { banner.style.display = 'none'; return; }
+  const T = window.TENANT;
+  const totalSl = (T?.moduleCount || 27);
+  const done = (ud.currentSlide || 0) >= totalSl - 1;
+  if (done) { banner.style.display = 'none'; return; }
+  const now = Date.now();
+  const due = ud.dueDate;
+  const daysLeft = Math.ceil((due - now) / 864e5);
+  const overdue  = daysLeft < 0;
+  const soon     = daysLeft >= 0 && daysLeft <= 3;
+  const bg    = overdue ? 'linear-gradient(135deg,#dc2626,#b91c1c)' : soon ? 'linear-gradient(135deg,#d97706,#b45309)' : 'linear-gradient(135deg,#2563eb,#1d4ed8)';
+  const emoji = overdue ? '🚨' : soon ? '⏰' : '📅';
+  const label = overdue
+    ? `Your training was due ${Math.abs(daysLeft)} day${Math.abs(daysLeft)!==1?'s':''} ago. Please complete it today.`
+    : daysLeft === 0
+    ? 'Your training deadline is TODAY. Please complete it before your shift ends.'
+    : `Training deadline: ${new Date(due).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})} — ${daysLeft} day${daysLeft!==1?'s':''} remaining`;
+  banner.style.display = 'block';
+  banner.innerHTML = `
+    <div style="background:${bg};color:white;border-radius:1rem;padding:.875rem 1.25rem;display:flex;align-items:center;gap:.875rem;margin-bottom:.25rem">
+      <span style="font-size:1.5rem;flex-shrink:0">${emoji}</span>
+      <p style="font-weight:800;font-size:.9rem;margin:0;flex:1">${label}</p>
+      <button onclick="hideHomeGateway();resumeTrainingFromHub&&resumeTrainingFromHub()"
+        style="background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.35);color:white;padding:.4rem 1rem;border-radius:.6rem;font-weight:900;font-size:.8rem;cursor:pointer;flex-shrink:0;white-space:nowrap">
+        Resume Now →
+      </button>
+    </div>`;
+}
+
+function openSetDueDateModal(uid, name, currentDue) {
+  const existing = currentDue ? new Date(currentDue).toISOString().slice(0,10) : '';
+  const existing_enc = name.replace(/'/g,"\\'");
+  const modal = document.createElement('div');
+  modal.id = 'due-date-modal';
+  modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:300;display:flex;align-items:center;justify-content:center;padding:1.5rem';
+  modal.innerHTML = `
+    <div style="background:white;border-radius:1.25rem;padding:2rem;max-width:440px;width:100%;box-shadow:0 25px 60px rgba(0,0,0,.35)">
+      <h3 style="font-weight:900;font-size:1.1rem;color:#0f172a;margin:0 0 .35rem">📅 Set Training Deadline</h3>
+      <p style="font-size:.85rem;color:#64748b;margin:0 0 1.5rem">Assign a due date for <strong>${name}</strong>. They'll see a countdown banner on their Hub.</p>
+      <label style="font-size:.825rem;font-weight:700;color:#0f172a;display:block;margin-bottom:.4rem">Deadline Date</label>
+      <input id="due-date-input" type="date" value="${existing}"
+        style="width:100%;padding:.65rem .875rem;border:1.5px solid #e2e8f0;border-radius:.65rem;font-size:1rem;font-weight:700;color:#0f172a;margin-bottom:1.25rem;outline:none">
+      <div style="display:flex;gap:.75rem;justify-content:flex-end">
+        ${existing ? `<button onclick="clearDueDate('${uid}')" style="background:#fef2f2;color:#dc2626;border:1px solid #fecaca;padding:.55rem 1rem;border-radius:.65rem;font-weight:800;font-size:.85rem;cursor:pointer;margin-right:auto">Remove Deadline</button>` : ''}
+        <button onclick="document.getElementById('due-date-modal')?.remove()" style="background:#f1f5f9;color:#64748b;border:none;padding:.6rem 1.25rem;border-radius:.65rem;font-weight:700;font-size:.875rem;cursor:pointer">Cancel</button>
+        <button onclick="saveDueDate('${uid}')" style="background:linear-gradient(135deg,#2563eb,#7c3aed);color:white;border:none;padding:.6rem 1.5rem;border-radius:.65rem;font-weight:900;font-size:.875rem;cursor:pointer">Save</button>
+      </div>
+    </div>`;
+  document.body.appendChild(modal);
+  modal.addEventListener('click', e => { if(e.target===modal) modal.remove(); });
+  setTimeout(()=>document.getElementById('due-date-input')?.focus(), 50);
+}
+
+async function saveDueDate(uid) {
+  const input = document.getElementById('due-date-input');
+  if (!input?.value) { alert('Please pick a date.'); return; }
+  const dueDate = new Date(input.value + 'T23:59:59').getTime();
+  try {
+    await window._updateUserData(uid, { dueDate });
+    document.getElementById('due-date-modal')?.remove();
+    const cached = window._adminUsersCache;
+    if (cached && cached[uid]) cached[uid].dueDate = dueDate;
+    _renderUsersGrid(window._adminUsersCache || {});
+  } catch(e) { alert('Error saving: ' + e.message); }
+}
+
+async function clearDueDate(uid) {
+  try {
+    await window._updateUserData(uid, { dueDate: null });
+    document.getElementById('due-date-modal')?.remove();
+    const cached = window._adminUsersCache;
+    if (cached && cached[uid]) delete cached[uid].dueDate;
+    _renderUsersGrid(window._adminUsersCache || {});
+  } catch(e) { alert('Error: ' + e.message); }
+}
+
+function openBulkDueDateModal() {
+  const cached = window._adminUsersCache || {};
+  const depts = [...new Set(Object.values(cached).map(u=>u.department||'Unassigned'))].sort();
+  const modal = document.createElement('div');
+  modal.id = 'bulk-due-modal';
+  modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:300;display:flex;align-items:center;justify-content:center;padding:1.5rem';
+  modal.innerHTML = `
+    <div style="background:white;border-radius:1.25rem;padding:2rem;max-width:480px;width:100%;box-shadow:0 25px 60px rgba(0,0,0,.35)">
+      <h3 style="font-weight:900;font-size:1.1rem;color:#0f172a;margin:0 0 .35rem">📅 Bulk Assign Training Deadline</h3>
+      <p style="font-size:.85rem;color:#64748b;margin:0 0 1.5rem">Assign a deadline to an entire department or all staff. Overwrites any existing deadlines.</p>
+      <label style="font-size:.825rem;font-weight:700;color:#0f172a;display:block;margin-bottom:.4rem">Apply To</label>
+      <select id="bulk-dept-select"
+        style="width:100%;padding:.65rem .875rem;border:1.5px solid #e2e8f0;border-radius:.65rem;font-size:.9rem;font-weight:700;color:#0f172a;margin-bottom:1rem;background:white">
+        <option value="__all__">All Users (entire facility)</option>
+        ${depts.map(d=>`<option value="${d}">${d}</option>`).join('')}
+      </select>
+      <label style="font-size:.825rem;font-weight:700;color:#0f172a;display:block;margin-bottom:.4rem">Deadline Date</label>
+      <input id="bulk-date-input" type="date"
+        style="width:100%;padding:.65rem .875rem;border:1.5px solid #e2e8f0;border-radius:.65rem;font-size:1rem;font-weight:700;color:#0f172a;margin-bottom:1.25rem">
+      <div style="display:flex;gap:.75rem;justify-content:flex-end">
+        <button onclick="document.getElementById('bulk-due-modal')?.remove()" style="background:#f1f5f9;color:#64748b;border:none;padding:.6rem 1.25rem;border-radius:.65rem;font-weight:700;font-size:.875rem;cursor:pointer">Cancel</button>
+        <button onclick="applyBulkDueDate()" style="background:linear-gradient(135deg,#2563eb,#7c3aed);color:white;border:none;padding:.6rem 1.5rem;border-radius:.65rem;font-weight:900;font-size:.875rem;cursor:pointer">Assign Deadline</button>
+      </div>
+    </div>`;
+  document.body.appendChild(modal);
+  modal.addEventListener('click', e => { if(e.target===modal) modal.remove(); });
+}
+
+async function applyBulkDueDate() {
+  const dept  = document.getElementById('bulk-dept-select')?.value;
+  const dateV = document.getElementById('bulk-date-input')?.value;
+  if (!dateV) { alert('Please pick a date.'); return; }
+  const dueDate = new Date(dateV + 'T23:59:59').getTime();
+  const cached = window._adminUsersCache || {};
+  const targets = Object.entries(cached).filter(([,u]) =>
+    dept === '__all__' || (u.department||'Unassigned') === dept
+  );
+  if (!targets.length) { alert('No users found.'); return; }
+  if (!confirm(`Set deadline of ${new Date(dueDate).toLocaleDateString()} for ${targets.length} user${targets.length!==1?'s':''}?`)) return;
+  try {
+    await Promise.all(targets.map(([uid]) => window._updateUserData(uid, { dueDate })));
+    targets.forEach(([uid]) => { if(cached[uid]) cached[uid].dueDate = dueDate; });
+    document.getElementById('bulk-due-modal')?.remove();
+    _renderUsersGrid(cached);
+  } catch(e) { alert('Error: ' + e.message); }
 }
 
 // ─── Completion roster ────────────────────────────────────
