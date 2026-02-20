@@ -4416,6 +4416,7 @@ function openLabRoom() {
   document.getElementById('lab-feedback').textContent='';
   document.getElementById('lab-cooldown').style.display='none';
   document.getElementById('lab-response').value='';
+  updateMarcusStateBadge();
 }
 function closeLabRoom() {
   document.getElementById('lab-modal').style.display='none';
