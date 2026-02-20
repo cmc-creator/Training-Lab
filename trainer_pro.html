@@ -119,6 +119,7 @@ async function loadUserData(user) {
     // Update last login and training year each session
     await update(_ref('users/' + user.uid), { lastLogin: Date.now(), trainingYear: new Date().getFullYear() });
     window._writeAudit('login', { slide: window._userData?.currentSlide || 0 });
+    window._checkAchievements && window._checkAchievements({ _justLoggedIn: true }).catch(()=>{});
   } else {
     // Legacy / admin-created account fallback
     const parts = (user.displayName || '').split(' ');
@@ -204,6 +205,72 @@ window._writeAudit = async function(action, meta) {
       ...(meta || {})
     });
   } catch(_e) { /* never block UI for audit failures */ }
+};
+// ─── UI Polish Helpers ────────────────────────────────────────
+window._typewrite = function(el, text, speed=20) {
+  el.textContent = '';
+  let i = 0;
+  const tick = () => {
+    if(i < text.length) {
+      el.textContent += text[i++];
+      setTimeout(tick, speed);
+    }
+  };
+  tick();
+};
+window._animCounter = function(el, from, to, ms=800) {
+  if(!el) return;
+  const start = performance.now();
+  const step = t => {
+    const p = Math.min(1, (t - start) / ms);
+    const ease = 1 - Math.pow(1 - p, 3);
+    el.textContent = Math.round(from + (to - from) * ease).toLocaleString();
+    if(p < 1) requestAnimationFrame(step);
+  };
+  requestAnimationFrame(step);
+};
+// ─── Achievement Badges ───────────────────────────────────────
+const ACHIEVEMENTS = [
+  { id:'first_login',   icon:'🌟', name:'Welcome Aboard',   desc:'Logged in for the first time',            check: ()=> true },
+  { id:'first_lab',     icon:'🧪', name:'Lab Initiate',      desc:'Completed your first lab scenario',       check: u=> (u.scenariosCompleted||0) >= 1 },
+  { id:'perfect_lab',   icon:'💎', name:'Perfect Technique', desc:'Scored an A in a lab scenario',           check: u=> u._lastLabGrade === 'A' },
+  { id:'all_patients',  icon:'👥', name:'Full Spectrum',     desc:'Worked with all 3 patients in the lab',   check: u=> (u._labPatientSet||[]).length >= 3 },
+  { id:'streak_3',      icon:'🔥', name:'On Fire',           desc:'Built a 3-day daily drill streak',         check: u=> (u.drillStreak||0) >= 3 },
+  { id:'streak_7',      icon:'⚡', name:'Week Warrior',      desc:'Built a 7-day daily drill streak',         check: u=> (u.drillStreak||0) >= 7 },
+  { id:'level_3',       icon:'🎖️', name:'Rising Clinician', desc:'Reached Level 3',                          check: u=> (u.level||1) >= 3 },
+  { id:'level_5',       icon:'🏆', name:'Expert Clinician',  desc:'Reached Level 5',                          check: u=> (u.level||1) >= 5 },
+  { id:'cert_earned',   icon:'🎓', name:'Certified!',        desc:'Downloaded your completion certificate',   check: u=> !!u.completedAt },
+  { id:'drill_10',      icon:'🧠', name:'Drill Devotee',     desc:'Completed 10 or more daily drills',        check: u=> (u.totalDrillsCompleted||0) >= 10 },
+];
+window._showAchievementToast = function(a) {
+  const old = document.getElementById('achievement-toast');
+  if(old) old.remove();
+  const t = document.createElement('div');
+  t.id = 'achievement-toast';
+  t.style.cssText = 'position:fixed;bottom:8rem;left:50%;transform:translateX(-50%) scale(.5);z-index:4000;background:linear-gradient(135deg,#1e3a8a,#7c3aed);color:#fff;border-radius:1.5rem;padding:.9rem 1.5rem;box-shadow:0 8px 36px rgba(124,58,237,.5);display:flex;align-items:center;gap:.85rem;pointer-events:none;white-space:nowrap;animation:badge-pop .4s cubic-bezier(.34,1.56,.64,1) forwards';
+  t.innerHTML = `<span style="font-size:2rem">${a.icon}</span><div><div style="font-size:.68rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;opacity:.8;margin-bottom:.15rem">Achievement Unlocked</div><div style="font-size:.97rem;font-weight:900">${a.name}</div><div style="font-size:.72rem;opacity:.7;margin-top:.1rem">${a.desc}</div></div>`;
+  document.body.appendChild(t);
+  setTimeout(() => {
+    t.style.transition = 'opacity .5s ease';
+    t.style.opacity = '0';
+    setTimeout(() => t.remove(), 520);
+  }, 4200);
+};
+window._checkAchievements = async function(patch) {
+  try {
+    if(!window._currentUser) return;
+    const merged = { ...(window._userData||{}), ...(patch||{}) };
+    const earned = merged.achievements || {};
+    const toUnlock = ACHIEVEMENTS.filter(a => !earned[a.id] && a.check(merged));
+    if(!toUnlock.length) return;
+    const updates = {};
+    toUnlock.forEach(a => { updates['achievements/' + a.id] = { ts: Date.now(), name: a.name }; });
+    await update(_ref('users/' + window._currentUser.uid), updates);
+    if(window._userData) {
+      window._userData.achievements = { ...(window._userData.achievements||{}), ...Object.fromEntries(toUnlock.map(a=>[a.id,{ts:Date.now()}])) };
+    }
+    toUnlock.forEach((a, i) => setTimeout(() => window._showAchievementToast(a), i * 4600));
+  } catch(_e) {}
 };
 window._resetAllProgress = async function() {
   const snap = await get(_ref('users'));
@@ -479,6 +546,11 @@ h1,h2,.font-display{font-family:'Montserrat',sans-serif}
 #avatar-mouth{animation:none}
 #avatar-mouth.talking{animation:talking .15s ease infinite}
 #home-gateway{display:none;position:fixed;inset:0;z-index:70;background:radial-gradient(circle at 20% 20%,rgba(59,130,246,.12),transparent 35%),radial-gradient(circle at 80% 10%,rgba(14,165,233,.12),transparent 32%),radial-gradient(circle at 30% 80%,rgba(124,58,237,.12),transparent 38%),#0b1224;backdrop-filter:blur(10px);align-items:center;justify-content:center;padding:2rem}
+@keyframes shimmer{0%{background-position:-400px 0}100%{background-position:400px 0}}
+.skel{background:linear-gradient(90deg,#e2e8f0 25%,#f1f5f9 50%,#e2e8f0 75%);background-size:400px 100%;animation:shimmer 1.4s infinite linear;border-radius:.55rem;height:1rem}
+@keyframes badge-pop{0%{transform:translateX(-50%) scale(.5);opacity:0}70%{transform:translateX(-50%) scale(1.07)}100%{transform:translateX(-50%) scale(1);opacity:1}}
+@keyframes xp-bounce{0%,100%{transform:translateX(-50%) scale(1)}40%{transform:translateX(-50%) scale(1.22)}}
+.xp-toast-pop{animation:xp-bounce .35s cubic-bezier(.34,1.56,.64,1)}
 </style>
 </head>
 <body>
@@ -1308,6 +1380,25 @@ h1,h2,.font-display{font-family:'Montserrat',sans-serif}
 
 <!-- XP Toast notification -->
 <div id="xp-toast" style="display:none;position:fixed;bottom:6.5rem;left:50%;transform:translateX(-50%);z-index:300;background:linear-gradient(135deg,#1d4ed8,#7c3aed);color:white;font-weight:900;font-size:.95rem;padding:.5rem 1.3rem;border-radius:2rem;box-shadow:0 6px 20px rgba(37,99,235,.45);pointer-events:none;white-space:nowrap">+XP</div>
+
+<!-- Keyboard shortcuts overlay -->
+<div id="shortcuts-overlay" onclick="closeShortcuts()" style="display:none;position:fixed;inset:0;z-index:5000;background:rgba(0,0,20,.72);backdrop-filter:blur(6px);align-items:center;justify-content:center;padding:1.5rem">
+  <div onclick="event.stopPropagation()" style="background:#0f172a;border:1px solid rgba(255,255,255,.12);border-radius:1.5rem;padding:2rem;max-width:420px;width:100%;box-shadow:0 24px 80px rgba(0,0,0,.6);color:#f1f5f9">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.4rem">
+      <h3 style="font-size:1rem;font-weight:900;letter-spacing:.05em;text-transform:uppercase;color:#f8fafc">⌨ Keyboard Shortcuts</h3>
+      <button onclick="closeShortcuts()" style="background:rgba(255,255,255,.08);border:none;color:#94a3b8;border-radius:.5rem;width:28px;height:28px;cursor:pointer;font-size:1rem;display:flex;align-items:center;justify-content:center">&times;</button>
+    </div>
+    <div style="display:grid;gap:.6rem;font-size:.83rem">
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:.5rem .75rem;background:rgba(255,255,255,.05);border-radius:.65rem"><span style="color:#94a3b8">Next slide</span><kbd style="background:#1e293b;color:#e2e8f0;padding:.2rem .55rem;border-radius:.35rem;font-family:monospace;font-size:.78rem;border:1px solid rgba(255,255,255,.1)">→ / ↓</kbd></div>
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:.5rem .75rem;background:rgba(255,255,255,.05);border-radius:.65rem"><span style="color:#94a3b8">Previous slide</span><kbd style="background:#1e293b;color:#e2e8f0;padding:.2rem .55rem;border-radius:.35rem;font-family:monospace;font-size:.78rem;border:1px solid rgba(255,255,255,.1)">← / ↑</kbd></div>
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:.5rem .75rem;background:rgba(255,255,255,.05);border-radius:.65rem"><span style="color:#94a3b8">Toggle ambient sound</span><kbd style="background:#1e293b;color:#e2e8f0;padding:.2rem .55rem;border-radius:.35rem;font-family:monospace;font-size:.78rem;border:1px solid rgba(255,255,255,.1)">M</kbd></div>
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:.5rem .75rem;background:rgba(255,255,255,.05);border-radius:.65rem"><span style="color:#94a3b8">Open admin dashboard</span><kbd style="background:#1e293b;color:#e2e8f0;padding:.2rem .55rem;border-radius:.35rem;font-family:monospace;font-size:.78rem;border:1px solid rgba(255,255,255,.1)">A</kbd></div>
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:.5rem .75rem;background:rgba(255,255,255,.05);border-radius:.65rem"><span style="color:#94a3b8">Dismiss Vance / close panel</span><kbd style="background:#1e293b;color:#e2e8f0;padding:.2rem .55rem;border-radius:.35rem;font-family:monospace;font-size:.78rem;border:1px solid rgba(255,255,255,.1)">Esc</kbd></div>
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:.5rem .75rem;background:rgba(255,255,255,.05);border-radius:.65rem"><span style="color:#94a3b8">This help screen</span><kbd style="background:#1e293b;color:#e2e8f0;padding:.2rem .55rem;border-radius:.35rem;font-family:monospace;font-size:.78rem;border:1px solid rgba(255,255,255,.1)">?</kbd></div>
+    </div>
+    <p style="margin-top:1.2rem;font-size:.72rem;color:#475569;text-align:center">Click anywhere outside or press Esc to close</p>
+  </div>
+</div>
 
 <!-- Completion options modal -->
 <div id="completion-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:120;align-items:center;justify-content:center;padding:1rem">
@@ -3119,9 +3210,20 @@ function prevSlide() {
 // Keyboard navigation
 document.addEventListener('keydown',e=>{
   if(document.getElementById('app').style.display==='none') return;
+  if(e.key==='?' || (e.key==='/'&&!e.ctrlKey&&!e.metaKey)) { e.preventDefault(); showShortcuts(); return; }
+  if(e.key==='Escape') { closeShortcuts(); }
+  if(document.activeElement.tagName==='INPUT'||document.activeElement.tagName==='TEXTAREA') return;
   if(['ArrowRight','ArrowDown'].includes(e.key)) nextSlide();
   if(['ArrowLeft','ArrowUp'].includes(e.key)) prevSlide();
 });
+function showShortcuts() {
+  const o = document.getElementById('shortcuts-overlay');
+  if(o) { o.style.display = 'flex'; }
+}
+function closeShortcuts() {
+  const o = document.getElementById('shortcuts-overlay');
+  if(o) o.style.display = 'none';
+}
 
 // ─── Nav UI ──────────────────────────────────────────────
 function updateNavUI() {
@@ -3250,12 +3352,25 @@ function chooseCompletionPath(mode) {
 
 // ─── XP & Level ──────────────────────────────────────────
 function awardXP(amount, save=true) {
+  const prevXP = xp;
   xp += amount;
   const thresholds = [0,500,1200,2200,3500,5500,8000,11000,15000,20000];
+  const prevLevel = level;
   for(let i=thresholds.length-1;i>=0;i--){
     if(xp>=thresholds[i]){ level=i+1; break; }
   }
   updateNavUI();
+  // Animate the XP counter rolling up
+  if(amount > 0 && window._animCounter) {
+    const navXpEl = document.getElementById('nav-xp');
+    if(navXpEl) window._animCounter(navXpEl, prevXP, xp, 900);
+  }
+  // Level-up flash
+  if(level > prevLevel) {
+    const navLvl = document.getElementById('nav-level');
+    if(navLvl) { navLvl.style.transition='color .2s'; navLvl.style.color='#fbbf24'; setTimeout(()=>{ navLvl.style.color=''; }, 1400); }
+  }
+  window._checkAchievements && window._checkAchievements({xp, level}).catch(()=>{});
   if(save) saveProgress();
 }
 
@@ -4067,15 +4182,18 @@ function closeTutorial() {
 function showXPToast(amount, label='') {
   const toast = document.getElementById('xp-toast');
   if(!toast) return;
-  toast.textContent = `+${amount} XP${label ? ' · ' + label : ''}`;
+  toast.textContent = `+${amount.toLocaleString()} XP${label ? ' · ' + label : ''}`;
   toast.style.display = 'block';
   toast.style.opacity = '1';
   toast.style.transition = '';
+  toast.classList.remove('xp-toast-pop');
+  void toast.offsetWidth; // reflow to restart animation
+  toast.classList.add('xp-toast-pop');
   clearTimeout(window._xpToastTimer);
   window._xpToastTimer = setTimeout(() => {
     toast.style.transition = 'opacity .65s ease';
     toast.style.opacity = '0';
-    setTimeout(() => { toast.style.display = 'none'; toast.style.transition = ''; }, 700);
+    setTimeout(() => { toast.style.display = 'none'; toast.style.transition = ''; toast.classList.remove('xp-toast-pop'); }, 700);
   }, 1900);
 }
 
@@ -4367,11 +4485,16 @@ function adminTab(name, el) {
 async function loadLeaderboard() {
   const el = document.getElementById('at-leaderboard');
   if(!el) return;
-  el.innerHTML='<p style="color:#94a3b8;font-size:.875rem;padding:1rem">Loading...</p>';
+  el.innerHTML = `<div style="display:flex;flex-direction:column;gap:.75rem;padding:.5rem">${[1,2,3,4,5].map(()=>`
+    <div style="display:flex;align-items:center;gap:.75rem">
+      <div class="skel" style="width:32px;height:32px;border-radius:50%;flex-shrink:0"></div>
+      <div style="flex:1;display:flex;flex-direction:column;gap:.4rem">
+        <div class="skel" style="width:55%;height:.85rem"></div>
+        <div class="skel" style="width:35%;height:.72rem"></div>
+      </div>
+      <div class="skel" style="width:60px;height:1.2rem"></div>
+    </div>`).join('')}</div>`;
   try {
-    const users = await window._loadAllUsers();
-    if(!users||!Object.keys(users).length){
-      el.innerHTML='<p style="color:#94a3b8;font-size:.875rem;padding:1rem">No users yet.</p>'; return;
     }
     const sorted = Object.entries(users).map(([uid,d])=>({uid,...d}))
       .sort((a,b)=>(b.xp||0)-(a.xp||0));
@@ -4411,7 +4534,18 @@ async function loadLeaderboard() {
 async function loadUsers() {
   const el = document.getElementById('at-users');
   if(!el) return;
-  el.innerHTML='<p style="color:#94a3b8;font-size:.875rem;padding:1rem">Loading...</p>';
+  el.innerHTML = `<div style="display:flex;flex-direction:column;gap:.65rem;padding:.5rem">${[1,2,3,4,5,6].map(()=>`
+    <div style="display:flex;align-items:center;gap:.75rem;padding:.5rem;border-radius:.75rem;border:1px solid #f1f5f9">
+      <div class="skel" style="width:40px;height:40px;border-radius:50%;flex-shrink:0"></div>
+      <div style="flex:1;display:flex;flex-direction:column;gap:.4rem">
+        <div class="skel" style="width:45%;height:.85rem"></div>
+        <div class="skel" style="width:65%;height:.72rem"></div>
+      </div>
+      <div style="display:flex;gap:.5rem">
+        <div class="skel" style="width:50px;height:1.4rem"></div>
+        <div class="skel" style="width:65px;height:1.4rem"></div>
+      </div>
+    </div>`).join('')}</div>`;
   try {
     const users = await window._loadAllUsers();
     if(!users||!Object.keys(users).length){
@@ -4503,6 +4637,7 @@ async function confirmDeleteUser(uid,name) {
 async function loadAnalytics() {
   const el = document.getElementById('at-analytics');
   if(!el) return;
+  el.innerHTML = `<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:1rem;margin-bottom:1.5rem">${[1,2,3,4].map(()=>`<div style="padding:1.25rem;border-radius:1rem;background:#f8fafc"><div class="skel" style="width:55%;height:2rem;margin:0 auto .5rem"></div><div class="skel" style="width:70%;height:.72rem;margin:0 auto"></div></div>`).join('')}</div><div style="display:flex;flex-direction:column;gap:.65rem">${[1,2,3].map(()=>`<div class="skel" style="height:2.5rem;border-radius:.75rem"></div>`).join('')}</div>`;
   try {
     const users = await window._loadAllUsers() || {};
     const list = Object.values(users);
@@ -5548,6 +5683,7 @@ async function submitDrill() {
     grade, xpEarned: finalXP, streak: drillStreak, timestamp: new Date().toISOString()
   }).catch(() => {});
   window._writeAudit('drill_completed', { grade, xpEarned: finalXP, streak: drillStreak }).catch(() => {});
+  window._checkAchievements && window._checkAchievements({ drillStreak, totalDrillsCompleted: window._userData?.totalDrillsCompleted||0 }).catch(()=>{});
 }
 
 function startBoxBreathing() {
@@ -5855,6 +5991,15 @@ function submitLabScenario() {
     grade,
     lcEarned
   }).catch(()=>{});
+  // Track patient set for Full Spectrum badge
+  const _patName = typeof activePatient !== 'undefined' ? activePatient.name : 'Marcus';
+  const _patSet = [...new Set([...(window._userData?._labPatientSet||[]), _patName])];
+  if(window._userData) window._userData._labPatientSet = _patSet;
+  window._checkAchievements && window._checkAchievements({
+    scenariosCompleted: (window._userData?.scenariosCompleted||0),
+    _lastLabGrade: grade,
+    _labPatientSet: _patSet
+  }).catch(()=>{});
   window._emitXAPI('experienced', { completion:true, success: grade==='A'||grade==='B', score:{ raw:xpGain,min:0,max:250 } }).catch(()=>{});
 
   // Marcus in-character reply
@@ -5905,9 +6050,9 @@ How do you respond right now?`;
     });
     const data = await res.json();
     const reply = (data?.reply || data?.choices?.[0]?.message?.content || '...').trim();
-    textEl.textContent = reply;
+    window._typewrite(textEl, reply, 18);
   } catch(e) {
-    textEl.textContent = 'Fine. Whatever.';
+    window._typewrite(textEl, 'Fine. Whatever.', 22);
   }
 }
 
@@ -6135,11 +6280,16 @@ function downloadCertificate() {
   renderInlineLogos();
   const certEl = d.firstElementChild;
   const cleanup = ()=>{ try{ d.remove(); }catch(_e){} };
-  const celebrate = ()=>{
+  const celebrate = () => {
     if(!window.confetti) return;
-    const opts = {particleCount:140, spread:70, origin:{y:0.6}};
-    window.confetti(opts);
-    setTimeout(()=>window.confetti(Object.assign({},opts,{particleCount:90,spread:90,origin:{y:0.4}})), 180);
+    const fire = (o) => window.confetti({ particleCount:90, spread:70, ...o });
+    fire({ origin:{x:0.5,y:0.65} });
+    setTimeout(()=>fire({ origin:{x:0.2,y:0.55}, angle:60,  particleCount:70 }), 220);
+    setTimeout(()=>fire({ origin:{x:0.8,y:0.55}, angle:120, particleCount:70 }), 440);
+    setTimeout(()=>fire({ origin:{x:0.5,y:0.3},  spread:110, particleCount:130 }), 700);
+    setTimeout(()=>window.confetti({ particleCount:55, spread:100, startVelocity:12, origin:{x:0.5,y:0.9}, scalar:1.5 }), 1050);
+    setTimeout(()=>fire({ origin:{x:0.35,y:0.5}, angle:80,  particleCount:60 }), 1400);
+    setTimeout(()=>fire({ origin:{x:0.65,y:0.5}, angle:100, particleCount:60 }), 1600);
   };
   const finishFlow = ()=>{
     try {
@@ -6157,6 +6307,7 @@ function downloadCertificate() {
       window._fireWebhook('training_completed', _compPayload).catch(()=>{});
       window._fireWebhook('cert_downloaded', _compPayload).catch(()=>{});
       window._writeAudit('cert_downloaded', { xp, level, completedAt: new Date().toISOString() }).catch(()=>{});
+      window._checkAchievements && window._checkAchievements({ completedAt: true }).catch(()=>{});
       window._emitXAPI('completed', { completion:true, success:true, duration:'PT0S', extensions:{ 'https://www.destinysprings.com/extensions/xp': xp, 'https://www.destinysprings.com/extensions/level': level } }).catch(()=>{});
       window._emitXAPI('passed', { completion:true, success:true, score:{ raw:xp, min:0 } }).catch(()=>{});
       currentSlide = 0;
