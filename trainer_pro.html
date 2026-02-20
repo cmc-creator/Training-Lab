@@ -4524,7 +4524,14 @@ async function buildScript() {
 
 function generateLabScenario() {
   const dx = document.getElementById('lab-dx').value;
-  const pool= scenarios[dx]||scenarios.general||[];
+  // PTSD always uses Marcus scenarios (indices 1-5 are all Marcus)
+  let pool;
+  if(dx === 'ptsd') {
+    pool = scenarios.ptsd.filter(s => s.includes('Marcus'));
+    if(!pool.length) pool = scenarios.ptsd;
+  } else {
+    pool = scenarios[dx] || scenarios.general || [];
+  }
   const idx = Math.floor(Math.random()*pool.length);
   const scen= pool[idx] || 'No scenario available for this category yet.';
   currentLabDx = dx;
@@ -5053,6 +5060,31 @@ function doSignOut() {
 
 // ─── Fallback: support both direct call and event dispatch ──
 document.addEventListener('DSHUserLoaded', initApp);
+
+// Pre-cache the 4 idle nudge phrases so the first fire is instant
+function _preCacheIdleNudges() {
+  if(paxMuted) return;
+  const nudges = [
+    "Don't miss the detail on the right - that could be a safety breach.",
+    "This concept maps directly to how we approach Marcus. Think about the timing.",
+    "This is certification exam material. Lock it in before moving on.",
+    "Think of Marcus right now - how would this principle change your next move?"
+  ];
+  // Stagger requests 4 seconds apart to avoid hammering the TTS API at startup
+  nudges.forEach((text, i) => {
+    setTimeout(async () => {
+      const key = text.trim().slice(0,120);
+      if(_vanceAudioCache.has(key)) return;
+      try {
+        const res = await fetch('/api/tts', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({text}) });
+        if(!res.ok) return;
+        const blob = await res.blob();
+        _vanceAudioCache.set(key, URL.createObjectURL(blob));
+      } catch(_e) {}
+    }, 8000 + i * 4000); // start 8s after load, stagger by 4s
+  });
+}
+document.addEventListener('DSHUserLoaded', () => setTimeout(_preCacheIdleNudges, 500));
 // --- Micro-Expression Drill -------------------------------------------------
 const MICROEXP_ROUNDS = [
   { prompt: "Marcus crosses his arms, jaw tightens, eyes narrow. He just heard 'You have to calm down.'", emotion: "Anger", tip: "Jaw tightening + narrowed eyes = suppressed anger. Never command calm - offer choice instead." },
