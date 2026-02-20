@@ -809,7 +809,7 @@ h1,h2,.font-display{font-family:'Montserrat',sans-serif}
             </div>
           </div>
         </div>
-        <div id="microexp-buttons" style="display:grid;grid-template-columns:repeat(4,1fr);gap:.6rem;margin-bottom:.85rem">
+        <div id="microexp-buttons" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:.6rem;margin-bottom:.85rem">
           <button onclick="answerMicroExp('Anger')" style="border:2px solid #fca5a5;background:#fff5f5;color:#b91c1c;font-weight:900;padding:.7rem .4rem;border-radius:.875rem;cursor:pointer;font-size:.88rem">😠 Anger</button>
           <button onclick="answerMicroExp('Fear')" style="border:2px solid #bfdbfe;background:#eff6ff;color:#1d4ed8;font-weight:900;padding:.7rem .4rem;border-radius:.875rem;cursor:pointer;font-size:.88rem">😨 Fear</button>
           <button onclick="answerMicroExp('Sadness')" style="border:2px solid #e9d5ff;background:#faf5ff;color:#7c3aed;font-weight:900;padding:.7rem .4rem;border-radius:.875rem;cursor:pointer;font-size:.88rem">😔 Sadness</button>
@@ -4604,7 +4604,11 @@ const scenarios = {
   ],
   ptsd:[
     `A male nurse entered Ana's room without knocking while she was changing. Ana is a trauma survivor. She has now barricaded behind her bed, is hyperventilating, and keeps shouting "Don't come near me." She doesn't appear to recognize staff.`,
-    `Marcus, 38, combat PTSD, was startled by a door slamming in the hallway. He is now in a crouched position near the wall, scanning the room, and appears to be in a flashback state saying "They're coming."`
+    `Marcus, 38, combat PTSD, was startled by a door slamming in the hallway. He is now in a crouched position near the wall, scanning the room, and appears to be in a flashback state saying "They're coming."`,
+    `Marcus refused his morning medications and told staff "Those pills make me feel like I'm not myself." He is now pacing the hallway with fists clenched, and just told another patient to "stay out of my space." His voice is rising. Vitals were last taken 4 hours ago.`,
+    `During group therapy, another patient described a combat story. Marcus abruptly stood up, knocked his chair backwards, and walked out of the room without a word. He is now sitting alone in the corner of the dayroom, hood up, knees pulled to his chest, with his back to the wall. He has not responded to two verbal check-ins from staff.`,
+    `Marcus asked staff twice to lower the TV volume in the common room. It was not addressed. He is now standing at the nursing station, voice at a raised level, saying "Nobody listens in this place. I'm done with all of you." His affect is intense and his hands are visibly shaking.`,
+    `It is 2:00 AM. Marcus was found by night staff sitting on the floor of the hallway outside his room, arms wrapped around himself, whispering. When asked if he is okay, he said "Just leave me alone. You wouldn't understand." He appears tearful and is not making eye contact.`
   ],
   bpd:[
     `Leah, 25, BPD, feels her discharge date was changed without her input. She approached the nursing desk crying and then began shouting that "nobody here cares about me." She said "I'll hurt myself if you discharge me." She's now in her room with the door locked.`,
