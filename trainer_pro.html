@@ -2747,10 +2747,10 @@ function showSlide(n) {
     const _u  = window._currentUser;
     const _fn = _ud.firstName || (_u?.displayName||'').split(' ')[0] || 'there';
     if(target === 0) {
-      setTimeout(()=>showAvatarAndSpeak('_direct_', _fn, `Welcome, ${_fn}! Are you ready to begin? I’m here to help and guide you through every module on this journey.`), 400);
+      scheduleVance(()=>showAvatarAndSpeak('_direct_', _fn, `Welcome, ${_fn}! Are you ready to begin? I’m here to help and guide you through every module on this journey.`), 400);
     } else {
       const tipFn = slideTips[target] || slideTips[slideTips.length-1];
-      setTimeout(()=>showAvatarAndSpeak('_direct_', _fn, tipFn(_fn)), 400);
+      scheduleVance(()=>showAvatarAndSpeak('_direct_', _fn, tipFn(_fn)), 400);
     }
   }
   // Reset idle nudge timer on every slide navigation
@@ -2836,7 +2836,7 @@ function showHomeGateway() {
     ? `Welcome back, ${fname}! Pick where you want to go today — I’ll be right here with you.`
     : `Welcome, ${fname}! I’m Professor Vance. When you’re ready, choose a path and we’ll get started.`;
   if(window._vanceAudio) { window._vanceAudio.pause(); window._vanceAudio.currentTime = 0; }
-  setTimeout(()=>showAvatarAndSpeak('_direct_', fname, hubMsg), 300);
+  scheduleVance(()=>showAvatarAndSpeak('_direct_', fname, hubMsg), 300);
 }
 
 function hideHomeGateway() {
@@ -2883,7 +2883,7 @@ function enterLabFromHub() {
   currentSlide = 0;
   showSlide(0);
   const fname = currentFirstName();
-  setTimeout(()=>showAvatarAndSpeak('_direct_', fname, 'Jumping into the Lab. Ask me if you want tips while you practice.'), 500);
+  scheduleVance(()=>showAvatarAndSpeak('_direct_', fname, 'Jumping into the Lab. Ask me if you want tips while you practice.'), 500);
   window._saveUserData({ sessionMode, currentSlide:0 }).catch(()=>{});
   setTimeout(()=>openLabRoom(), 350);
 }
@@ -3571,16 +3571,38 @@ function toggleAvatar() {
 
 // ─── ElevenLabs TTS for Professor Vance ──────────────────
 const _vanceAudioCache = new Map(); // session cache: text → blob URL (avoids repeat API calls)
+let _vanceGen = 0;       // incremented each time a new speak is requested — stale fetches are discarded
+let _vanceTimer = null;  // single pending speak timer — cleared before each new one is scheduled
+
+// Cancel any scheduled or in-flight Vance speech and stop current audio
+function cancelVance() {
+  clearTimeout(_vanceTimer);
+  _vanceTimer = null;
+  _vanceGen++;  // invalidate any in-flight fetch
+  if(window._vanceAudio) { window._vanceAudio.pause(); window._vanceAudio.currentTime = 0; window._vanceAudio = null; }
+  const portrait = document.getElementById('vance-portrait');
+  if(portrait) portrait.classList.remove('speaking');
+}
+
+// Schedule a single Vance speech, cancelling any previously queued one
+function scheduleVance(fn, delay) {
+  clearTimeout(_vanceTimer);
+  _vanceTimer = setTimeout(fn, delay);
+}
 
 async function speakWithVance(text) {
   if(paxMuted || !text) return;
   // Stop any current playback
-  if(window._vanceAudio) { window._vanceAudio.pause(); window._vanceAudio.currentTime = 0; }
+  if(window._vanceAudio) { window._vanceAudio.pause(); window._vanceAudio.currentTime = 0; window._vanceAudio = null; }
+  // Capture current generation — if it changes before fetch resolves, discard the audio
+  const myGen = ++_vanceGen;
 
   const portrait = document.getElementById('vance-portrait');
   const cacheKey = text.trim().slice(0, 120); // use first 120 chars as key
 
   const playAudio = (url) => {
+    if(_vanceGen !== myGen) return; // a newer speak was requested — discard this audio
+    if(window._vanceAudio) { window._vanceAudio.pause(); window._vanceAudio.currentTime = 0; }
     const audio = new Audio(url);
     window._vanceAudio = audio;
     if(portrait) portrait.classList.add('speaking');
@@ -3608,8 +3630,10 @@ async function speakWithVance(text) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ text })
     });
+    if(_vanceGen !== myGen) return; // superseded while waiting for network
     if(!res.ok) return;
     const blob = await res.blob();
+    if(_vanceGen !== myGen) return; // superseded while parsing blob
     const url  = URL.createObjectURL(blob);
     _vanceAudioCache.set(cacheKey, url);
     playAudio(url);
@@ -3719,6 +3743,8 @@ function showXPToast(amount, label='') {
 }
 
 function showAvatarAndSpeak(context, name, directText) {
+  // Cancel any pending scheduled speech and stop current audio before starting a new one
+  cancelVance();
   // Don't interrupt with Vance tips while the hub choice screen is open
   const hub = document.getElementById('home-gateway');
   if(hub && hub.style.display === 'flex') return;
