@@ -265,6 +265,16 @@ h1,h2,.font-display{font-family:'Montserrat',sans-serif}
     text-indent:0;
   }
   
+  /* Prof. Vance portrait glow while speaking */
+  @keyframes vance-pulse {
+    0%,100% { box-shadow: 0 0 0 3px rgba(37,99,235,.7), 0 0 16px 4px rgba(37,99,235,.15); }
+    50%      { box-shadow: 0 0 0 6px rgba(37,99,235,.4), 0 0 28px 10px rgba(37,99,235,.3); }
+  }
+  #vance-portrait.speaking {
+    animation: vance-pulse 1.1s ease-in-out infinite;
+    border-color: #60a5fa !important;
+  }
+
   /* Hide Prof. Pax text on mobile - keep for screen readers */
   nav button[onclick="showGuide()"] span{
     position:absolute;
@@ -882,7 +892,7 @@ h1,h2,.font-display{font-family:'Montserrat',sans-serif}
   <!-- Speech bubble -->
   <div id="avatar-speech" style="position:relative;background:#fff;border-radius:1.1rem;border-bottom-right-radius:.3rem;padding:1rem 1.1rem;width:min(320px,90vw);box-shadow:0 8px 32px rgba(0,0,0,.2);font-size:.9rem;font-weight:600;color:#0f172a;display:none;line-height:1.65;margin-bottom:.6rem;cursor:pointer;max-width:100%" title="Click to open chat">
     <div style="display:flex;align-items:center;justify-content:space-between;gap:.5rem;margin-bottom:.35rem">
-      <div style="font-size:.65rem;font-weight:900;color:#2563eb;text-transform:uppercase;letter-spacing:.08em">Prof. Pax</div>
+      <div style="font-size:.65rem;font-weight:900;color:#2563eb;text-transform:uppercase;letter-spacing:.08em">Prof. Vance</div>
       <div style="display:flex;gap:.35rem">
         <button id="pax-mute-btn" onclick="togglePaxMute(event)" style="border:none;background:#f1f5f9;color:#475569;border-radius:.6rem;padding:.25rem .5rem;font-weight:800;font-size:.75rem;cursor:pointer" title="Mute / Unmute">🔈</button>
         <button id="pax-minimize-btn" onclick="minimizePax(event)" style="border:none;background:#f1f5f9;color:#475569;border-radius:.6rem;padding:.25rem .55rem;font-weight:800;font-size:.75rem;cursor:pointer" title="Minimize">–</button>
@@ -894,44 +904,17 @@ h1,h2,.font-display{font-family:'Montserrat',sans-serif}
     </div>
     <div style="position:absolute;bottom:-8px;right:16px;width:0;height:0;border-left:8px solid transparent;border-right:8px solid transparent;border-top:8px solid #fff"></div>
   </div>
-  <!-- Avatar face -->
-  <div id="avatar-drag-handle" style="position:relative;width:72px;height:72px;cursor:grab">
-    <svg width="72" height="72" viewBox="0 0 72 72" style="filter:drop-shadow(0 4px 14px rgba(37,99,235,.45));cursor:pointer" onclick="toggleAvatar()">
-      <!-- Body -->
-      <circle cx="36" cy="36" r="36" fill="#1d4ed8"/>
-      <!-- Head -->
-      <circle cx="36" cy="27" r="15" fill="#dbeafe"/>
-      <!-- Hair / mortarboard cap -->
-      <rect x="21" y="17" width="30" height="5" rx="2" fill="#1e3a8a"/>
-      <rect x="30" y="12" width="12" height="5" rx="1" fill="#1e3a8a"/>
-      <line x1="36" y1="12" x2="43" y2="15" stroke="#facc15" stroke-width="1.5" stroke-linecap="round"/>
-      <circle cx="43" cy="15" r="2" fill="#facc15"/>
-      <!-- Glasses -->
-      <circle cx="31" cy="27" r="4.5" fill="none" stroke="#1e40af" stroke-width="1.5"/>
-      <circle cx="41" cy="27" r="4.5" fill="none" stroke="#1e40af" stroke-width="1.5"/>
-      <line x1="35.5" y1="27" x2="36.5" y2="27" stroke="#1e40af" stroke-width="1.5"/>
-      <line x1="26.5" y1="27" x2="24" y2="26" stroke="#1e40af" stroke-width="1.2"/>
-      <line x1="45.5" y1="27" x2="48" y2="26" stroke="#1e40af" stroke-width="1.2"/>
-      <!-- Eyes -->
-      <circle cx="31" cy="27" r="1.8" fill="#1e40af"/>
-      <circle cx="41" cy="27" r="1.8" fill="#1e40af"/>
-      <circle cx="31.7" cy="26.3" r="0.7" fill="white"/>
-      <circle cx="41.7" cy="26.3" r="0.7" fill="white"/>
-      <!-- Mouth -->
-      <ellipse id="avatar-mouth" cx="36" cy="34" rx="4.5" ry="2" fill="#1e40af"/>
-      <!-- Shoulders / shirt -->
-      <ellipse cx="36" cy="54" rx="14" ry="10" fill="#1e40af"/>
-      <!-- Tie -->
-      <polygon points="34,44 38,44 37,56 35,56" fill="#facc15"/>
-    </svg>
-    <button onclick="toggleAvatar()" style="position:absolute;top:-6px;right:-6px;width:20px;height:20px;background:#ef4444;color:white;border-radius:50%;border:none;font-size:10px;cursor:pointer;font-weight:900;line-height:1" title="Dismiss Professor Pax">✕</button>
+  <!-- Avatar face (Professor Vance photo portrait) -->
+  <div id="avatar-drag-handle" style="position:relative;width:90px;height:90px;cursor:grab">
+    <img id="vance-portrait" src="prof.png" onclick="toggleAvatar()" style="width:90px;height:90px;border-radius:50%;object-fit:cover;object-position:top center;border:3px solid #2563eb;box-shadow:0 4px 14px rgba(37,99,235,.45);cursor:pointer;display:block;transition:border-color .3s" alt="Professor Vance">
+    <button onclick="toggleAvatar()" style="position:absolute;top:-6px;right:-6px;width:20px;height:20px;background:#ef4444;color:white;border-radius:50%;border:none;font-size:10px;cursor:pointer;font-weight:900;line-height:1" title="Dismiss Professor Vance">✕</button>
   </div>
   <!-- Name label -->
-  <div style="font-size:.72rem;font-weight:900;color:#0f172a;background:rgba(255,255,255,.9);padding:.2rem .55rem;border-radius:.75rem;text-align:center;width:auto;margin-top:.35rem;letter-spacing:.05em;box-shadow:0 6px 16px rgba(0,0,0,.15)">PROF. PAX</div>
+  <div style="font-size:.72rem;font-weight:900;color:#0f172a;background:rgba(255,255,255,.9);padding:.2rem .55rem;border-radius:.75rem;text-align:center;width:auto;margin-top:.35rem;letter-spacing:.05em;box-shadow:0 6px 16px rgba(0,0,0,.15)">PROF. VANCE</div>
 </div>
 
 <!-- Minimized pill -->
-<div id="avatar-mini" style="display:none;position:fixed;bottom:5rem;right:1rem;z-index:91;background:linear-gradient(135deg,#2563eb,#7c3aed);color:white;padding:.5rem .75rem;border-radius:.9rem;font-weight:900;cursor:pointer;box-shadow:0 8px 24px rgba(0,0,0,.25);font-size:.82rem" onclick="restorePax()">🎓 Pax (listening)</div>
+<div id="avatar-mini" style="display:none;position:fixed;bottom:5rem;right:1rem;z-index:91;background:linear-gradient(135deg,#2563eb,#7c3aed);color:white;padding:.5rem .75rem;border-radius:.9rem;font-weight:900;cursor:pointer;box-shadow:0 8px 24px rgba(0,0,0,.25);font-size:.82rem" onclick="restorePax()">🎓 Vance (listening)</div>
 
 <div style="position:fixed;top:0;left:0;right:0;height:4px;background:#1e293b;z-index:100">
   <div id="progress-bar" class="progress-bar" style="height:100%;background:linear-gradient(90deg,#2563eb,#7c3aed);width:3.7%;transition:width .4s ease"></div>
@@ -955,7 +938,7 @@ h1,h2,.font-display{font-family:'Montserrat',sans-serif}
   <!-- Right controls -->
   <div style="display:flex;gap:.4rem;align-items:center;flex-wrap:wrap;justify-content:flex-end">
     <button onclick="toggleAmbience()" id="ambience-btn" title="Toggle background ambience" style="background:rgba(59,130,246,.12);border:1px solid rgba(59,130,246,.25);color:#bfdbfe;padding:.5rem .78rem;border-radius:.8rem;font-size:.85rem;font-weight:800;cursor:pointer" onmouseover="this.style.background='rgba(59,130,246,.2)'" onmouseout="this.style.background='rgba(59,130,246,.12)'">🎵 Ambience (tap to play)</button>
-    <button onclick="openChat()" title="Prof. Pax & chat" style="background:rgba(96,165,250,.18);border:1px solid rgba(96,165,250,.3);color:#bfdbfe;padding:.5rem .78rem;border-radius:.8rem;font-size:.85rem;font-weight:800;cursor:pointer;display:flex;align-items:center;gap:.4rem" onmouseover="this.style.background='rgba(96,165,250,.26)'" onmouseout="this.style.background='rgba(96,165,250,.18)'">🎓 <span style="font-size:.8rem">Pax & Chat</span></button>
+    <button onclick="openChat()" title="Prof. Vance & chat" style="background:rgba(96,165,250,.18);border:1px solid rgba(96,165,250,.3);color:#bfdbfe;padding:.5rem .78rem;border-radius:.8rem;font-size:.85rem;font-weight:800;cursor:pointer;display:flex;align-items:center;gap:.4rem" onmouseover="this.style.background='rgba(96,165,250,.26)'" onmouseout="this.style.background='rgba(96,165,250,.18)'">🎓 <span style="font-size:.8rem">Vance & Chat</span></button>
     <button onclick="openVideoModal()" title="Example videos" style="background:rgba(251,191,36,.16);border:1px solid rgba(251,191,36,.35);color:#facc15;padding:.5rem .78rem;border-radius:.8rem;font-size:.85rem;font-weight:800;cursor:pointer" onmouseover="this.style.background='rgba(251,191,36,.24)'" onmouseout="this.style.background='rgba(251,191,36,.16)'">🎬 Videos</button>
     <button onclick="openLabRoom()" title="Laboratory Room" style="background:rgba(16,185,129,.14);border:1px solid rgba(16,185,129,.3);color:#a7f3d0;padding:.5rem .78rem;border-radius:.8rem;font-size:.85rem;font-weight:800;cursor:pointer;display:flex;align-items:center;gap:.4rem;white-space:nowrap" onmouseover="this.style.background='rgba(16,185,129,.22)'" onmouseout="this.style.background='rgba(16,185,129,.14)'">🧪 Lab Room</button>
     <button onclick="openAdminPrompt()" title="Admin Dashboard" style="background:rgba(124,58,237,.18);border:1px solid rgba(124,58,237,.35);color:#c4b5fd;padding:.5rem .7rem;border-radius:.8rem;font-size:.85rem;font-weight:800;cursor:pointer" onmouseover="this.style.background='rgba(124,58,237,.3)'" onmouseout="this.style.background='rgba(124,58,237,.18)'">⚙️</button>
@@ -993,8 +976,8 @@ h1,h2,.font-display{font-family:'Montserrat',sans-serif}
 <div id="chat-panel" style="display:none;position:fixed;bottom:5.2rem;right:1rem;z-index:96;width:340px;max-height:420px;background:white;border:1px solid #e2e8f0;border-radius:1rem;box-shadow:0 16px 48px rgba(0,0,0,.2);flex-direction:column;overflow:hidden">
   <div style="display:flex;align-items:center;justify-content:space-between;padding:.75rem 1rem;border-bottom:1px solid #e2e8f0;background:#f8fafc">
     <div>
-      <div style="font-weight:900;color:#0f172a;font-size:1.05rem">Ask Prof. Pax</div>
-      <div style="font-size:.8rem;color:#475569;font-weight:700">LLM-powered; defaults to supervisor if unsure</div>
+      <div style="font-weight:900;color:#0f172a;font-size:1.05rem">Ask Prof. Vance</div>
+      <div style="font-size:.8rem;color:#475569;font-weight:700">Marcus scenario · clinical de-escalation coach</div>
     </div>
     <button onclick="closeChat()" style="width:28px;height:28px;border-radius:50%;border:1px solid #e2e8f0;background:#f1f5f9;font-weight:900;color:#475569;cursor:pointer">✕</button>
   </div>
@@ -3227,7 +3210,7 @@ const slideTips = [
 function renderChatMessages() {
   const box = document.getElementById('chat-messages');
   if(!box) return;
-  box.innerHTML = chatMessages.map(m=>`<div style="margin-bottom:.65rem;">${m.role==='user'?'<div style="font-size:.78rem;color:#475569;font-weight:800;margin-bottom:.2rem">You</div>':'<div style="font-size:.78rem;color:#1d4ed8;font-weight:900;margin-bottom:.2rem">Prof. Pax</div>'}<div style="background:${m.role==='user'?'#e2e8f0':'#eff6ff'};border:1px solid ${m.role==='user'?'#cbd5e1':'#bfdbfe'};border-radius:.75rem;padding:.65rem .8rem;font-size:.92rem;color:#0f172a;line-height:1.55">${m.content}</div></div>`).join('');
+  box.innerHTML = chatMessages.map(m=>`<div style="margin-bottom:.65rem;">${m.role==='user'?'<div style="font-size:.78rem;color:#475569;font-weight:800;margin-bottom:.2rem">You</div>':'<div style="font-size:.78rem;color:#1d4ed8;font-weight:900;margin-bottom:.2rem">Prof. Vance</div>'}<div style="background:${m.role==='user'?'#e2e8f0':'#eff6ff'};border:1px solid ${m.role==='user'?'#cbd5e1':'#bfdbfe'};border-radius:.75rem;padding:.65rem .8rem;font-size:.92rem;color:#0f172a;line-height:1.55">${m.content}</div></div>`).join('');
   box.scrollTop = box.scrollHeight;
 }
 
@@ -3246,8 +3229,8 @@ function openChat() {
   if(!chatMessages.length) {
     const mode = sessionMode || 'training';
     const intro = mode === 'lab'
-      ? "I'm here for quick hints and tips while you practice scenarios. Ask for a nudge if you get stuck."
-      : "Hi! I'm Prof. Pax. Ask me any training question. If I don't know, I'll suggest asking your supervisor or leadership.";
+      ? "Welcome to the unit. I'm Professor Vance. Marcus is waiting — tension is rising. Before you step in, take a breath. Your goal isn't to control him, it's to help him regain control of himself. Tell me how you plan to approach him."
+      : "Welcome to the unit. I'm Professor Vance. Today we're working with Marcus — he's been waiting a long time for his evaluation and the tension is rising. Your goal isn't to control him, it's to help him regain control of himself. When you're ready, tell me how you plan to approach him.";
     chatMessages.push({role:'assistant', content:intro});
   }
   renderChatMessages();
@@ -3273,13 +3256,23 @@ async function sendChatMessage() {
   chatMessages.push({role:'user', content:q});
   renderChatMessages();
   if(input) input.value='';
+  // Show typing indicator
+  const box = document.getElementById('chat-messages');
+  if(box) {
+    const typing = document.createElement('div');
+    typing.id = 'vance-typing';
+    typing.style.cssText = 'margin-bottom:.65rem';
+    typing.innerHTML = '<div style="font-size:.78rem;color:#1d4ed8;font-weight:900;margin-bottom:.2rem">Prof. Vance</div><div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:.75rem;padding:.65rem .8rem;font-size:1.1rem;color:#475569;letter-spacing:.15em">&#8226;&#8226;&#8226;</div>';
+    box.appendChild(typing);
+    box.scrollTop = box.scrollHeight;
+  }
   chatLoading = true;
   const sendBtn = document.getElementById('chat-send-btn');
   if(sendBtn) { sendBtn.disabled=true; sendBtn.textContent='Sending...'; }
   const mode = sessionMode || 'training';
   const sys = mode === 'lab'
-    ? "You are Professor Pax, a calm psychiatric training coach for Destiny Springs Healthcare staff. The user is practicing scenarios in Lab mode. Provide short hints, tips, and nudges (under 80 words). Do not roleplay the patient. If they ask for answers, guide with principles and safety reminders. Avoid PHI and avoid definitive clinical orders."
-    : "You are Professor Pax, a calm psychiatric training coach for Destiny Springs Healthcare staff. Keep replies under 120 words. If unsure or the question is outside training scope, say you may not have the answer and recommend they ask their supervisor or leadership. Avoid PHI. Tone: supportive, concise.";
+    ? `You are Professor Vance, an expert Clinical Mentor for Behavioral Health Technicians (BHTs) in a high-acuity psychiatric crisis unit. You are coaching a trainee through a simulation involving a patient named Marcus. Tone: calm, authoritative, deeply empathetic — a veteran clinician who is unshakable in a crisis. Keep responses to a maximum of THREE short, conversational sentences so audio playback stays concise. Use "we" to foster professional teamwork. Safety principles: always prioritize the Reaction Gap (6-10 feet), validate feelings before authority, offer forced choices, scan for environmental hazards. If the trainee's response would escalate Marcus, say: "That's a common mistake, but in this environment, it's a dangerous one. Let's look at why Marcus felt threatened." If they choose well, say: "Excellent work. By validating his frustration, you've lowered the room's temperature." Marcus current state context clue: Neutral → Frustrated → Rage. Avoid PHI and definitive clinical orders.`
+    : `You are Professor Vance, an expert Clinical Mentor for Behavioral Health Technicians (BHTs) in a high-acuity psychiatric crisis unit coaching a trainee through a simulation involving a patient named Marcus. Tone: calm, authoritative, deeply empathetic. Keep responses to a maximum of THREE short conversational sentences. Use "we" to foster teamwork. Safety first: Reaction Gap (6-10 ft), validate over authority, forced choices, scan for hazards. If unsure or outside scope, recommend they ask their supervisor or leadership. Avoid PHI.`;
   const body = { system: sys, messages: chatMessages.slice(-8) };
   let reply = '';
   try {
@@ -3297,12 +3290,17 @@ async function sendChatMessage() {
   chatMessages.push({role:'assistant', content:reply});
   chatLoading = false;
   if(sendBtn) { sendBtn.disabled=false; sendBtn.textContent='Send'; }
+  // Remove typing indicator
+  const typingEl = document.getElementById('vance-typing');
+  if(typingEl) typingEl.remove();
   renderChatMessages();
+  // Play Professor Vance voice for this reply
+  speakWithVance(reply);
 }
 
 function updatePaxMiniLabel() {
   const mini = document.getElementById('avatar-mini');
-  if(mini) mini.textContent = paxMuted ? '🎓 Pax (muted)' : '🎓 Pax (listening)';
+  if(mini) mini.textContent = paxMuted ? '🎓 Vance (muted)' : '🎓 Vance (listening)';
 }
 
 function togglePaxMute(evt) {
@@ -3310,7 +3308,7 @@ function togglePaxMute(evt) {
   paxMuted = !paxMuted;
   const btn = document.getElementById('pax-mute-btn');
   if(btn) btn.textContent = paxMuted ? '🔇' : '🔈';
-  if(paxMuted && window.speechSynthesis) window.speechSynthesis.cancel();
+  if(paxMuted && window._vanceAudio) { window._vanceAudio.pause(); window._vanceAudio.currentTime=0; }
   updatePaxMiniLabel();
 }
 
@@ -3323,7 +3321,7 @@ function minimizePax(evt) {
   if(bubble) bubble.style.display = 'none';
   if(cont) cont.style.display = 'none';
   if(mini) { mini.style.display = 'block'; updatePaxMiniLabel(); }
-  if(window.speechSynthesis) window.speechSynthesis.cancel();
+  if(window._vanceAudio) { window._vanceAudio.pause(); window._vanceAudio.currentTime=0; }
 }
 
 function restorePax() {
@@ -3393,8 +3391,57 @@ function toggleAvatar() {
   avatarActive = !avatarActive;
   paxMinimized = !avatarActive ? paxMinimized : paxMinimized;
   if(cont) cont.style.display = avatarActive ? 'flex' : 'none';
-  if(!avatarActive && window.speechSynthesis) window.speechSynthesis.cancel();
+  if(!avatarActive && window._vanceAudio) { window._vanceAudio.pause(); window._vanceAudio.currentTime=0; }
   if(!avatarActive) document.getElementById('avatar-mini').style.display='none';
+}
+
+// ─── ElevenLabs TTS for Professor Vance ──────────────────
+const _vanceAudioCache = new Map(); // session cache: text → blob URL (avoids repeat API calls)
+
+async function speakWithVance(text) {
+  if(paxMuted || !text) return;
+  // Stop any current playback
+  if(window._vanceAudio) { window._vanceAudio.pause(); window._vanceAudio.currentTime = 0; }
+
+  const portrait = document.getElementById('vance-portrait');
+  const cacheKey = text.trim().slice(0, 120); // use first 120 chars as key
+
+  const playAudio = (url) => {
+    const audio = new Audio(url);
+    window._vanceAudio = audio;
+    if(portrait) portrait.classList.add('speaking');
+    audio.play().catch(()=>{});
+    audio.onended = () => {
+      window._vanceAudio = null;
+      if(portrait) portrait.classList.remove('speaking');
+    };
+    audio.onerror = () => {
+      window._vanceAudio = null;
+      if(portrait) portrait.classList.remove('speaking');
+    };
+  };
+
+  // Return cached audio if available for this text
+  if(_vanceAudioCache.has(cacheKey)) {
+    playAudio(_vanceAudioCache.get(cacheKey));
+    return;
+  }
+
+  // Call /api/tts — fallback silently on failure (no disruption to training)
+  try {
+    const res = await fetch('/api/tts', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text })
+    });
+    if(!res.ok) return;
+    const blob = await res.blob();
+    const url  = URL.createObjectURL(blob);
+    _vanceAudioCache.set(cacheKey, url);
+    playAudio(url);
+  } catch(e) {
+    // TTS failure is non-fatal — training continues without audio
+  }
 }
 
 function showAvatarAndSpeak(context, name, directText) {
@@ -3435,34 +3482,8 @@ function showAvatarAndSpeak(context, name, directText) {
     });
   });
 
-  // Web Speech API — Professor Pax voice
-  if(window.speechSynthesis && !paxMuted) {
-    window.speechSynthesis.cancel();
-    const utt = new SpeechSynthesisUtterance(text);
-    utt.rate   = 0.87;   // measured professorial pace
-    utt.pitch  = 0.88;   // slightly lower = authoritative warmth
-    utt.volume = 1.0;
-    const trySpeak = () => {
-      const voices = window.speechSynthesis.getVoices();
-      // Priority: MALE voices only — skip Google US English (female)
-      const pick =
-        voices.find(v => v.name === 'Google UK English Male') ||
-        voices.find(v => v.name.includes('Microsoft David') && v.lang.startsWith('en')) ||
-        voices.find(v => v.name.includes('Microsoft Mark')  && v.lang.startsWith('en')) ||
-        voices.find(v => v.name.includes('Microsoft Guy')   && v.lang.startsWith('en')) ||
-        voices.find(v => v.name.includes('Microsoft James') && v.lang.startsWith('en')) ||
-        voices.find(v => /\b(male|man|david|mark|guy|james|daniel|aaron|fred|alex|tom|oliver)\b/i.test(v.name) && v.lang.startsWith('en')) ||
-        voices.find(v => v.lang === 'en-US' && !/zira|female|woman/i.test(v.name)) ||
-        voices.find(v => v.lang.startsWith('en') && !/zira|female|woman/i.test(v.name)) ||
-        voices[0];
-      if(pick) utt.voice = pick;
-      utt.onstart = () => { if(mouth) { mouth.setAttribute('ry','3.5'); mouth.style.animation='talking .18s ease infinite'; } };
-      utt.onend   = () => { if(mouth) { mouth.setAttribute('ry','2'); mouth.style.animation='none'; } };
-      window.speechSynthesis.speak(utt);
-    };
-    if(window.speechSynthesis.getVoices().length) { trySpeak(); }
-    else { window.speechSynthesis.onvoiceschanged = trySpeak; }
-  }
+  // ElevenLabs TTS — natural Professor Vance voice
+  speakWithVance(text);
 }
 
 // ─── My Account ──────────────────────────────────────────
