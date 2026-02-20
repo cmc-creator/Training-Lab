@@ -995,7 +995,10 @@ h1,h2,.font-display{font-family:'Montserrat',sans-serif}
   <!-- Speech bubble -->
   <div id="avatar-speech" style="position:relative;background:#fff;border-radius:1.1rem;border-bottom-right-radius:.3rem;padding:1rem 1.1rem;width:min(320px,90vw);box-shadow:0 8px 32px rgba(0,0,0,.2);font-size:.9rem;font-weight:600;color:#0f172a;display:none;line-height:1.65;margin-bottom:.6rem;cursor:pointer;max-width:100%" title="Click to open chat">
     <div style="display:flex;align-items:center;justify-content:space-between;gap:.5rem;margin-bottom:.35rem">
-      <div style="font-size:.65rem;font-weight:900;color:#2563eb;text-transform:uppercase;letter-spacing:.08em">Prof. Vance</div>
+      <div style="display:flex;flex-direction:column;gap:.08rem">
+        <div style="font-size:.65rem;font-weight:900;color:#2563eb;text-transform:uppercase;letter-spacing:.08em">Prof. Vance</div>
+        <div style="font-size:.62rem;font-weight:600;color:#94a3b8;font-style:italic">(Click &amp; drag if I'm in your way)</div>
+      </div>
       <div style="display:flex;gap:.35rem">
         <button id="pax-mute-btn" onclick="togglePaxMute(event)" style="border:none;background:#f1f5f9;color:#475569;border-radius:.6rem;padding:.25rem .5rem;font-weight:800;font-size:.75rem;cursor:pointer" title="Mute / Unmute">🔈</button>
         <button id="pax-minimize-btn" onclick="minimizePax(event)" style="border:none;background:#f1f5f9;color:#475569;border-radius:.6rem;padding:.25rem .55rem;font-weight:800;font-size:.75rem;cursor:pointer" title="Minimize">–</button>
