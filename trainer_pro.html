@@ -669,6 +669,7 @@ h1,h2,.font-display{font-family:'Montserrat',sans-serif}
       <button class="admin-tab-btn py-3 px-4 text-xs font-black uppercase tracking-widest border-b-2 border-transparent text-slate-400 whitespace-nowrap" onclick="adminTab('users',this)">👥 Users</button>
       <button class="admin-tab-btn py-3 px-4 text-xs font-black uppercase tracking-widest border-b-2 border-transparent text-slate-400 whitespace-nowrap" onclick="adminTab('analytics',this)">📈 Analytics</button>
       <button class="admin-tab-btn py-3 px-4 text-xs font-black uppercase tracking-widest border-b-2 border-transparent text-slate-400 whitespace-nowrap" onclick="adminTab('reports',this)">📋 Reports</button>
+      <button class="admin-tab-btn py-3 px-4 text-xs font-black uppercase tracking-widest border-b-2 border-transparent text-slate-400 whitespace-nowrap" onclick="adminTab('completion',this)">✅ Completion</button>
       <button id="settings-tab-btn" class="admin-tab-btn py-3 px-4 text-xs font-black uppercase tracking-widest border-b-2 border-transparent text-slate-400 whitespace-nowrap" onclick="adminTab('settings',this)" style="display:none">⚙️ Settings</button>
     </div>
     <div class="flex-1 overflow-y-auto p-6">
@@ -676,6 +677,7 @@ h1,h2,.font-display{font-family:'Montserrat',sans-serif}
       <div id="at-users" style="display:none"></div>
       <div id="at-analytics" style="display:none"></div>
       <div id="at-reports" style="display:none"></div>
+      <div id="at-completion" style="display:none"></div>
       <div id="at-settings" style="display:none"></div>
     </div>
   </div>
@@ -4039,7 +4041,7 @@ function adminTab(name, el) {
     t.className='admin-tab-btn py-3 px-4 text-xs font-black uppercase tracking-widest border-b-2 border-transparent text-slate-400 whitespace-nowrap';
   });
   if(el){ el.className='admin-tab-btn py-3 px-4 text-xs font-black uppercase tracking-widest border-b-2 border-blue-600 text-blue-600 whitespace-nowrap'; }
-  ['leaderboard','users','analytics','reports','settings'].forEach(t=>{
+  ['leaderboard','users','analytics','reports','completion','settings'].forEach(t=>{
     const d=document.getElementById('at-'+t);
     if(d) d.style.display=(t===name)?'block':'none';
   });
@@ -4047,6 +4049,7 @@ function adminTab(name, el) {
   if(name==='users')       loadUsers();
   if(name==='analytics')   loadAnalytics();
   if(name==='reports')     loadReports();
+  if(name==='completion')  loadCompletion();
   if(name==='settings')    loadSettings();
 }
 
@@ -4062,21 +4065,32 @@ async function loadLeaderboard() {
     const sorted = Object.entries(users).map(([uid,d])=>({uid,...d}))
       .sort((a,b)=>(b.xp||0)-(a.xp||0));
     const medals=['🥇','🥈','🥉'];
+    const T = window.TENANT;
+    const totalSl = (T?.moduleCount||27);
     el.innerHTML = `<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:.85rem">
       <thead><tr style="background:#f8fafc;border-bottom:2px solid #e2e8f0">
         <th style="padding:.875rem;text-align:left;font-weight:900;color:#0f172a">#</th>
         <th style="padding:.875rem;text-align:left;font-weight:900;color:#0f172a">Name</th>
+        <th style="padding:.875rem;text-align:left;font-weight:900;color:#0f172a">Dept</th>
         <th style="padding:.875rem;text-align:center;font-weight:900;color:#0f172a">Level</th>
         <th style="padding:.875rem;text-align:center;font-weight:900;color:#0f172a">XP</th>
         <th style="padding:.875rem;text-align:center;font-weight:900;color:#0f172a">Progress</th>
+        <th style="padding:.875rem;text-align:center;font-weight:900;color:#0f172a">Status</th>
       </tr></thead><tbody>
-      ${sorted.map((u,i)=>`<tr style="border-bottom:1px solid #f1f5f9;${i<3?'background:#fffbeb':''}">
-        <td style="padding:.875rem;font-weight:900;color:#0f172a">${medals[i]||i+1}</td>
-        <td style="padding:.875rem;font-weight:700;color:#0f172a">${u.displayName||u.email||'Unknown'}</td>
-        <td style="padding:.875rem;text-align:center"><span class="badge" style="background:#dbeafe;color:#1d4ed8">Lvl ${u.level||1}</span></td>
-        <td style="padding:.875rem;text-align:center;font-weight:800;color:#2563eb">${(u.xp||0).toLocaleString()}</td>
-        <td style="padding:.875rem;text-align:center"><div style="background:#e2e8f0;border-radius:999px;height:8px;width:80px;margin:auto"><div style="background:#2563eb;height:8px;border-radius:999px;width:${Math.round(((u.currentSlide||0)/27)*100)}%"></div></div></td>
-      </tr>`).join('')}
+      ${sorted.map((u,i)=>{
+        const nm = [u.firstName,u.lastName].filter(Boolean).join(' ') || u.name || u.email || 'Unknown';
+        const done = (u.currentSlide||0) >= totalSl - 1;
+        const pct  = Math.min(100, Math.round(((u.currentSlide||0)/(totalSl-1))*100));
+        return `<tr style="border-bottom:1px solid #f1f5f9;${i<3?'background:#fffbeb':''}">
+          <td style="padding:.875rem;font-weight:900;color:#0f172a">${medals[i]||i+1}</td>
+          <td style="padding:.875rem;font-weight:700;color:#0f172a">${nm}</td>
+          <td style="padding:.875rem;color:#64748b;font-size:.8rem">${u.department||'—'}</td>
+          <td style="padding:.875rem;text-align:center"><span class="badge" style="background:#dbeafe;color:#1d4ed8">Lvl ${u.level||1}</span></td>
+          <td style="padding:.875rem;text-align:center;font-weight:800;color:#2563eb">${(u.xp||0).toLocaleString()}</td>
+          <td style="padding:.875rem;text-align:center"><div style="background:#e2e8f0;border-radius:999px;height:8px;width:80px;margin:auto"><div style="background:#2563eb;height:8px;border-radius:999px;width:${pct}%"></div></div></td>
+          <td style="padding:.875rem;text-align:center"><span style="background:${done?'#dcfce7':'#fef9c3'};color:${done?'#15803d':'#92400e'};padding:.2rem .6rem;border-radius:999px;font-size:.72rem;font-weight:800">${done?'✅ Done':'⏳ '+pct+'%'}</span></td>
+        </tr>`;
+      }).join('')}
       </tbody></table></div>`;
   } catch(e){
     el.innerHTML=`<p style="color:#ef4444;font-size:.875rem;padding:1rem">Error loading users: ${e.message}</p>`;
@@ -4092,25 +4106,64 @@ async function loadUsers() {
     if(!users||!Object.keys(users).length){
       el.innerHTML='<p style="color:#94a3b8;font-size:.875rem;padding:1rem">No registered users yet.</p>'; return;
     }
-    el.innerHTML = Object.entries(users).map(([uid,u])=>`
-      <div style="background:#f8fafc;border-radius:1rem;padding:1rem;display:flex;align-items:center;justify-content:space-between;border:1px solid #e2e8f0;margin-bottom:.75rem">
-        <div style="display:flex;align-items:center;gap:.875rem">
-          <div style="width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,#2563eb,#7c3aed);color:white;font-weight:900;font-size:.9rem;display:flex;align-items:center;justify-content:center">
-            ${(u.displayName||u.email||'?').split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2)}
-          </div>
-          <div>
-            <p style="font-weight:800;font-size:.875rem;color:#0f172a">${u.displayName||'Unknown'}</p>
-            <p style="font-size:.75rem;color:#64748b">${u.email||''}</p>
-          </div>
-        </div>
-        <div style="display:flex;align-items:center;gap:1rem">
-          <span style="font-size:.8rem;color:#2563eb;font-weight:700">Lvl ${u.level||1} · ${(u.xp||0).toLocaleString()} XP</span>
-          <button onclick="confirmDeleteUser('${uid}','${u.displayName||u.email}')" style="background:#fef2f2;color:#dc2626;border:1px solid #fecaca;border-radius:.5rem;padding:.35rem .75rem;font-size:.75rem;font-weight:700;cursor:pointer">Remove</button>
-        </div>
-      </div>`).join('');
+    window._adminUsersCache = users;
+    _renderUsersGrid(users);
   } catch(e){
     el.innerHTML=`<p style="color:#ef4444;font-size:.875rem;padding:1rem">Error: ${e.message}</p>`;
   }
+}
+
+function _renderUsersGrid(users) {
+  const el = document.getElementById('at-users');
+  if(!el) return;
+  const T = window.TENANT;
+  const totalSl = (T?.moduleCount||27);
+  const entries = Object.entries(users);
+  el.innerHTML = `
+    <div style="display:flex;gap:.75rem;align-items:center;margin-bottom:1rem;flex-wrap:wrap">
+      <input id="user-search-box" type="text" placeholder="🔍 Search name, email or department…"
+        oninput="filterAdminUsers(this.value)"
+        style="flex:1;min-width:200px;padding:.55rem .9rem;border:1px solid #e2e8f0;border-radius:.65rem;font-size:.85rem;font-weight:600;color:#0f172a;outline:none">
+      <span id="user-count-badge" style="font-size:.8rem;color:#94a3b8;font-weight:700">${entries.length} user${entries.length!==1?'s':''}</span>
+    </div>
+    <div id="user-cards-wrap">
+      ${entries.map(([uid,u])=>{
+        const name = [u.firstName,u.lastName].filter(Boolean).join(' ') || u.name || 'Unknown';
+        const initials = name.split(' ').map(w=>w[0]||'').join('').toUpperCase().slice(0,2)||'?';
+        const done = (u.currentSlide||0) >= totalSl-1;
+        const lastSeen = u.lastLogin ? new Date(u.lastLogin).toLocaleDateString() : 'Never';
+        const searchKey = (name+' '+(u.email||'')+' '+(u.department||'')).toLowerCase();
+        return `<div data-uid="${uid}" data-search="${searchKey}"
+          style="background:#f8fafc;border-radius:1rem;padding:.875rem 1rem;display:flex;align-items:center;justify-content:space-between;border:1px solid #e2e8f0;margin-bottom:.65rem;gap:1rem;flex-wrap:wrap">
+          <div style="display:flex;align-items:center;gap:.875rem;flex:1;min-width:0">
+            <div style="width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,#2563eb,#7c3aed);color:white;font-weight:900;font-size:.9rem;display:flex;align-items:center;justify-content:center;flex-shrink:0">${initials}</div>
+            <div style="min-width:0">
+              <p style="font-weight:800;font-size:.875rem;color:#0f172a;margin:0">${name}</p>
+              <p style="font-size:.72rem;color:#64748b;margin:.1rem 0 0">${u.email||''}${u.department?' · '+u.department:''}</p>
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;gap:.75rem;flex-wrap:wrap">
+            <span style="font-size:.78rem;font-weight:700;color:#2563eb">Lvl ${u.level||1} · ${(u.xp||0).toLocaleString()} XP</span>
+            <span style="background:${done?'#dcfce7':'#fef9c3'};color:${done?'#15803d':'#92400e'};padding:.2rem .6rem;border-radius:999px;font-size:.72rem;font-weight:800">${done?'✅ Done':'⏳ Slide '+(u.currentSlide||0)}</span>
+            <span style="font-size:.72rem;color:#94a3b8;font-weight:600">Last: ${lastSeen}</span>
+            <button onclick="confirmDeleteUser('${uid}','${name.replace(/'/g,"\\\'")}')" style="background:#fef2f2;color:#dc2626;border:1px solid #fecaca;border-radius:.5rem;padding:.3rem .7rem;font-size:.72rem;font-weight:700;cursor:pointer">Remove</button>
+          </div>
+        </div>`;
+      }).join('')}
+    </div>`;
+}
+
+function filterAdminUsers(q) {
+  const term = (q||'').toLowerCase().trim();
+  const cards = document.querySelectorAll('#user-cards-wrap>[data-uid]');
+  let visible = 0;
+  cards.forEach(c => {
+    const match = !term || c.dataset.search.includes(term);
+    c.style.display = match ? '' : 'none';
+    if(match) visible++;
+  });
+  const badge = document.getElementById('user-count-badge');
+  if(badge) badge.textContent = `${visible} user${visible!==1?'s':''}`;
 }
 
 async function confirmDeleteUser(uid,name) {
@@ -4128,36 +4181,64 @@ async function loadAnalytics() {
   try {
     const users = await window._loadAllUsers() || {};
     const list = Object.values(users);
-    const total  = list.length;
+    const T = window.TENANT;
+    const totalSl = (T?.moduleCount||27);
+    const total       = list.length;
+    const notStarted  = list.filter(u=>!(u.currentSlide>0) && !(u.xp>0)).length;
+    const inProgress  = list.filter(u=>(u.currentSlide||0)>0 && (u.currentSlide||0)<totalSl-1).length;
+    const compl       = list.filter(u=>(u.currentSlide||0)>=totalSl-1).length;
+    const stalled     = list.filter(u=> {
+      const daysAgo = u.lastLogin ? (Date.now()-u.lastLogin)/864e5 : 999;
+      return daysAgo > 7 && (u.currentSlide||0) > 0 && (u.currentSlide||0) < totalSl-1;
+    }).length;
     const avgXP  = total ? Math.round(list.reduce((s,u)=>s+(u.xp||0),0)/total) : 0;
     const avgLvl = total ? (list.reduce((s,u)=>s+(u.level||1),0)/total).toFixed(1) : 0;
-    const compl  = list.filter(u=>(u.currentSlide||0)>=26).length;
+    const complPct = total ? Math.round((compl/total)*100) : 0;
     el.innerHTML = `
-      <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:1rem;margin-bottom:1.5rem">
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:1rem;margin-bottom:1.5rem">
         <div style="background:#eff6ff;padding:1.25rem;border-radius:1rem;text-align:center">
           <div style="font-size:2rem;font-weight:900;color:#1d4ed8">${total}</div>
-          <p style="font-size:.75rem;color:#3b82f6;font-weight:800;text-transform:uppercase;margin-top:.25rem">Total Users</p>
+          <p style="font-size:.72rem;color:#3b82f6;font-weight:800;text-transform:uppercase;margin-top:.25rem">Total Users</p>
         </div>
         <div style="background:#f0fdf4;padding:1.25rem;border-radius:1rem;text-align:center">
           <div style="font-size:2rem;font-weight:900;color:#15803d">${compl}</div>
-          <p style="font-size:.75rem;color:#16a34a;font-weight:800;text-transform:uppercase;margin-top:.25rem">Completions</p>
+          <p style="font-size:.72rem;color:#16a34a;font-weight:800;text-transform:uppercase;margin-top:.25rem">Completed</p>
         </div>
+        <div style="background:#fef9c3;padding:1.25rem;border-radius:1rem;text-align:center">
+          <div style="font-size:2rem;font-weight:900;color:#92400e">${inProgress}</div>
+          <p style="font-size:.72rem;color:#d97706;font-weight:800;text-transform:uppercase;margin-top:.25rem">In Progress</p>
+        </div>
+        <div style="background:#fef2f2;padding:1.25rem;border-radius:1rem;text-align:center">
+          <div style="font-size:2rem;font-weight:900;color:#dc2626">${notStarted}</div>
+          <p style="font-size:.72rem;color:#ef4444;font-weight:800;text-transform:uppercase;margin-top:.25rem">Not Started</p>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1.5rem">
         <div style="background:#faf5ff;padding:1.25rem;border-radius:1rem;text-align:center">
           <div style="font-size:2rem;font-weight:900;color:#6d28d9">${avgXP.toLocaleString()}</div>
-          <p style="font-size:.75rem;color:#7c3aed;font-weight:800;text-transform:uppercase;margin-top:.25rem">Avg XP</p>
+          <p style="font-size:.72rem;color:#7c3aed;font-weight:800;text-transform:uppercase;margin-top:.25rem">Avg XP</p>
         </div>
         <div style="background:#fffbeb;padding:1.25rem;border-radius:1rem;text-align:center">
           <div style="font-size:2rem;font-weight:900;color:#92400e">${avgLvl}</div>
-          <p style="font-size:.75rem;color:#d97706;font-weight:800;text-transform:uppercase;margin-top:.25rem">Avg Level</p>
+          <p style="font-size:.72rem;color:#d97706;font-weight:800;text-transform:uppercase;margin-top:.25rem">Avg Level</p>
         </div>
       </div>
-      <div style="background:#f8fafc;border-radius:1rem;padding:1rem;border:1px solid #e2e8f0">
-        <p style="font-size:.8rem;font-weight:900;color:#0f172a;margin-bottom:.875rem;text-transform:uppercase">Completion Rate</p>
-        <div style="background:#e2e8f0;border-radius:999px;height:12px;overflow:hidden">
-          <div style="background:linear-gradient(90deg,#2563eb,#7c3aed);height:12px;border-radius:999px;width:${total?Math.round((compl/total)*100):0}%;transition:width .6s ease"></div>
+      <div style="background:#f8fafc;border-radius:1rem;padding:1.25rem;border:1px solid #e2e8f0;margin-bottom:1.25rem">
+        <p style="font-size:.8rem;font-weight:900;color:#0f172a;margin-bottom:.875rem;text-transform:uppercase">Overall Completion Rate</p>
+        <div style="background:#e2e8f0;border-radius:999px;height:14px;overflow:hidden">
+          <div style="background:linear-gradient(90deg,#2563eb,#7c3aed);height:14px;border-radius:999px;width:${complPct}%;transition:width .6s ease"></div>
         </div>
-        <p style="font-size:.75rem;color:#64748b;margin-top:.5rem;font-weight:700">${total?Math.round((compl/total)*100):0}% of users completed all 27 slides</p>
-      </div>`;
+        <p style="font-size:.75rem;color:#64748b;margin-top:.5rem;font-weight:700">${complPct}% of ${total} users completed all ${totalSl} slides</p>
+      </div>
+      ${stalled > 0
+        ? `<div style="background:#fff7ed;border:1px solid #fed7aa;border-radius:1rem;padding:1.25rem">
+            <p style="font-weight:900;font-size:.85rem;color:#c2410c;margin-bottom:.4rem">⚠️ Needs Attention — ${stalled} staff member${stalled!==1?'s':''} stalled 7+ days</p>
+            <p style="font-size:.8rem;color:#9a3412;margin:0">These users started training but haven't logged in for over a week. Visit the Users tab to identify them (highlighted in red "Last Login").</p>
+          </div>`
+        : `<div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:1rem;padding:1.25rem">
+            <p style="font-weight:900;font-size:.85rem;color:#15803d;margin:0">✅ No stalled users — all active staff are progressing on schedule.</p>
+          </div>`
+      }`;
   } catch(e){
     el.innerHTML=`<p style="color:#ef4444;font-size:.875rem">Error: ${e.message}</p>`;
   }
@@ -4174,12 +4255,14 @@ async function loadReports() {
     if(!list.length){ el.innerHTML='<p style="color:#94a3b8;font-size:.875rem;padding:1rem">No user data yet.</p>'; return; }
 
     // Group by department
+    const T = window.TENANT;
+    const totalSl = (T?.moduleCount||27);
     const depts = {};
     list.forEach(u => {
       const d = u.department || 'Unassigned';
       if(!depts[d]) depts[d] = { total:0, completed:0, totalXP:0 };
       depts[d].total++;
-      if((u.currentSlide||0)>=26) depts[d].completed++;
+      if((u.currentSlide||0)>=totalSl-1) depts[d].completed++;
       depts[d].totalXP += (u.xp||0);
     });
 
@@ -4201,16 +4284,26 @@ async function loadReports() {
       </tr>`;
     }).join('');
 
-    // Per-user table for CSV
-    const userRows = list.sort((a,b)=>b.xp-a.xp).map(u=>{
-      const done = (u.currentSlide||0)>=26;
+    // Per-user table
+    const userRows = list.sort((a,b)=>(b.xp||0)-(a.xp||0)).map(u=>{
+      const name = [u.firstName,u.lastName].filter(Boolean).join(' ') || u.name || u.email || 'Unknown';
+      const done = (u.currentSlide||0)>=totalSl-1;
+      const completedDate = u.completedAt
+        ? new Date(u.completedAt).toLocaleDateString()
+        : (done && u.lastLogin ? new Date(u.lastLogin).toLocaleDateString()+' *' : '—');
+      const quizScore = u.finalQuizScore != null ? `${u.finalQuizScore}/10` : '—';
+      const daysAgo = u.lastLogin ? Math.round((Date.now()-u.lastLogin)/864e5) : null;
+      const loginStr = daysAgo === 0 ? 'Today' : daysAgo === 1 ? 'Yesterday' : daysAgo != null ? `${daysAgo}d ago` : '—';
+      const loginColor = daysAgo != null && daysAgo > 7 && !done ? '#dc2626' : '#475569';
       return `<tr style="border-bottom:1px solid #f1f5f9">
-        <td style="padding:.6rem 1rem;font-weight:700;color:#0f172a">${u.firstName||''} ${u.lastName||''}</td>
+        <td style="padding:.6rem 1rem;font-weight:700;color:#0f172a">${name}</td>
         <td style="padding:.6rem 1rem;color:#64748b;font-size:.8rem">${u.department||'—'}</td>
         <td style="padding:.6rem 1rem;color:#64748b;font-size:.8rem">${u.jobTitle||'—'}</td>
-        <td style="padding:.6rem 1rem;text-align:center"><span style="background:${done?'#dcfce7':'#fef9c3'};color:${done?'#15803d':'#92400e'};padding:.2rem .65rem;border-radius:999px;font-size:.72rem;font-weight:800">${done?'✅ Complete':'⏳ In Progress'}</span></td>
+        <td style="padding:.6rem 1rem;text-align:center"><span style="background:${done?'#dcfce7':'#fef9c3'};color:${done?'#15803d':'#92400e'};padding:.2rem .65rem;border-radius:999px;font-size:.72rem;font-weight:800">${done?'✅ Complete':'⏳ Slide '+(u.currentSlide||0)+'/'+totalSl}</span></td>
         <td style="padding:.6rem 1rem;text-align:center;font-weight:700;color:#7c3aed">${(u.xp||0).toLocaleString()}</td>
-        <td style="padding:.6rem 1rem;text-align:center;color:#475569;font-size:.8rem">${u.lastLogin?new Date(u.lastLogin).toLocaleDateString():'—'}</td>
+        <td style="padding:.6rem 1rem;text-align:center;font-weight:700;color:${u.finalQuizScore>=9?'#15803d':u.finalQuizScore>0?'#92400e':'#94a3b8'}">${quizScore}</td>
+        <td style="padding:.6rem 1rem;text-align:center;color:#475569;font-size:.8rem">${completedDate}</td>
+        <td style="padding:.6rem 1rem;text-align:center;color:${loginColor};font-size:.8rem;font-weight:${daysAgo>7&&!done?'800':'400'}">${loginStr}</td>
       </tr>`;
     }).join('');
 
@@ -4240,6 +4333,8 @@ async function loadReports() {
             <th style="padding:.6rem 1rem;text-align:left;font-weight:900;color:#0f172a">Title</th>
             <th style="padding:.6rem 1rem;text-align:center;font-weight:900;color:#0f172a">Status</th>
             <th style="padding:.6rem 1rem;text-align:center;font-weight:900;color:#0f172a">XP</th>
+            <th style="padding:.6rem 1rem;text-align:center;font-weight:900;color:#0f172a">Quiz</th>
+            <th style="padding:.6rem 1rem;text-align:center;font-weight:900;color:#0f172a">Completed</th>
             <th style="padding:.6rem 1rem;text-align:center;font-weight:900;color:#0f172a">Last Login</th>
           </tr></thead>
           <tbody>${userRows}</tbody>
@@ -4252,14 +4347,18 @@ async function loadReports() {
 
 async function exportCSV() {
   const users = await window._loadAllUsers() || {};
-  const rows = [['First Name','Last Name','Email','Department','Job Title','Employee ID','XP','Level','Slide','Completed','Lab Credits','Tier','Last Login','Training Year']];
+  const rows = [['First Name','Last Name','Email','Department','Job Title','Employee ID','XP','Level','Slide','Completed','Completed Date','Quiz Score','Lab Credits','Tier','Last Login','Training Year']];
+  const totalSl = (window.TENANT?.moduleCount||27);
   Object.values(users).forEach(u => {
     const tier = getTier(u.labCredits||0, (window._settingsCache?.redemptionTiers)||labSettings.redemptionTiers||[]);
+    const done = (u.currentSlide||0)>=totalSl-1;
     rows.push([
       u.firstName||'', u.lastName||'', u.email||'',
       u.department||'', u.jobTitle||'', u.employeeId||'',
       u.xp||0, u.level||1, u.currentSlide||0,
-      (u.currentSlide||0)>=26 ? 'Yes':'No',
+      done ? 'Yes':'No',
+      u.completedAt ? new Date(u.completedAt).toLocaleDateString() : (done && u.lastLogin ? new Date(u.lastLogin).toLocaleDateString()+' (est)' : ''),
+      u.finalQuizScore != null ? u.finalQuizScore : '',
       u.labCredits||0,
       tier ? `Tier ${tier}` : '',
       u.lastLogin ? new Date(u.lastLogin).toLocaleDateString() : '',
@@ -4269,8 +4368,77 @@ async function exportCSV() {
   const csv = rows.map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
   const a = document.createElement('a');
   a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
-  a.download = `DSH_Training_Report_${new Date().toISOString().slice(0,10)}.csv`;
+  a.download = `${(window.TENANT?.orgId||'training').toUpperCase()}_Report_${new Date().toISOString().slice(0,10)}.csv`;
   a.click();
+}
+
+// ─── Completion roster ────────────────────────────────────
+async function loadCompletion() {
+  const el = document.getElementById('at-completion');
+  if(!el) return;
+  el.innerHTML='<p style="color:#94a3b8;font-size:.875rem;padding:1rem">Loading...</p>';
+  try {
+    const users = await window._loadAllUsers() || {};
+    const T = window.TENANT;
+    const totalSl = (T?.moduleCount||27);
+    const list = Object.entries(users).map(([uid,d])=>({uid,...d}));
+    const done    = list.filter(u=>(u.currentSlide||0)>=totalSl-1)
+                        .sort((a,b)=>(b.completedAt||b.lastLogin||0)-(a.completedAt||a.lastLogin||0));
+    const pending = list.filter(u=>(u.currentSlide||0)<totalSl-1)
+                        .sort((a,b)=>(b.currentSlide||0)-(a.currentSlide||0));
+
+    const row = (u, isDone) => {
+      const name = [u.firstName,u.lastName].filter(Boolean).join(' ') || u.name || 'Unknown';
+      const initials = name.split(' ').map(w=>w[0]||'').join('').toUpperCase().slice(0,2)||'?';
+      const pct = Math.min(100, Math.round(((u.currentSlide||0)/(totalSl-1))*100));
+      const completedStr = u.completedAt
+        ? new Date(u.completedAt).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})
+        : (isDone ? 'Date not recorded' : '');
+      const score = u.finalQuizScore != null ? u.finalQuizScore : null;
+      return `<div style="display:flex;align-items:center;gap:.875rem;padding:.75rem 1rem;border-bottom:1px solid #f1f5f9">
+        <div style="width:36px;height:36px;border-radius:50%;background:${isDone?'linear-gradient(135deg,#16a34a,#22c55e)':'linear-gradient(135deg,#2563eb,#7c3aed)'};color:white;font-weight:900;font-size:.8rem;display:flex;align-items:center;justify-content:center;flex-shrink:0">${initials}</div>
+        <div style="flex:1;min-width:0">
+          <p style="font-weight:800;font-size:.85rem;color:#0f172a;margin:0">${name}</p>
+          <p style="font-size:.72rem;color:#64748b;margin:.1rem 0 0">${u.department||u.jobTitle||u.email||''}</p>
+        </div>
+        ${isDone
+          ? `<div style="text-align:right;flex-shrink:0">
+              ${score!==null?`<div style="font-size:.75rem;font-weight:800;color:${score>=9?'#15803d':'#92400e'}">Quiz: ${score}/10</div>`:''}
+              <div style="font-size:.72rem;color:#64748b">${completedStr}</div>
+             </div>
+             <span style="background:#dcfce7;color:#15803d;padding:.25rem .65rem;border-radius:999px;font-size:.72rem;font-weight:800;flex-shrink:0">✅ Done</span>`
+          : `<div style="width:90px;flex-shrink:0">
+               <div style="background:#e2e8f0;border-radius:999px;height:6px;margin-bottom:.2rem">
+                 <div style="background:#2563eb;width:${pct}%;height:6px;border-radius:999px"></div>
+               </div>
+               <p style="font-size:.7rem;color:#94a3b8;font-weight:700;text-align:right">${pct}% · Slide ${u.currentSlide||0}</p>
+             </div>`
+        }
+      </div>`;
+    };
+
+    el.innerHTML = `
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.25rem">
+        <div style="border:1px solid #e2e8f0;border-radius:1rem;overflow:hidden">
+          <div style="background:#f0fdf4;padding:.875rem 1rem;border-bottom:1px solid #e2e8f0">
+            <span style="font-weight:900;font-size:.85rem;color:#15803d">✅ Completed — ${done.length}</span>
+          </div>
+          <div style="max-height:440px;overflow-y:auto">
+            ${done.length ? done.map(u=>row(u,true)).join('') : '<p style="padding:1rem;color:#94a3b8;font-size:.85rem">No completions yet.</p>'}
+          </div>
+        </div>
+        <div style="border:1px solid #e2e8f0;border-radius:1rem;overflow:hidden">
+          <div style="background:#fef9c3;padding:.875rem 1rem;border-bottom:1px solid #e2e8f0">
+            <span style="font-weight:900;font-size:.85rem;color:#92400e">⏳ In Progress / Not Started — ${pending.length}</span>
+          </div>
+          <div style="max-height:440px;overflow-y:auto">
+            ${pending.length ? pending.map(u=>row(u,false)).join('') : '<p style="padding:1rem;color:#94a3b8;font-size:.85rem;color:#15803d">🎉 All staff have completed training!</p>'}
+          </div>
+        </div>
+      </div>`;
+  } catch(e) {
+    el.innerHTML=`<p style="color:#ef4444;font-size:.875rem">Error: ${e.message}</p>`;
+  }
 }
 
 // ─── Settings ─────────────────────────────────────────────
@@ -4951,6 +5119,10 @@ function downloadCertificate() {
   };
   const finishFlow = ()=>{
     try {
+      // Record completion timestamp once (do not overwrite if already stored)
+      if(!window._userData?.completedAt) {
+        window._saveUserData({ completedAt: Date.now() }).catch(()=>{});
+      }
       currentSlide = 0;
       showSlide(0);
       window._saveUserData({ currentSlide:0 }).catch(()=>{});
