@@ -694,11 +694,21 @@ h1,h2,.font-display{font-family:'Montserrat',sans-serif}
       <button id="lab-tab-btn-scenarios" onclick="switchLabTab('scenarios')" style="padding:.65rem 1.1rem;font-size:.85rem;font-weight:800;border:none;cursor:pointer;border-bottom:3px solid #2563eb;color:#2563eb;background:transparent;margin-bottom:-2px">🎲 Scenarios</button>
       <button id="lab-tab-btn-debrief" onclick="switchLabTab('debrief')" style="padding:.65rem 1.1rem;font-size:.85rem;font-weight:800;border:none;cursor:pointer;border-bottom:3px solid transparent;color:#64748b;background:transparent;margin-bottom:-2px">🎓 Debrief</button>
       <button id="lab-tab-btn-script" onclick="switchLabTab('script')" style="padding:.65rem 1.1rem;font-size:.85rem;font-weight:800;border:none;cursor:pointer;border-bottom:3px solid transparent;color:#64748b;background:transparent;margin-bottom:-2px">📝 Script Builder</button>
+      <button id="lab-tab-btn-microexp" onclick="switchLabTab('microexp')" style="padding:.65rem 1.1rem;font-size:.85rem;font-weight:800;border:none;cursor:pointer;border-bottom:3px solid transparent;color:#64748b;background:transparent;margin-bottom:-2px">👁 Micro-Exp</button>
     </div>
     <div style="padding:1.25rem;overflow-y:auto;flex:1">
 
       <!-- TAB: Scenarios -->
       <div id="lab-tab-scenarios">
+        <!-- Marcus State Tracker -->
+        <div style="display:flex;align-items:center;gap:.75rem;margin-bottom:.85rem;background:#0f172a;border-radius:.875rem;padding:.6rem 1rem">
+          <img src="prof.png" style="width:36px;height:36px;border-radius:50%;object-fit:cover;object-position:top;border:2px solid #2563eb;flex-shrink:0" alt="">
+          <div style="flex:1">
+            <div style="font-size:.68rem;font-weight:900;text-transform:uppercase;letter-spacing:.1em;color:#475569">Patient Status</div>
+            <div style="font-weight:800;color:white;font-size:.9rem">Marcus <span style="font-size:.75rem;font-weight:600;color:#94a3b8">— Combat PTSD, evaluation pending</span></div>
+          </div>
+          <div id="marcus-state-badge" style="padding:.3rem .85rem;border-radius:1rem;font-weight:900;font-size:.8rem;background:#dcfce7;color:#166534;border:1px solid #bbf7d0">&#x26AB; Neutral</div>
+        </div>
         <div style="display:grid;grid-template-columns:1.1fr 0.9fr;gap:1rem;align-items:start">
         <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:1rem;padding:1rem">
           <div style="display:flex;gap:.75rem;flex-wrap:wrap;margin-bottom:1rem">
@@ -771,6 +781,45 @@ h1,h2,.font-display{font-family:'Montserrat',sans-serif}
         </div>
         <div id="script-output" style="background:#0f172a;border:1px solid rgba(255,255,255,.1);border-radius:.875rem;padding:1.25rem;color:#4ade80;font-family:monospace;font-size:.85rem;line-height:1.7;min-height:300px;overflow-y:auto;white-space:pre-wrap"><span style="opacity:.5">Roleplay script appears here...</span></div>
       </div><!-- end tab script -->
+
+      <!-- TAB: Micro-Expression Drill -->
+      <div id="lab-tab-microexp" style="display:none">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.85rem;flex-wrap:wrap;gap:.75rem">
+          <div>
+            <h4 style="margin:0;font-size:1rem;font-weight:900;color:#0f172a">Micro-Expression Speed Drill</h4>
+            <p style="margin:.2rem 0 0;color:#64748b;font-size:.83rem;font-weight:600">You have 3 seconds to identify Marcus's emotion. React faster than he escalates.</p>
+          </div>
+          <div style="display:flex;align-items:center;gap:.75rem">
+            <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:.75rem;padding:.35rem .75rem;font-size:.82rem;font-weight:800;color:#15803d">Score: <span id="microexp-score">0</span>/<span id="microexp-total">0</span></div>
+            <button onclick="startMicroExpDrill()" style="border:none;background:#2563eb;color:white;padding:.55rem 1.1rem;border-radius:.85rem;font-weight:900;font-size:.85rem;cursor:pointer">▶ Start Drill</button>
+          </div>
+        </div>
+        <div style="background:#1e293b;border-radius:1rem;overflow:hidden;margin-bottom:.85rem">
+          <div style="padding:.45rem .9rem;background:#0f172a;display:flex;align-items:center;justify-content:space-between">
+            <span style="color:#94a3b8;font-size:.72rem;font-weight:800;text-transform:uppercase;letter-spacing:.1em">Marcus · Read the expression</span>
+            <div id="microexp-timer-bar-wrap" style="width:120px;height:5px;background:rgba(255,255,255,.15);border-radius:3px;overflow:hidden;display:none">
+              <div id="microexp-timer-bar" style="height:5px;background:#22c55e;width:100%;border-radius:3px"></div>
+            </div>
+          </div>
+          <div style="position:relative;min-height:190px;display:flex;align-items:center;justify-content:center;padding:1rem">
+            <img src="microexpressions.png" alt="Microexpressions reference" style="max-height:170px;max-width:100%;object-fit:contain;opacity:.25;position:absolute;inset:0;width:100%;height:100%;padding:1rem;box-sizing:border-box">
+            <div style="position:relative;z-index:1;text-align:center;padding:0 1rem">
+              <div id="microexp-prompt" style="color:white;font-size:.95rem;font-weight:700;line-height:1.65;max-width:380px;text-shadow:0 2px 10px rgba(0,0,0,.8)">Click Start Drill to begin</div>
+              <div id="microexp-result-badge" style="display:none;margin-top:.75rem;padding:.35rem .9rem;border-radius:1rem;font-weight:900;font-size:.88rem;display:inline-block"></div>
+            </div>
+          </div>
+        </div>
+        <div id="microexp-buttons" style="display:grid;grid-template-columns:repeat(4,1fr);gap:.6rem;margin-bottom:.85rem">
+          <button onclick="answerMicroExp('Anger')" style="border:2px solid #fca5a5;background:#fff5f5;color:#b91c1c;font-weight:900;padding:.7rem .4rem;border-radius:.875rem;cursor:pointer;font-size:.88rem">😠 Anger</button>
+          <button onclick="answerMicroExp('Fear')" style="border:2px solid #bfdbfe;background:#eff6ff;color:#1d4ed8;font-weight:900;padding:.7rem .4rem;border-radius:.875rem;cursor:pointer;font-size:.88rem">😨 Fear</button>
+          <button onclick="answerMicroExp('Sadness')" style="border:2px solid #e9d5ff;background:#faf5ff;color:#7c3aed;font-weight:900;padding:.7rem .4rem;border-radius:.875rem;cursor:pointer;font-size:.88rem">😔 Sadness</button>
+          <button onclick="answerMicroExp('Neutral')" style="border:2px solid #d1fae5;background:#f0fdf4;color:#065f46;font-weight:900;padding:.7rem .4rem;border-radius:.875rem;cursor:pointer;font-size:.88rem">😐 Neutral</button>
+        </div>
+        <div id="microexp-vance-tip" style="background:#eff6ff;border-left:4px solid #2563eb;border-radius:0 .6rem .6rem 0;padding:.7rem 1rem;display:none">
+          <div style="font-size:.6rem;font-weight:900;text-transform:uppercase;letter-spacing:.1em;color:#1d4ed8;margin-bottom:.2rem">Prof. Vance</div>
+          <p id="microexp-vance-text" style="color:#1e3a8a;font-size:.87rem;font-weight:700;margin:0;font-style:italic"></p>
+        </div>
+      </div><!-- end tab microexp -->
 
     </div>
   </div>
@@ -2475,6 +2524,7 @@ let hazardTimer = null;
 let hazardTimeLeft = 30;
 let hazardsFound = 0;
 let drillStats = { vitalsAttempts:0, vitalsPass:0, brancherPicks:{}, hazardAttempts:0, hazardWins:0 };
+let marcusState = 'Neutral'; // Neutral, Frustrated, Rage
 
 async function hashText(text) {
   const enc = new TextEncoder();
@@ -2670,7 +2720,38 @@ function showSlide(n) {
     const msg = `${tipFn(firstName)} Any questions on this part?`;
     showAvatarAndSpeak('_direct_', firstName, msg);
     lastSpokenSlide = target;
+  // Section milestone: +50 XP every 5 slides (first visit only)
+  if(target > 0 && target % 5 === 0) {
+    const mKey = 'milestone_' + target;
+    if(!window._userData?.[mKey]) {
+      awardXP(50);
+      showXPToast(50, '5-Slide Section Complete');
+      if(window._userData) window._userData[mKey] = true;
+      window._saveUserData({ [mKey]: true }).catch(()=>{});
+    }
   }
+  // Reset idle nudge timer each slide
+  resetSlideIdleTimer();
+  }
+}
+
+// -- Idle nudge timer: Vance speaks if trainee lingers 45s without navigating --
+let slideIdleTimer = null;
+function resetSlideIdleTimer() {
+  clearTimeout(slideIdleTimer);
+  slideIdleTimer = setTimeout(() => {
+    const hub = document.getElementById('home-gateway');
+    if(hub && hub.style.display === 'flex') return;
+    if(paxMuted) return;
+    const nudges = [
+      'Don\'t miss the detail on the right - that could be a safety breach.',
+      'This concept maps directly to how we approach Marcus. Think about the timing.',
+      'This is certification exam material. Lock it in before moving on.',
+      'Think of Marcus right now - how would this principle change your next move?'
+    ];
+    const n = nudges[Math.floor(Math.random() * nudges.length)];
+    showAvatarAndSpeak('_direct_', currentFirstName(), n);
+  }, 45000);
 }
 
 function nextSlide() {
@@ -2885,16 +2966,16 @@ async function toggleAmbience(auto=false) {
 
 // ─── Final Quiz (Certificate Gate) ───────────────────────
 const finalQuizQuestions = [
-  {q:'First move when entering a tense room?', a:['Announce yourself calmly from the doorway','Stand close and speak firmly','Approach from behind to surprise'], correct:0},
-  {q:'Best body angle to reduce threat perception?', a:['90° straight on','45° off-angle with space','Stand directly over the patient'], correct:1},
-  {q:'What to remove first for autism sensory overload?', a:['Begin rapid questioning','Increase lighting','Remove the sensory trigger and lower stimulation'], correct:2},
-  {q:'Patient is pacing, swearing, and says "leave me alone" with no immediate threat. Your best first move?', a:['Stay close and increase verbal direction','Announce you will give space and return in a moment','Call a code team immediately'], correct:1},
-  {q:'Trauma-informed touch requires…', a:['Touching only if others are present','Announcing and asking consent every time','Never touching in any situation'], correct:1},
-  {q:'De-escalation language should be…', a:['Short, validating, offers choice','Complex, clinical, detailed','Directive and loud'], correct:0},
-  {q:'If unsure or out of scope, Prof. Pax will…', a:['Give definitive clinical orders','Guess an answer','Recommend asking supervisor/leadership'], correct:2},
-  {q:'Non-punitive limit setting sounds like…', a:['“If you do that, you’ll be punished.”','“I can’t let you do X because of safety. What I can do is Y.”','“Stop or I’ll call security.”'], correct:1},
-  {q:'During recovery after a crisis, when should you debrief?', a:['Immediately while adrenaline is high','After stabilization with consent and safety','Skip debrief unless forced by policy'], correct:1},
-  {q:'Before certificate download you must…', a:['Finish quiz and pass threshold','Just click download anytime','Skip the quiz'], correct:0}
+  {q:'What is the minimum recommended Reaction Gap when approaching a standing agitated patient?', a:['2-3 feet - within coaching range','6-10 feet - outside striking range','15+ feet - hallway distance'], correct:1},
+  {q:'Marcus says he is sick of waiting. What is the BEST first response?', a:['Tell him the wait is normal and he needs to be patient','Validate: That wait sounds incredibly frustrating - I hear you.','Inform him of consequences for outbursts'], correct:1},
+  {q:'Which object in a psychiatric room is a ligature risk?', a:['A plastic chair','A window blind cord','A foam mattress'], correct:1},
+  {q:'Which micro-expression most reliably precedes a physical strike from an agitated patient?', a:['Tearful eyes and lip tremor','Flared nostrils, clenched jaw, and narrowed eyes','Downcast gaze and collapsed posture'], correct:1},
+  {q:'Choice Architecture in de-escalation means:', a:['Physically blocking escape routes','Offering two safe options so the patient feels in control','Designing the unit layout to prevent elopement'], correct:1},
+  {q:'Offering Marcus a choice between two safe options is a form of manipulation - True or False?', a:['True - it removes his autonomy','False - it IS Choice Architecture and restores his sense of control','Only true if the patient is involuntary'], correct:1},
+  {q:'The CPI model pillars are:', a:['Care, Welfare, Safety, Security','Control, Warning, Safety, Supervision','Calm, Wait, Separate, Contain'], correct:0},
+  {q:'If Marcus is in an active PTSD flashback, your FIRST action is:', a:['Increase lighting and speak louder to orient him','Call a code team immediately','Lower stimulation, announce every movement, use grounding language'], correct:2},
+  {q:'Non-punitive limit setting sounds like:', a:['Do it again and you lose phone privileges.','I cannot allow that for safety. What I CAN offer is...','Calm down or I will have to restrain you.'], correct:1},
+  {q:'After a crisis stabilizes, when is the best time to debrief Marcus?', a:['Immediately while emotions are high','After stabilization, with his consent, in a safe environment','Only when mandated by the incident report'], correct:1}
 ];
 
 function renderFinalQuiz() {
@@ -3342,7 +3423,8 @@ async function sendChatMessage() {
   const sys = mode === 'lab'
     ? `You are Professor Vance, an expert Clinical Mentor for Behavioral Health Technicians (BHTs) in a high-acuity psychiatric crisis unit. You are coaching a trainee through a simulation involving a patient named Marcus. You have access to the user's progress through the training. When the user is on a slide, narrate key points and provide Pro-Tips. When the user types a response, evaluate it based on de-escalation criteria and award XP verbally for strong clinical points. Tone: calm, authoritative, deeply empathetic — unshakable in a crisis. Maximum THREE short conversational sentences per reply. Use 'we' to foster teamwork. Safety rules: Reaction Gap (6-10 feet), validate feelings before asserting authority, offer forced choices (Choice Architecture), scan for environmental hazards. If trainee's response would escalate Marcus: 'That's a common mistake, but in this environment it's a dangerous one. Let's look at why Marcus felt threatened.' If they choose well: 'Excellent work. By validating his frustration, you've lowered the room's temperature.' Link feedback to concepts from the slides they just completed. Avoid PHI and definitive clinical orders.`
     : `You are Professor Vance, an expert Clinical Mentor for Behavioral Health Technicians at Destiny Springs Healthcare, coaching through an interactive de-escalation training involving a patient named Marcus. You serve dual roles: (1) when asked about slides or content, narrate and give Pro-Tips linked to what was just covered; (2) when the user types a clinical response, evaluate it against de-escalation best practices and provide immediate coaching. Keep replies to maximum THREE short sentences. Use 'we' to build teamwork. Always connect feedback to the slides. If unsure or outside training scope, recommend the supervisor or clinical leadership. Avoid PHI.`;
-  const body = { system: sys, messages: chatMessages.slice(-8) };
+  const _mStateNote = (typeof marcusState !== 'undefined' && marcusState !== 'Neutral') ? ` [ALERT: Patient Marcus current state is ${marcusState} — calibrate your coaching accordingly.]` : '';
+  const body = { system: sys + _mStateNote, messages: chatMessages.slice(-8) };
   let reply = '';
   try {
     const res = await fetch(CHAT_ENDPOINT, {
@@ -4349,8 +4431,23 @@ function closeVideoModal() {
 }
 
 // ─── Lab Room Tabs ───────────────────────────────────────
+function updateMarcusStateBadge() {
+  const badge = document.getElementById('marcus-state-badge');
+  if(!badge) return;
+  const map = {
+    Neutral:  { bg:'#dcfce7', color:'#166534', border:'#bbf7d0', dot:'&#x26AB;' },
+    Frustrated:{ bg:'#fef9c3', color:'#854d0e', border:'#fde68a', dot:'&#x1F7E1;' },
+    Rage:     { bg:'#fee2e2', color:'#991b1b', border:'#fca5a5', dot:'&#x1F534;' }
+  };
+  const s = map[marcusState] || map.Neutral;
+  badge.style.background = s.bg;
+  badge.style.color = s.color;
+  badge.style.borderColor = s.border;
+  badge.innerHTML = s.dot + ' ' + marcusState;
+}
+
 function switchLabTab(tab) {
-  ['scenarios','debrief','script'].forEach(t => {
+  ['scenarios','debrief','script','microexp'].forEach(t => {
     const pane = document.getElementById('lab-tab-'+t);
     const btn  = document.getElementById('lab-tab-btn-'+t);
     if(pane) pane.style.display = t === tab ? 'block' : 'none';
@@ -4359,6 +4456,7 @@ function switchLabTab(tab) {
       btn.style.color = t === tab ? '#2563eb' : '#64748b';
     }
   });
+  if(tab === 'microexp') updateMarcusStateBadge();
 }
 
 async function runDebrief() {
@@ -4440,6 +4538,16 @@ function submitLabScenario() {
   else if(matched>=3||resp.length>120) { grade='B'; xpGain=175; }
   else if(matched>=2||resp.length>60)  { grade='C'; xpGain=100; }
   else                                 { grade='D'; xpGain=50;  }
+
+  // Marcus state escalation/de-escalation
+  if(grade==='A'||grade==='B') {
+    if(marcusState==='Rage')       marcusState='Frustrated';
+    else if(marcusState==='Frustrated') marcusState='Neutral';
+  } else if(grade==='D') {
+    if(marcusState==='Neutral')    marcusState='Frustrated';
+    else if(marcusState==='Frustrated') marcusState='Rage';
+  }
+  updateMarcusStateBadge();
 
   // Lab credit calculation with once-per-day per scenario guard
   const today = new Date().toISOString().slice(0,10);
@@ -4875,6 +4983,90 @@ function doSignOut() {
 
 // ─── Fallback: support both direct call and event dispatch ──
 document.addEventListener('DSHUserLoaded', initApp);
+// --- Micro-Expression Drill -------------------------------------------------
+const MICROEXP_ROUNDS = [
+  { prompt: "Marcus crosses his arms, jaw tightens, eyes narrow. He just heard 'You have to calm down.'", emotion: "Anger", tip: "Jaw tightening + narrowed eyes = suppressed anger. Never command calm - offer choice instead." },
+  { prompt: "Marcus goes still. Brows pull together and upward. Lips press together. A door just slammed.", emotion: "Fear", tip: "Inner brow raise + lip press = startle/fear. Lower voice, slow movements, give space." },
+  { prompt: "Marcus's gaze drops to the floor. Lip corners pull down slightly. He says 'It doesn't matter.'", emotion: "Sadness", tip: "Downward gaze + lip corners down = despair. Validate feelings - do not problem-solve." },
+  { prompt: "Marcus sits relaxed, face neutral, eyes mid-level. He responds to his name with 'Yeah.'", emotion: "Neutral", tip: "Relaxed facial muscles, neutral gaze = regulated state. Build rapport and offer choices now." },
+  { prompt: "Marcus's nostrils flare briefly. Upper lip twitches. He turns slightly away while you speak.", emotion: "Anger", tip: "Nostril flare + upper lip pull = micro-contempt. Avoid confrontational language immediately." },
+  { prompt: "Marcus glances rapidly toward the door twice. Breathing shallow. Hands grip chair arms.", emotion: "Fear", tip: "Eye movement to exits + shallow breathing = threat assessment. State room is safe; do not block exits." },
+  { prompt: "Marcus stares at the table. Shoulders slump. Has not responded in 90 seconds.", emotion: "Sadness", tip: "Withdrawn stillness + slumped posture = shutdown. Silence can be therapeutic - wait before re-prompting." },
+  { prompt: "Marcus makes brief eye contact, nods once, says 'I hear you.' Body language open.", emotion: "Neutral", tip: "Brief eye contact + open body = engagement signal. Transition to collaborative problem solving now." }
+];
+let _meIndex = 0, _meScore = 0, _meAnswered = false;
+let _meTimerHandle = null, _meTimerBarHandle = null;
+
+function startMicroExpDrill() {
+  _meIndex = 0; _meScore = 0; _meAnswered = false;
+  document.getElementById('microexp-score').textContent = '0';
+  document.getElementById('microexp-total').textContent = '0';
+  var res = document.getElementById('microexp-result-badge');
+  if(res) res.style.display = 'none';
+  var tip = document.getElementById('microexp-vance-tip');
+  if(tip) tip.style.display = 'none';
+  nextMicroExpRound();
+}
+
+function nextMicroExpRound() {
+  if(_meIndex >= MICROEXP_ROUNDS.length) {
+    var prompt = document.getElementById('microexp-prompt');
+    if(prompt) prompt.textContent = 'Drill complete! Score: ' + _meScore + '/' + MICROEXP_ROUNDS.length;
+    var wrap = document.getElementById('microexp-timer-bar-wrap');
+    if(wrap) wrap.style.display = 'none';
+    awardXP(_meScore * 30);
+    showXPToast(_meScore * 30, 'Micro-Exp Drill Complete');
+    speakWithVance('Excellent drill work. You identified ' + _meScore + ' out of ' + MICROEXP_ROUNDS.length + ' expressions. In a real crisis, that reaction time saves lives.');
+    return;
+  }
+  _meAnswered = false;
+  var round = MICROEXP_ROUNDS[_meIndex];
+  var prompt = document.getElementById('microexp-prompt');
+  if(prompt) prompt.textContent = round.prompt;
+  var res = document.getElementById('microexp-result-badge');
+  if(res) res.style.display = 'none';
+  var tip = document.getElementById('microexp-vance-tip');
+  if(tip) tip.style.display = 'none';
+  var wrap = document.getElementById('microexp-timer-bar-wrap');
+  var bar  = document.getElementById('microexp-timer-bar');
+  if(wrap) wrap.style.display = 'block';
+  if(bar)  { bar.style.transition = 'none'; bar.style.width = '100%'; bar.style.background = '#22c55e'; }
+  clearTimeout(_meTimerHandle); clearInterval(_meTimerBarHandle);
+  var START = Date.now(), DURATION = 3000;
+  _meTimerBarHandle = setInterval(function() {
+    var pct = Math.max(0, 1 - (Date.now() - START) / DURATION);
+    if(bar) { bar.style.transition='none'; bar.style.width=(pct*100)+'%'; bar.style.background=pct>0.5?'#22c55e':pct>0.25?'#f59e0b':'#ef4444'; }
+    if(pct <= 0) clearInterval(_meTimerBarHandle);
+  }, 50);
+  _meTimerHandle = setTimeout(function() { if(!_meAnswered) answerMicroExp(null); }, DURATION);
+}
+
+function answerMicroExp(chosen) {
+  if(_meAnswered) return;
+  _meAnswered = true;
+  clearTimeout(_meTimerHandle); clearInterval(_meTimerBarHandle);
+  var round = MICROEXP_ROUNDS[_meIndex];
+  var isRight = (chosen === round.emotion);
+  if(isRight) _meScore++;
+  document.getElementById('microexp-score').textContent = _meScore;
+  document.getElementById('microexp-total').textContent = _meIndex + 1;
+  var bar = document.getElementById('microexp-timer-bar');
+  if(bar) bar.style.width = '0';
+  var res = document.getElementById('microexp-result-badge');
+  if(res) {
+    res.style.display = 'inline-block';
+    if(!chosen){ res.textContent='Too slow! Correct: '+round.emotion; res.style.background='#fee2e2'; res.style.color='#991b1b'; }
+    else if(isRight){ res.textContent='Correct!'; res.style.background='#dcfce7'; res.style.color='#166534'; awardXP(30); }
+    else{ res.textContent='Incorrect - was '+round.emotion; res.style.background='#fef9c3'; res.style.color='#854d0e'; }
+  }
+  var tipEl = document.getElementById('microexp-vance-tip');
+  var tipTxt = document.getElementById('microexp-vance-text');
+  if(tipEl && tipTxt) { tipTxt.textContent = round.tip; tipEl.style.display = 'block'; }
+  speakWithVance(round.tip);
+  _meIndex++;
+  setTimeout(nextMicroExpRound, 3200);
+}
+// ---------------------------------------------------------------------------
 </script>
 </body>
 </html>
