@@ -1012,7 +1012,7 @@ h1,h2,.font-display{font-family:'Montserrat',sans-serif}
         <p style="margin:0 0 1rem;color:#64748b;font-size:.88rem;font-weight:700">Generate a realistic roleplay script for a team huddle or training drill from any scenario topic.</p>
         <div style="display:flex;gap:.75rem;margin-bottom:1rem;flex-wrap:wrap">
           <input id="script-topic" class="input-field" placeholder="e.g. Medication refusal, PTSD flashback, manic episode..." style="flex:1;min-width:220px">
-          <button id="script-btn" class="btn btn-primary" onclick="buildScript()">Build Script ✨</button>
+          <button id="script-btn" class="btn btn-primary" onclick="buildLabScriptAI()">Build Script ✨</button>
         </div>
         <div id="script-output" style="background:#0f172a;border:1px solid rgba(255,255,255,.1);border-radius:.875rem;padding:1.25rem;color:#4ade80;font-family:monospace;font-size:.85rem;line-height:1.7;min-height:300px;overflow-y:auto;white-space:pre-wrap"><span style="opacity:.5">Roleplay script appears here...</span></div>
       </div><!-- end tab script -->
@@ -2411,7 +2411,7 @@ function getSlides14to27() { return `
     <div style="display:flex;flex-direction:column;gap:.875rem">
       <div>
         <label style="font-size:.75rem;font-weight:900;color:#64748b;text-transform:uppercase;letter-spacing:.08em;display:block;margin-bottom:.5rem">Scenario Topic</label>
-        <input id="script-topic" class="input-field" placeholder="e.g., Medication refusal">
+        <input id="slide-script-topic" class="input-field" placeholder="e.g., Medication refusal">
       </div>
       <div>
         <label style="font-size:.75rem;font-weight:900;color:#64748b;text-transform:uppercase;letter-spacing:.08em;display:block;margin-bottom:.5rem">Diagnosis Context</label>
@@ -2435,7 +2435,7 @@ function getSlides14to27() { return `
       <button onclick="buildScript()" class="btn btn-success">🎭 Build Script</button>
       <button onclick="printScript()" class="btn" style="background:#f1f5f9;color:#475569">🖨️ Print Script</button>
     </div>
-    <div id="script-output" style="background:#0f172a;border-radius:1.5rem;padding:1.5rem;font-family:'Courier New',monospace;font-size:.82rem;line-height:1.8;color:#4ade80;min-height:400px;white-space:pre-wrap;overflow-y:auto">
+    <div id="slide-script-output" style="background:#0f172a;border-radius:1.5rem;padding:1.5rem;font-family:'Courier New',monospace;font-size:.82rem;line-height:1.8;color:#4ade80;min-height:400px;white-space:pre-wrap;overflow-y:auto">
 <span style="color:#64748b;font-style:normal">// Select options and click Build Script to generate a training scenario...</span>
     </div>
   </div>
@@ -3109,7 +3109,7 @@ function initApp() {
     delete window._pwaShortcut;
     setTimeout(() => {
       if (sc === 'training') startTrainingFromHub && startTrainingFromHub();
-      if (sc === 'lab')      startLabFromHub      && startLabFromHub();
+      if (sc === 'lab')      enterLabFromHub      && enterLabFromHub();
     }, 600);
   }
 }
@@ -3218,6 +3218,8 @@ document.addEventListener('keydown',e=>{
   if(document.activeElement.tagName==='INPUT'||document.activeElement.tagName==='TEXTAREA') return;
   if(['ArrowRight','ArrowDown'].includes(e.key)) nextSlide();
   if(['ArrowLeft','ArrowUp'].includes(e.key)) prevSlide();
+  if(e.key==='a'||e.key==='A') openAdminPrompt();
+  if(e.key==='m'||e.key==='M') toggleAmbience();
 });
 function showShortcuts() {
   const o = document.getElementById('shortcuts-overlay');
@@ -5874,7 +5876,7 @@ async function runDebrief() {
   }
 }
 
-async function buildScript() {
+async function buildLabScriptAI() {
   const btn = document.getElementById('script-btn');
   const topicEl = document.getElementById('script-topic');
   const output = document.getElementById('script-output');
@@ -6142,7 +6144,7 @@ function submitScenario() {
 
 // ─── Role-Play Script Builder ─────────────────────────────
 function buildScript() {
-  const topic = document.getElementById('script-topic').value.trim() || 'Medication Refusal';
+  const topic = document.getElementById('slide-script-topic').value.trim() || 'Medication Refusal';
   const dx    = document.getElementById('script-dx').value;
   const level = document.getElementById('script-level').value;
   const dxMap = {general:'General',autism:'Autism Spectrum Disorder',schizophrenia:'Schizophrenia',bpd:'Borderline Personality Disorder',ptsd:'PTSD',bipolar:'Bipolar Disorder (Manic)'};
@@ -6223,12 +6225,12 @@ Key techniques to watch for:
 • Non-punitive limit setting
 
 ════════════════════════════════════════════════════════════`;
-  document.getElementById('script-output').textContent = script;
+  document.getElementById('slide-script-output').textContent = script;
   awardXP(50);
 }
 
 function printScript() {
-  const content = document.getElementById('script-output').textContent;
+  const content = document.getElementById('slide-script-output').textContent;
   const w = window.open('','_blank');
   w.document.write(`<html><head><title>DSH Training Script</title><style>body{font-family:'Courier New',monospace;font-size:11px;line-height:1.6;padding:2rem;white-space:pre-wrap}</style></head><body>${content}</body></html>`);
   w.document.close(); w.print();
