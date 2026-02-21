@@ -32,7 +32,6 @@ jobs:
         run: |
           mkdir -p deploy
           cp index.html deploy/
-          cp trainer.html deploy/
           cp trainer_pro.html deploy/
       
       - name: Upload artifact
