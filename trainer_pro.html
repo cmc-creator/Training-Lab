@@ -1435,7 +1435,7 @@ h1,h2,.font-display{font-family:'Montserrat',sans-serif}
   </div>
   <div id="chat-messages" style="flex:1;overflow-y:auto;padding:1rem;background:#fff"></div>
   <div style="padding:.6rem 1rem;border-top:1px solid #e2e8f0;background:#f8fafc;display:flex;gap:.5rem;flex-direction:column">
-    <textarea id="chat-input" rows="2" placeholder="Type how you'd respond to Marcus, or ask Professor Vance a clinical question..." style="width:100%;border:1px solid #e2e8f0;border-radius:.75rem;padding:.7rem;font-size:.95rem;font-weight:700;resize:vertical;background:white"></textarea>
+    <textarea id="chat-input" rows="2" placeholder="Type how you'd respond to Marcus, or ask Professor Vance a clinical question..." style="width:100%;border:1px solid #e2e8f0;border-radius:.75rem;padding:.7rem;font-size:.95rem;font-weight:700;resize:vertical;background:white" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendChatMessage();}"></textarea>
     <div style="display:flex;gap:.5rem;align-items:center;justify-content:space-between">
       <span style="font-size:.8rem;color:#64748b;font-weight:700">If I'm unsure, I'll suggest asking a supervisor/leadership.</span>
       <button id="chat-send-btn" onclick="sendChatMessage()" style="border:none;background:#2563eb;color:white;font-weight:900;padding:.6rem 1rem;border-radius:.85rem;font-size:.9rem;cursor:pointer">Send</button>
@@ -3192,6 +3192,9 @@ function resetSlideIdleTimer() {
     const hub = document.getElementById('home-gateway');
     if(hub && hub.style.display === 'flex') return;
     if(paxMuted) return;
+    if(currentSlide === 0) return;  // never nudge on the welcome/title slide
+    const labModal = document.getElementById('lab-modal');
+    if(labModal && labModal.style.display === 'flex') return;  // never nudge while lab is open
     const nudges = [
       'Don\'t miss the detail on the right - that could be a safety breach.',
       'This concept maps directly to how we approach Marcus. Think about the timing.',
@@ -5743,6 +5746,7 @@ function openLabRoom() {
 }
 function closeLabRoom() {
   document.getElementById('lab-modal').style.display='none';
+  cancelVance();
 }
 
 function openVideoModal() {
