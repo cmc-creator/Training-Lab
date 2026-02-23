@@ -1505,7 +1505,7 @@ h1,h2,.font-display{font-family:'Montserrat',sans-serif}
 <div class="slide active" style="background:linear-gradient(135deg,#0f172a 0%,#1e3a5f 60%,#0f172a 100%)">
   <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:3rem 2rem;text-align:center;padding-bottom:6rem">
     <div style="margin-bottom:1.2rem;max-width:320px;width:70vw;filter:drop-shadow(0 6px 14px rgba(0,0,0,.25))">
-      <div class="logo-inline" aria-label="Destiny Springs Healthcare logo" style="width:100%;display:block"></div>
+      <img src="logo.png" alt="Destiny Springs Healthcare" style="width:100%;object-fit:contain;display:block">
     </div>
     <div class="badge" style="background:rgba(37,99,235,.2);color:#93c5fd;border:1px solid rgba(37,99,235,.3);margin-bottom:2rem;font-size:.7rem">
       🏥 Inpatient Psychiatric Acute Care · Est. 2026
@@ -1518,7 +1518,7 @@ h1,h2,.font-display{font-family:'Montserrat',sans-serif}
     <div id="welcome-card" style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:1.5rem;padding:2rem;max-width:520px;width:100%;margin-bottom:2.5rem;backdrop-filter:blur(12px)">
       <p id="welcome-greeting" style="color:#94a3b8;font-size:.85rem;margin-bottom:.5rem">Welcome,</p>
       <p id="welcome-name" style="color:white;font-size:1.75rem;font-weight:900;font-family:Montserrat,sans-serif;margin-bottom:1rem">&nbsp;</p>
-      <p style="color:#cbd5e1;font-size:.9rem;line-height:1.7">You're about to complete <strong style="color:white">27 evidence-based training modules</strong> covering de-escalation, crisis intervention, psychiatric diagnosis recognition, and real-time scenario practice. Let's build your clinical confidence.</p>
+      <p style="color:#cbd5e1;font-size:.9rem;line-height:1.7">You're about to complete <strong style="color:white">evidence-based training modules</strong> covering de-escalation, crisis intervention, psychiatric diagnosis recognition, and real-time scenario practice. Let's build your clinical confidence.</p>
     </div>
     <div style="display:flex;gap:1rem;flex-wrap:wrap;justify-content:center">
       <div style="display:flex;align-items:center;gap:.5rem;color:white;font-size:.8rem;font-weight:700"><span style="width:10px;height:10px;background:#ef4444;border-radius:50%;display:inline-block"></span>Safety First</div>
@@ -3127,6 +3127,14 @@ function showSlide(n) {
   const slides = document.querySelectorAll('.slide');
   const certIndex = slides.length ? slides.length-1 : 0;
   let target = Math.max(0, Math.min(n, slides.length-1));
+  // Always refresh welcome card name when slide 0 is shown
+  if(target === 0) {
+    const _fn = currentFirstName();
+    const greetEl = document.getElementById('welcome-greeting');
+    const welEl   = document.getElementById('welcome-name');
+    if(greetEl) greetEl.textContent = (window._userData?.completedTraining || window._userData?.currentSlide > 0) ? 'Welcome back,' : 'Welcome,';
+    if(welEl)   welEl.textContent   = _fn;
+  }
 
   // Gate certificate slide until quiz is passed
   if(target === certIndex && !finalQuizPassed) {
@@ -3323,7 +3331,9 @@ function startTrainingFromHub() {
 function resumeTrainingFromHub() {
   hideHomeGateway();
   sessionMode = 'training';
-  const resumeSlide = Math.max(0, Number(window._userData?.currentSlide || currentSlide || 0));
+  // If saved slide is 0 (no prior progress), start at slide 1 (first content slide)
+  const savedSlide = Number(window._userData?.currentSlide || currentSlide || 0);
+  const resumeSlide = savedSlide > 0 ? savedSlide : 1;
   currentSlide = resumeSlide;
   showSlide(currentSlide);
   renderFinalQuiz();
