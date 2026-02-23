@@ -3083,14 +3083,16 @@ function initApp() {
   const isNewUser   = !completed && !hasProgress && !seenBefore;
 
   if(isNewUser) {
+    // Brand-new account: skip title card, go straight to first content slide
     sessionMode = 'training';
-    currentSlide = 0;
+    currentSlide = 1;
+    showSlide(1);
+    hideHomeGateway();
+  } else {
+    // Returning user: always land on the hub (welcome-back page)
+    showSlide(currentSlide);
+    showHomeGateway();
   }
-
-  showSlide(currentSlide);
-  // Always bring every authenticated user to the hub (welcome-back page) on login.
-  // The hub itself handles new vs returning messaging. No user should land directly on a slide.
-  showHomeGateway();
 
   window._saveUserData({ sessionMode, currentSlide, hasOnboarded:true }).catch(()=>{});
   updateNavUI();
