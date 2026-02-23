@@ -3088,11 +3088,9 @@ function initApp() {
   }
 
   showSlide(currentSlide);
-  if(completed || hasProgress || seenBefore) {
-    showHomeGateway();
-  } else {
-    hideHomeGateway();
-  }
+  // Always bring every authenticated user to the hub (welcome-back page) on login.
+  // The hub itself handles new vs returning messaging. No user should land directly on a slide.
+  showHomeGateway();
 
   window._saveUserData({ sessionMode, currentSlide, hasOnboarded:true }).catch(()=>{});
   updateNavUI();
@@ -3331,9 +3329,9 @@ function startTrainingFromHub() {
 function resumeTrainingFromHub() {
   hideHomeGateway();
   sessionMode = 'training';
-  // If saved slide is 0 (no prior progress), start at slide 1 (first content slide)
+  // Go to saved slide; use at least slide 1 so we never land back on the title card
   const savedSlide = Number(window._userData?.currentSlide || currentSlide || 0);
-  const resumeSlide = savedSlide > 0 ? savedSlide : 1;
+  const resumeSlide = Math.max(1, savedSlide);
   currentSlide = resumeSlide;
   showSlide(currentSlide);
   renderFinalQuiz();
