@@ -1030,17 +1030,25 @@ h1,h2,.font-display{font-family:'Montserrat',sans-serif}
           </div>
         </div>
         <div style="background:#1e293b;border-radius:1rem;overflow:hidden;margin-bottom:.85rem">
+          <!-- Header bar with timer -->
           <div style="padding:.45rem .9rem;background:#0f172a;display:flex;align-items:center;justify-content:space-between">
             <span style="color:#94a3b8;font-size:.72rem;font-weight:800;text-transform:uppercase;letter-spacing:.1em">Marcus · Read the expression</span>
             <div id="microexp-timer-bar-wrap" style="width:120px;height:5px;background:rgba(255,255,255,.15);border-radius:3px;overflow:hidden;display:none">
               <div id="microexp-timer-bar" style="height:5px;background:#22c55e;width:100%;border-radius:3px"></div>
             </div>
           </div>
-          <div style="position:relative;min-height:190px;display:flex;align-items:center;justify-content:center;padding:1rem">
-            <img src="microexpressions.png" alt="Microexpressions reference" style="max-height:170px;max-width:100%;object-fit:contain;opacity:.25;position:absolute;inset:0;width:100%;height:100%;padding:1rem;box-sizing:border-box">
-            <div style="position:relative;z-index:1;text-align:center;padding:0 1rem">
-              <div id="microexp-prompt" style="color:white;font-size:.95rem;font-weight:700;line-height:1.65;max-width:380px;text-shadow:0 2px 10px rgba(0,0,0,.8)">Click Start Drill to begin</div>
-              <div id="microexp-result-badge" style="display:none;margin-top:.75rem;padding:.35rem .9rem;border-radius:1rem;font-weight:900;font-size:.88rem;display:inline-block"></div>
+          <!-- Expression image — full visibility, NO text overlay -->
+          <div style="background:#111827;display:flex;align-items:center;justify-content:center;min-height:200px">
+            <img id="microexp-image" src="microexpressions.png" alt="Marcus expression" style="width:100%;max-height:320px;object-fit:contain;display:block">
+          </div>
+          <!-- Scenario prompt text — below the image, never on top of it -->
+          <div style="padding:.9rem 1rem 1.1rem;background:#0f172a">
+            <div id="microexp-prompt" style="color:#e2e8f0;font-size:.95rem;font-weight:700;line-height:1.65;text-align:center">Click Start Drill to begin</div>
+            <div style="text-align:center;margin-top:.6rem">
+              <span id="microexp-result-badge" style="display:none;padding:.35rem .9rem;border-radius:1rem;font-weight:900;font-size:.88rem"></span>
+            </div>
+            <div style="text-align:center;margin-top:.75rem">
+              <button id="microexp-next-btn" onclick="nextMicroExpRound()" style="display:none;border:none;background:#2563eb;color:white;font-weight:900;padding:.65rem 1.8rem;border-radius:.875rem;font-size:.92rem;cursor:pointer;letter-spacing:.01em">Next Round →</button>
             </div>
           </div>
         </div>
@@ -5846,6 +5854,7 @@ function selectLabPatient(id) {
 }
 
 function switchLabTab(tab) {
+  cancelVance();  // stop any Vance speech from the previous tab
   ['scenarios','debrief','script','microexp'].forEach(t => {
     const pane = document.getElementById('lab-tab-'+t);
     const btn  = document.getElementById('lab-tab-btn-'+t);
@@ -6553,6 +6562,9 @@ function startMicroExpDrill() {
 }
 
 function nextMicroExpRound() {
+  // Hide the Next/See Results button at the start of every round
+  var nextBtn = document.getElementById('microexp-next-btn');
+  if(nextBtn) nextBtn.style.display = 'none';
   if(_meIndex >= MICROEXP_ROUNDS.length) {
     var prompt = document.getElementById('microexp-prompt');
     if(prompt) prompt.textContent = 'Drill complete! Score: ' + _meScore + '/' + MICROEXP_ROUNDS.length;
@@ -6560,7 +6572,7 @@ function nextMicroExpRound() {
     if(wrap) wrap.style.display = 'none';
     awardXP(_meScore * 30);
     showXPToast(_meScore * 30, 'Micro-Exp Drill Complete');
-    speakWithVance('Excellent drill work. You identified ' + _meScore + ' out of ' + MICROEXP_ROUNDS.length + ' expressions. In a real crisis, that reaction time saves lives.');
+    speakWithVance('Excellent drill work. You identified ' + _meScore + ' out of ' + MICROEXP_ROUNDS.length + ' expressions correctly. In a real crisis, that reaction time saves lives.');
     return;
   }
   _meAnswered = false;
@@ -6576,7 +6588,7 @@ function nextMicroExpRound() {
   if(wrap) wrap.style.display = 'block';
   if(bar)  { bar.style.transition = 'none'; bar.style.width = '100%'; bar.style.background = '#22c55e'; }
   clearTimeout(_meTimerHandle); clearInterval(_meTimerBarHandle);
-  var START = Date.now(), DURATION = 3000;
+  var START = Date.now(), DURATION = 8000;  // 8 seconds to study the expression
   _meTimerBarHandle = setInterval(function() {
     var pct = Math.max(0, 1 - (Date.now() - START) / DURATION);
     if(bar) { bar.style.transition='none'; bar.style.width=(pct*100)+'%'; bar.style.background=pct>0.5?'#22c55e':pct>0.25?'#f59e0b':'#ef4444'; }
@@ -6608,7 +6620,12 @@ function answerMicroExp(chosen) {
   if(tipEl && tipTxt) { tipTxt.textContent = round.tip; tipEl.style.display = 'block'; }
   speakWithVance(round.tip);
   _meIndex++;
-  setTimeout(nextMicroExpRound, 3200);
+  // Don't auto-advance — show a button so the user moves on when ready
+  var nextBtn = document.getElementById('microexp-next-btn');
+  if(nextBtn) {
+    nextBtn.textContent = _meIndex < MICROEXP_ROUNDS.length ? 'Next Round →' : 'See Results →';
+    nextBtn.style.display = 'inline-block';
+  }
 }
 // ---------------------------------------------------------------------------
 </script>
