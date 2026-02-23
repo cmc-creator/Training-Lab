@@ -597,8 +597,8 @@ h1,h2,.font-display{font-family:'Montserrat',sans-serif}
         <div id="auth-tagline" style="margin-bottom:2.5rem;max-width:420px;color:#94a3b8;font-size:.95rem;line-height:1.75;font-weight:600">
           Master psychiatric de-escalation techniques through immersive training built for Destiny Springs Healthcare staff.
         </div>
-        <div style="max-width:520px;width:100%;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:1rem;padding:.85rem 1rem">
-          <img id="auth-org-logo" src="dsh.png" alt="Destiny Springs Healthcare" style="width:100%;height:auto;object-fit:contain;display:block">
+        <div style="max-width:520px;width:100%;display:flex;align-items:center;justify-content:center;padding:1.5rem">
+          <div class="logo-inline" style="max-width:240px;width:100%" aria-label="Destiny Springs Healthcare"></div>
         </div>
       </div>
 
@@ -1509,7 +1509,7 @@ h1,h2,.font-display{font-family:'Montserrat',sans-serif}
     <p style="color:#475569;font-size:.8rem;margin-bottom:3rem">© 2026 De-escalation Mastery Lab™. All Rights Reserved. Proprietary Training Content.</p>
     <div id="welcome-card" style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:1.5rem;padding:2rem;max-width:520px;width:100%;margin-bottom:2.5rem;backdrop-filter:blur(12px)">
       <p id="welcome-greeting" style="color:#94a3b8;font-size:.85rem;margin-bottom:.5rem">Welcome,</p>
-      <p id="welcome-name" style="color:white;font-size:1.75rem;font-weight:900;font-family:Montserrat,sans-serif;margin-bottom:1rem">Trainee</p>
+      <p id="welcome-name" style="color:white;font-size:1.75rem;font-weight:900;font-family:Montserrat,sans-serif;margin-bottom:1rem">&nbsp;</p>
       <p style="color:#cbd5e1;font-size:.9rem;line-height:1.7">You're about to complete <strong style="color:white">27 evidence-based training modules</strong> covering de-escalation, crisis intervention, psychiatric diagnosis recognition, and real-time scenario practice. Let's build your clinical confidence.</p>
     </div>
     <div style="display:flex;gap:1rem;flex-wrap:wrap;justify-content:center">
@@ -3277,6 +3277,9 @@ function showHomeGateway() {
     ? `Welcome back, ${fname}! Pick where you want to go today — I’ll be right here with you.`
     : `Welcome, ${fname}! I’m Professor Vance. When you’re ready, choose a path and we’ll get started.`;
   if(window._vanceAudio) { window._vanceAudio.pause(); window._vanceAudio.currentTime = 0; }
+  // Update hub heading with user's first name
+  const hubHeading = document.getElementById('hub-heading');
+  if(hubHeading) hubHeading.textContent = isReturning ? 'Welcome back, ' + fname + '! \uD83D\uDC4B' : 'Welcome, ' + fname + '! Ready to get started?';
   scheduleVance(()=>showAvatarAndSpeak('_direct_', fname, hubMsg), 300);
 }
 
@@ -4209,9 +4212,9 @@ function showXPToast(amount, label='') {
 function showAvatarAndSpeak(context, name, directText) {
   // Cancel any pending scheduled speech and stop current audio before starting a new one
   cancelVance();
-  // Don't interrupt with Vance tips while the hub choice screen is open
+  // Don't interrupt with auto slide-tips while the hub is open — but DO allow direct messages (welcome back etc.)
   const hub = document.getElementById('home-gateway');
-  if(hub && hub.style.display === 'flex') return;
+  if(hub && hub.style.display === 'flex' && context !== '_direct_') return;
 
   const cont   = document.getElementById('avatar-container');
   const bubble = document.getElementById('avatar-speech');
