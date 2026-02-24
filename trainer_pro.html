@@ -3089,7 +3089,9 @@ function initApp() {
     showSlide(1);
     hideHomeGateway();
   } else {
-    // Returning user: always land on the hub (welcome-back page)
+    // Returning user: mark hasOnboarded in memory FIRST so showHomeGateway
+    // doesn't mistakenly fire the tutorial before the hub is shown
+    if(window._userData) window._userData.hasOnboarded = true;
     showSlide(currentSlide);
     showHomeGateway();
   }
@@ -3291,7 +3293,7 @@ function showHomeGateway() {
   if(na) na.style.display = 'none';
   // Show Professor Vance on the hub with a welcome greeting
   const fname = currentFirstName();
-  const isReturning = !!(window._userData?.currentSlide > 0 || window._userData?.completedTraining);
+  const isReturning = !!(window._userData?.currentSlide > 0 || window._userData?.completedTraining || window._userData?.hasOnboarded);
   const hubMsg = isReturning
     ? `Welcome back, ${fname}! Pick where you want to go today — I’ll be right here with you.`
     : `Welcome, ${fname}! I’m Professor Vance. When you’re ready, choose a path and we’ll get started.`;
