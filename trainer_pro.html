@@ -3112,6 +3112,12 @@ function initApp() {
   if(greetEl) greetEl.textContent = completed ? 'Welcome back,' : 'Welcome,';
   const welEl = document.getElementById('welcome-name');
   if(welEl) welEl.textContent = firstName;
+  // Also retry after 1s in case Firebase auth resolves after initApp
+  setTimeout(() => {
+    const fn = currentFirstName();
+    const we = document.getElementById('welcome-name');
+    if(we && fn && fn !== 'there') we.textContent = fn;
+  }, 1000);
 
   // Handle PWA home-screen shortcut deep links
   if (window._pwaShortcut) {
