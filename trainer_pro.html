@@ -5021,7 +5021,7 @@ async function loadReports() {
       const completedDate = u.completedAt
         ? new Date(u.completedAt).toLocaleDateString()
         : (done && u.lastLogin ? new Date(u.lastLogin).toLocaleDateString()+' *' : '—');
-      const quizScore = u.finalQuizScore != null ? `${u.finalQuizScore}/10` : '—';
+      const quizScore = u.finalQuizScore != null ? `${u.finalQuizScore}/15` : '—';
       const daysAgo = u.lastLogin ? Math.round((Date.now()-u.lastLogin)/864e5) : null;
       const loginStr = daysAgo === 0 ? 'Today' : daysAgo === 1 ? 'Yesterday' : daysAgo != null ? `${daysAgo}d ago` : '—';
       const loginColor = daysAgo != null && daysAgo > 7 && !done ? '#dc2626' : '#475569';
@@ -5031,7 +5031,7 @@ async function loadReports() {
         <td style="padding:.6rem 1rem;color:#64748b;font-size:.8rem">${u.jobTitle||'—'}</td>
         <td style="padding:.6rem 1rem;text-align:center"><span style="background:${done?'#dcfce7':'#fef9c3'};color:${done?'#15803d':'#92400e'};padding:.2rem .65rem;border-radius:999px;font-size:.72rem;font-weight:800">${done?'✅ Complete':'⏳ Slide '+(u.currentSlide||0)+'/'+totalSl}</span></td>
         <td style="padding:.6rem 1rem;text-align:center;font-weight:700;color:#7c3aed">${(u.xp||0).toLocaleString()}</td>
-        <td style="padding:.6rem 1rem;text-align:center;font-weight:700;color:${u.finalQuizScore>=9?'#15803d':u.finalQuizScore>0?'#92400e':'#94a3b8'}">${quizScore}</td>
+        <td style="padding:.6rem 1rem;text-align:center;font-weight:700;color:${u.finalQuizScore>=14?'#15803d':u.finalQuizScore>0?'#92400e':'#94a3b8'}">${quizScore}</td>
         <td style="padding:.6rem 1rem;text-align:center;color:#475569;font-size:.8rem">${completedDate}</td>
         <td style="padding:.6rem 1rem;text-align:center;font-size:.8rem;font-weight:700">${u.dueDate&&!done?`<span style="color:${Math.ceil((u.dueDate-Date.now())/864e5)<0?'#dc2626':Math.ceil((u.dueDate-Date.now())/864e5)<=3?'#d97706':'#2563eb'};">${Math.ceil((u.dueDate-Date.now())/864e5)<0?'⚠️ Overdue':'📅 '+new Date(u.dueDate).toLocaleDateString()}</span>`:done?'—':'Not set'}</td>
         <td style="padding:.6rem 1rem;text-align:center;color:${loginColor};font-size:.8rem;font-weight:${daysAgo>7&&!done?'800':'400'}">${loginStr}</td>
@@ -6877,7 +6877,7 @@ function updateFinalStats() {
   if(cxp) cxp.textContent = xp.toLocaleString();
   if(clv) clv.textContent = level;
   if(csc) csc.textContent = scenariosDone;
-  if(cqs) cqs.textContent = finalQuizPassed ? `${finalQuizScore}/10` : 'Locked';
+  if(cqs) cqs.textContent = finalQuizPassed ? `${finalQuizScore}/15` : 'Locked';
 }
 
 // ─── Sign Out ─────────────────────────────────────────────
