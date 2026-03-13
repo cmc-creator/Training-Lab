@@ -1,7 +1,7 @@
 {
-  "name": "De-escalation Mastery Lab",
-  "short_name": "DSH Training",
-  "description": "Destiny Springs Healthcare — Interactive De-escalation Training for Clinical Staff",
+  "name": "NyxLab™",
+  "short_name": "NyxLab™",
+  "description": "NyxLab™ by Nyx Collective LLC — De-escalation & Crisis Intervention Training for Destiny Springs Healthcare",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",

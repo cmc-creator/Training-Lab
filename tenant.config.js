@@ -1,5 +1,5 @@
 // ─────────────────────────────────────────────────────────────────────────────
-// TENANT CONFIGURATION — De-escalation Mastery Lab™
+// TENANT CONFIGURATION — NyxLab™ by Nyx Collective LLC
 // ─────────────────────────────────────────────────────────────────────────────
 // To white-label this platform for a new organization:
 //   1. Copy this file into the new deployment folder
@@ -21,7 +21,7 @@ window.TENANT = {
 
   brandName:     'NyxLab\u2122',
   productLine:   'NyxLab\u2122 \u2014 A Nyx Collective LLC Platform',
-  moduleCount:   27,
+  moduleCount:   31,
   tagline:       'De-escalation &amp; Crisis Intervention Training \u2014 Destiny Springs Healthcare Edition',
   subtopics:     'CPI Model \u00B7 Diagnosis-Specific Care \u00B7 Trauma-Informed Practice \u00B7 Safety Protocols',
   copyrightYear: '2026',
