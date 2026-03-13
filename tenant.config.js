@@ -24,6 +24,23 @@ window.TENANT = {
   moduleCount:   31,
   tagline:       'De-escalation &amp; Crisis Intervention Training \u2014 Destiny Springs Healthcare Edition',
   subtopics:     'CPI Model \u00B7 Diagnosis-Specific Care \u00B7 Trauma-Informed Practice \u00B7 Safety Protocols',
+
+  // ── Certification & Compliance ────────────────────────────────────────────────────────────────────────────────────────
+  // Displayed on the certificate and compliance reports. Update per org as needed.
+  certContactHours:    4.0,
+  certType:            'Internal Competency Verification',
+  certProvider:        'Destiny Springs Healthcare Education Dept.',
+  certRenewalMonths:   12,
+  trainingAdminName:   'Training & Education Department',
+  certCompetencyDomains: [
+    'De-escalation & Crisis Communication',
+    'Trauma-Informed Care',
+    'Diagnosis-Specific Behavioral Interventions',
+    'Safety & Restraint Prevention',
+    'Cultural Humility & Person-Centered Care',
+    'Mandated Reporting & Documentation',
+  ],
+
   copyrightYear: '2026',
   copyrightHolder: 'Nyx Collective LLC',
 
