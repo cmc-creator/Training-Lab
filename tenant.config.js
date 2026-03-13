@@ -19,11 +19,13 @@ window.TENANT = {
   orgWebsite:    'https://www.destinyspringshealthcare.com/',
   orgAddress:    '17300 N Dysart Rd, Surprise AZ 85378',
 
-  brandName:     'De-escalation Mastery Lab\u2122',
+  brandName:     'NyxLab\u2122',
+  productLine:   'NyxLab\u2122 \u2014 A Nyx Collective LLC Platform',
   moduleCount:   27,
-  tagline:       '27-Module Inpatient Psychiatric Crisis Intervention Training',
+  tagline:       'De-escalation &amp; Crisis Intervention Training \u2014 Destiny Springs Healthcare Edition',
   subtopics:     'CPI Model \u00B7 Diagnosis-Specific Care \u00B7 Trauma-Informed Practice \u00B7 Safety Protocols',
   copyrightYear: '2026',
+  copyrightHolder: 'Nyx Collective LLC',
 
   // ── Assets ────────────────────────────────────────────────────────────────
   // Relative or absolute URLs. Replace with CDN links for hosted tenants.

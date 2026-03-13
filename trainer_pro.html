@@ -2,8 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<!-- Desktop-first viewport: optimized for desktop (1024px min) but mobile-adaptive -->
-<meta name="viewport" content="width=1024, initial-scale=1.0, user-scalable=yes">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 <title>DSH De-escalation Mastery Lab™</title>
 
 <!-- PWA -->
@@ -605,7 +604,7 @@ h1,h2,.font-display{font-family:'Montserrat',sans-serif}
       <!-- Footer strip -->
       <div style="border-top:1px solid rgba(255,255,255,.15);padding-top:1.5rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.75rem">
         <div style="display:flex;align-items:center;gap:.6rem">
-          <span id="auth-copyright" style="font-size:.82rem;color:#cbd5e1;font-weight:600">© 2026 De-escalation Mastery Lab™</span>
+          <span id="auth-copyright" style="font-size:.82rem;color:#cbd5e1;font-weight:600">© 2026 NyxLab™ · Nyx Collective LLC</span>
           <span style="color:#475569;font-size:.9rem">·</span>
           <a href="https://www.destinyspringshealthcare.com/" target="_blank" style="font-size:.82rem;color:#7dd3fc;text-decoration:none;font-weight:700">destinyspringshealthcare.com</a>
         </div>
@@ -805,7 +804,7 @@ h1,h2,.font-display{font-family:'Montserrat',sans-serif}
   <div style="width:100%;max-width:1100px;display:grid;grid-template-columns:1.1fr 1fr;gap:1.75rem;align-items:center;color:#e2e8f0">
     <div style="display:flex;flex-direction:column;gap:1.1rem">
       <div class="logo-inline" aria-label="Destiny Springs Healthcare logo" style="max-width:360px;width:100%"></div>
-      <div id="hub-heading" style="font-family:Montserrat,sans-serif;font-weight:900;font-size:clamp(2rem,4vw,2.7rem);line-height:1.05;color:white">Welcome back to the Destiny Springs De-escalation Mastery Lab™</div>
+      <div id="hub-heading" style="font-family:Montserrat,sans-serif;font-weight:900;font-size:clamp(2rem,4vw,2.7rem);line-height:1.05;color:white">Welcome back to NyxLab™</div>
       <p style="color:#cbd5e1;font-size:1rem;line-height:1.7;max-width:640px;font-weight:600">Pick where you want to go. Restart the full training from slide one, or jump straight into the live Lab to practice scenarios. Your XP, level, and lab credits stay with you.</p>
       <div style="display:flex;flex-wrap:wrap;gap:1rem;color:#94a3b8;font-weight:700;font-size:.9rem">
         <div id="hub-org-pill" style="display:flex;align-items:center;gap:.5rem;padding:.65rem 1rem;border-radius:.9rem;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08)">Destiny Springs Healthcare</div>
@@ -870,7 +869,7 @@ h1,h2,.font-display{font-family:'Montserrat',sans-serif}
 <div id="admin-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:150;align-items:center;justify-content:center;padding:1rem">
   <div class="card w-full max-w-5xl" style="max-height:90vh;overflow:hidden;display:flex;flex-direction:column">
     <div class="p-6 border-b border-slate-200 flex items-center justify-between flex-shrink-0">
-      <div><h2 class="text-xl font-black text-slate-900">🏥 Command Center</h2><p id="admin-role-badge" class="text-xs text-slate-400 font-semibold">Destiny Springs Healthcare — Training Management</p></div>
+      <div><h2 class="text-xl font-black text-slate-900">NyxLab™ Command Center</h2><p id="admin-role-badge" class="text-xs text-slate-400 font-semibold">Destiny Springs Healthcare — Training Management</p></div>
       <button onclick="closeAdmin()" class="w-9 h-9 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center font-black text-slate-600">✕</button>
     </div>
     <div class="flex gap-0 border-b border-slate-200 px-6 flex-shrink-0" style="overflow-x:auto">
@@ -941,6 +940,7 @@ h1,h2,.font-display{font-family:'Montserrat',sans-serif}
               <option value="bipolar">Bipolar</option>
               <option value="ptsd">PTSD</option>
               <option value="bpd">BPD</option>
+              <option value="medication_refusal">💊 Medication Refusal</option>
             </select>
             <select id="lab-diff" class="input-field" style="width:180px">
               <option value="standard">Standard</option>
@@ -1356,6 +1356,9 @@ h1,h2,.font-display{font-family:'Montserrat',sans-serif}
 <!-- Minimized pill -->
 <div id="avatar-mini" style="display:none;position:fixed;bottom:5rem;right:1rem;z-index:91;background:linear-gradient(135deg,#2563eb,#7c3aed);color:white;padding:.5rem .75rem;border-radius:.9rem;font-weight:900;cursor:pointer;box-shadow:0 8px 24px rgba(0,0,0,.25);font-size:.82rem" onclick="restorePax()">🎓 Vance (listening)</div>
 
+<!-- Persistent Prof. Vance FAB — always visible during training -->
+<button id="vance-fab" onclick="openChat()" title="Ask Professor Vance" style="display:none;position:fixed;bottom:5.4rem;right:1.1rem;z-index:92;background:linear-gradient(135deg,#1d4ed8,#7c3aed);color:white;border:none;border-radius:50%;width:52px;height:52px;font-size:1.4rem;cursor:pointer;box-shadow:0 6px 20px rgba(37,99,235,.55);transition:transform .2s,box-shadow .2s" onmouseover="this.style.transform='scale(1.1)';this.style.boxShadow='0 8px 28px rgba(37,99,235,.7)'" onmouseout="this.style.transform='';this.style.boxShadow='0 6px 20px rgba(37,99,235,.55)'">🎓</button>
+
 <div style="position:fixed;top:0;left:0;right:0;height:4px;background:#1e293b;z-index:100">
   <div id="progress-bar" class="progress-bar" style="height:100%;background:linear-gradient(90deg,#2563eb,#7c3aed);width:3.7%;transition:width .4s ease"></div>
 </div>
@@ -1364,33 +1367,53 @@ h1,h2,.font-display{font-family:'Montserrat',sans-serif}
 <button id="side-arrow-prev" onclick="prevSlide()" title="Previous slide" style="position:fixed;left:0;top:50%;transform:translateY(-50%);z-index:79;width:52px;height:80px;background:rgba(10,15,30,.65);border:none;color:white;font-size:1.6rem;cursor:pointer;border-radius:0 .75rem .75rem 0;backdrop-filter:blur(8px);transition:background .2s" onmouseover="this.style.background='rgba(37,99,235,.7)'" onmouseout="this.style.background='rgba(10,15,30,.65)'">&#8249;</button>
 <button id="side-arrow-next" onclick="nextSlide()" title="Next slide" style="position:fixed;right:0;top:50%;transform:translateY(-50%);z-index:79;width:52px;height:80px;background:rgba(37,99,235,.7);border:none;color:white;font-size:1.6rem;cursor:pointer;border-radius:.75rem 0 0 .75rem;backdrop-filter:blur(8px);transition:background .2s" onmouseover="this.style.background='rgba(37,99,235,.92)'" onmouseout="this.style.background='rgba(37,99,235,.7)'">&#8250;</button>
 
-<nav style="position:fixed;bottom:0;left:0;right:0;background:rgba(10,15,30,.97);backdrop-filter:blur(16px);border-top:1px solid rgba(255,255,255,.07);padding:.6rem 1rem;display:flex;align-items:center;gap:.5rem;z-index:80;flex-wrap:wrap;row-gap:.35rem">
-  <!-- Left: slide counter + XP -->
-  <div style="display:flex;align-items:center;gap:.75rem;flex-shrink:0">
-    <div id="nav-slide-counter" style="color:#475569;font-size:.78rem;font-weight:800;min-width:46px">1 / 27</div>
-    <div style="color:#64748b;font-size:.72rem;font-weight:700;white-space:nowrap">Lvl <span id="nav-level">1</span> · <span id="nav-xp">0</span> XP</div>
-    <div style="color:#10b981;font-size:.72rem;font-weight:800;white-space:nowrap">💠 <span id="nav-lc">0 LC</span></div>
-  </div>
+<!-- ═══════════════════════ BOTTOM NAV BAR — NyxLab™ ══ -->
+<nav id="main-nav" style="position:fixed;bottom:0;left:0;right:0;z-index:80">
+  <!-- Slim progress strip at very top of nav -->
+  <div style="height:3px;background:rgba(255,255,255,.05)"><div id="nav-progress-fill" style="height:100%;width:0%;background:linear-gradient(90deg,#2563eb,#7c3aed);transition:width .4s ease"></div></div>
+  <!-- Main row -->
+  <div style="background:rgba(8,12,24,.97);backdrop-filter:blur(22px);border-top:1px solid rgba(255,255,255,.06);padding:.4rem .85rem;display:flex;align-items:center;gap:.4rem">
 
-  <!-- Spacer -->
-  <div style="flex:1"></div>
+    <!-- ① Stats group -->
+    <div style="display:flex;align-items:center;gap:.4rem;flex-shrink:0;padding-right:.65rem;border-right:1px solid rgba(255,255,255,.07)">
+      <span id="nav-slide-counter" style="font-size:.7rem;font-weight:800;color:#475569;min-width:44px">1 / 33</span>
+      <div style="display:flex;align-items:center;gap:.2rem;font-size:.65rem;font-weight:800">
+        <span style="color:#64748b">Lv</span>
+        <span id="nav-level" style="color:#a78bfa">1</span>
+        <span style="color:#334155;margin:0 .1rem">·</span>
+        <span id="nav-xp" style="color:#60a5fa">0 XP</span>
+        <span style="color:#334155;margin:0 .1rem">·</span>
+        <span style="font-size:.7rem">💠</span>
+        <span id="nav-lc" style="color:#34d399">0 LC</span>
+      </div>
+    </div>
 
-  <!-- Right controls -->
-  <div style="display:flex;gap:.4rem;align-items:center;flex-wrap:wrap;justify-content:flex-end">
-    <button onclick="toggleAmbience()" id="ambience-btn" title="Toggle background ambience" style="background:rgba(59,130,246,.12);border:1px solid rgba(59,130,246,.25);color:#bfdbfe;padding:.5rem .78rem;border-radius:.8rem;font-size:.85rem;font-weight:800;cursor:pointer" onmouseover="this.style.background='rgba(59,130,246,.2)'" onmouseout="this.style.background='rgba(59,130,246,.12)'">🎵 Ambience (tap to play)</button>
-    <button onclick="openChat()" title="Prof. Vance & chat" style="background:rgba(96,165,250,.18);border:1px solid rgba(96,165,250,.3);color:#bfdbfe;padding:.5rem .78rem;border-radius:.8rem;font-size:.85rem;font-weight:800;cursor:pointer;display:flex;align-items:center;gap:.4rem" onmouseover="this.style.background='rgba(96,165,250,.26)'" onmouseout="this.style.background='rgba(96,165,250,.18)'">🎓 <span style="font-size:.8rem">Vance & Chat</span></button>
-    <button onclick="openVideoModal()" title="Example videos" style="background:rgba(251,191,36,.16);border:1px solid rgba(251,191,36,.35);color:#facc15;padding:.5rem .78rem;border-radius:.8rem;font-size:.85rem;font-weight:800;cursor:pointer" onmouseover="this.style.background='rgba(251,191,36,.24)'" onmouseout="this.style.background='rgba(251,191,36,.16)'">🎬 Videos</button>
-    <button onclick="openLabRoom()" title="Laboratory Room" style="background:rgba(16,185,129,.14);border:1px solid rgba(16,185,129,.3);color:#a7f3d0;padding:.5rem .78rem;border-radius:.8rem;font-size:.85rem;font-weight:800;cursor:pointer;display:flex;align-items:center;gap:.4rem;white-space:nowrap" onmouseover="this.style.background='rgba(16,185,129,.22)'" onmouseout="this.style.background='rgba(16,185,129,.14)'">🧪 Lab Room</button>
-    <button onclick="openAdminPrompt()" title="Admin Dashboard" style="background:rgba(124,58,237,.18);border:1px solid rgba(124,58,237,.35);color:#c4b5fd;padding:.5rem .7rem;border-radius:.8rem;font-size:.85rem;font-weight:800;cursor:pointer" onmouseover="this.style.background='rgba(124,58,237,.3)'" onmouseout="this.style.background='rgba(124,58,237,.18)'">⚙️</button>
-    <button onclick="prevSlide()" title="Previous slide" style="background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.18);color:white;width:48px;height:48px;border-radius:.875rem;font-size:1.5rem;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0" onmouseover="this.style.background='rgba(255,255,255,.22)'" onmouseout="this.style.background='rgba(255,255,255,.1)'">&#8249;</button>
-    <button onclick="showHomeGateway()" title="Home / Hub" style="background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);color:#94a3b8;width:48px;height:48px;border-radius:.875rem;font-size:1.25rem;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0" onmouseover="this.style.background='rgba(255,255,255,.15)'" onmouseout="this.style.background='rgba(255,255,255,.07)'">🏠</button>
-    <button onclick="nextSlide()" title="Next slide" style="background:#2563eb;color:white;width:48px;height:48px;border-radius:.875rem;font-size:1.5rem;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 4px 14px rgba(37,99,235,.5)" onmouseover="this.style.background='#1d4ed8'" onmouseout="this.style.background='#2563eb'">&#8250;</button>
-    <!-- My Account button -->
-    <button onclick="openAccountModal()" title="My Account" style="display:flex;align-items:center;gap:.45rem;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);cursor:pointer;padding:.3rem .6rem .3rem .35rem;border-radius:.875rem;flex-shrink:0" onmouseover="this.style.background='rgba(255,255,255,.14)'" onmouseout="this.style.background='rgba(255,255,255,.07)'">
-      <div style="width:30px;height:30px;background:linear-gradient(135deg,#2563eb,#7c3aed);border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:900;color:white;font-size:.8rem;flex-shrink:0" id="nav-avatar-initials"></div>
-      <span style="color:white;font-weight:800;font-size:.82rem;white-space:nowrap"><span id="nav-name">My Account</span></span>
-    </button>
-    <button onclick="doSignOut()" title="Sign out" style="background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.25);color:#fca5a5;padding:.5rem .72rem;border-radius:.8rem;font-size:.85rem;font-weight:800;cursor:pointer" onmouseover="this.style.background='rgba(239,68,68,.25)'" onmouseout="this.style.background='rgba(239,68,68,.12)'">Sign Out</button>
+    <div style="flex:1"></div>
+
+    <!-- ② Feature buttons — uniform pill style -->
+    <div style="display:flex;align-items:center;gap:.28rem">
+      <button onclick="openChat()" title="Ask Professor Vance" style="display:flex;align-items:center;gap:.32rem;background:linear-gradient(135deg,rgba(96,165,250,.2),rgba(124,58,237,.18));border:1px solid rgba(96,165,250,.38);color:#93c5fd;padding:.38rem .7rem;border-radius:.65rem;font-size:.76rem;font-weight:800;cursor:pointer;white-space:nowrap;transition:filter .15s" onmouseover="this.style.filter='brightness(1.3)'" onmouseout="this.style.filter=''">🎓 <span>Prof. Vance</span></button>
+      <button onclick="openLabRoom()" title="NyxLab Laboratory Room" style="display:flex;align-items:center;gap:.32rem;background:rgba(16,185,129,.14);border:1px solid rgba(16,185,129,.32);color:#6ee7b7;padding:.38rem .7rem;border-radius:.65rem;font-size:.76rem;font-weight:800;cursor:pointer;white-space:nowrap;transition:filter .15s" onmouseover="this.style.filter='brightness(1.3)'" onmouseout="this.style.filter=''">🧪 <span>Lab</span></button>
+      <button onclick="openVideoModal()" title="Training Videos" style="display:flex;align-items:center;gap:.32rem;background:rgba(251,191,36,.12);border:1px solid rgba(251,191,36,.3);color:#fde68a;padding:.38rem .7rem;border-radius:.65rem;font-size:.76rem;font-weight:800;cursor:pointer;white-space:nowrap;transition:filter .15s" onmouseover="this.style.filter='brightness(1.3)'" onmouseout="this.style.filter=''">🎬 <span>Videos</span></button>
+      <button onclick="toggleAmbience()" id="ambience-btn" title="Toggle ambient sound" style="background:rgba(59,130,246,.1);border:1px solid rgba(59,130,246,.22);color:#93c5fd;padding:.38rem .6rem;border-radius:.65rem;font-size:.85rem;cursor:pointer;transition:filter .15s" onmouseover="this.style.filter='brightness(1.3)'" onmouseout="this.style.filter=''">🎵</button>
+      <button onclick="openAdminPrompt()" title="Admin Dashboard" style="background:rgba(124,58,237,.1);border:1px solid rgba(124,58,237,.26);color:#c4b5fd;padding:.38rem .6rem;border-radius:.65rem;font-size:.85rem;cursor:pointer;transition:filter .15s" onmouseover="this.style.filter='brightness(1.3)'" onmouseout="this.style.filter=''">⚙️</button>
+    </div>
+
+    <!-- Divider -->
+    <div style="width:1px;height:26px;background:rgba(255,255,255,.07);margin:0 .3rem;flex-shrink:0"></div>
+
+    <!-- ③ Navigation controls -->
+    <div style="display:flex;align-items:center;gap:.28rem;flex-shrink:0">
+      <button onclick="prevSlide()" title="Previous slide" style="background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);color:white;width:36px;height:36px;border-radius:.65rem;font-size:1.15rem;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .15s" onmouseover="this.style.background='rgba(255,255,255,.18)'" onmouseout="this.style.background='rgba(255,255,255,.07)'">&#8249;</button>
+      <button onclick="showHomeGateway()" title="Home Hub" style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);color:#64748b;width:36px;height:36px;border-radius:.65rem;font-size:.95rem;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:color .15s" onmouseover="this.style.color='white'" onmouseout="this.style.color='#64748b'">🏠</button>
+      <button onclick="nextSlide()" title="Next slide" style="background:linear-gradient(135deg,#2563eb,#1d4ed8);color:white;width:36px;height:36px;border-radius:.65rem;font-size:1.15rem;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 3px 10px rgba(37,99,235,.5);transition:filter .15s" onmouseover="this.style.filter='brightness(1.15)'" onmouseout="this.style.filter=''">&#8250;</button>
+      <!-- Account pill -->
+      <button onclick="openAccountModal()" title="My Account" style="display:flex;align-items:center;gap:.35rem;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);cursor:pointer;padding:.28rem .55rem .28rem .28rem;border-radius:.65rem;flex-shrink:0;transition:background .15s" onmouseover="this.style.background='rgba(255,255,255,.12)'" onmouseout="this.style.background='rgba(255,255,255,.05)'">
+        <div id="nav-avatar-initials" style="width:24px;height:24px;background:linear-gradient(135deg,#2563eb,#7c3aed);border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:900;color:white;font-size:.68rem;flex-shrink:0"></div>
+        <span id="nav-name" style="color:white;font-weight:800;font-size:.72rem;white-space:nowrap">Account</span>
+      </button>
+      <button onclick="doSignOut()" title="Sign out" style="background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.18);color:#fca5a5;padding:.35rem .55rem;border-radius:.65rem;font-size:.72rem;font-weight:800;cursor:pointer;white-space:nowrap;transition:background .15s" onmouseover="this.style.background='rgba(239,68,68,.22)'" onmouseout="this.style.background='rgba(239,68,68,.08)'">Sign Out</button>
+    </div>
   </div>
 </nav>
 
@@ -1513,13 +1536,13 @@ h1,h2,.font-display{font-family:'Montserrat',sans-serif}
       <img src="destiny-springs-logo.png" alt="Destiny Springs Healthcare" style="width:100%;object-fit:contain;display:block">
     </div>
     <div class="badge" style="background:rgba(37,99,235,.2);color:#93c5fd;border:1px solid rgba(37,99,235,.3);margin-bottom:2rem;font-size:.7rem">
-      🏥 Inpatient Psychiatric Acute Care · Est. 2026
+      NyxLab™ · Est. 2026 · Nyx Collective LLC
     </div>
     <h1 style="font-size:clamp(2.5rem,8vw,5.5rem);color:white;line-height:.95;margin-bottom:1.5rem;font-family:Montserrat,sans-serif;font-weight:900">
-      De-escalation<br><span style="background:linear-gradient(90deg,#60a5fa,#a78bfa);-webkit-background-clip:text;-webkit-text-fill-color:transparent">Mastery Lab™</span>
+      NyxLab™<br><span style="background:linear-gradient(90deg,#60a5fa,#a78bfa);-webkit-background-clip:text;-webkit-text-fill-color:transparent">De-escalation</span>
     </h1>
-    <p style="color:#94a3b8;font-size:1.1rem;margin-bottom:.5rem;font-weight:300">Destiny Springs Healthcare</p>
-    <p style="color:#475569;font-size:.8rem;margin-bottom:3rem">© 2026 De-escalation Mastery Lab™. All Rights Reserved. Proprietary Training Content.</p>
+    <p style="color:#94a3b8;font-size:1rem;margin-bottom:.25rem;font-weight:600">Mastery Lab · Destiny Springs Healthcare Edition</p>
+    <p style="color:#475569;font-size:.8rem;margin-bottom:3rem">© 2026 NyxLab™ · Nyx Collective LLC · All Rights Reserved · Deployed for Destiny Springs Healthcare</p>
     <div id="welcome-card" style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:1.5rem;padding:2rem;max-width:520px;width:100%;margin-bottom:2.5rem;backdrop-filter:blur(12px)">
       <p id="welcome-greeting" style="color:#94a3b8;font-size:.85rem;margin-bottom:.5rem">Welcome,</p>
       <p id="welcome-name" style="color:white;font-size:1.75rem;font-weight:900;font-family:Montserrat,sans-serif;margin-bottom:1rem">&nbsp;</p>
@@ -2384,6 +2407,7 @@ function getSlides14to27() { return `
           <option value="bipolar">📊 Bipolar Disorder</option>
           <option value="ptsd">🛡️ PTSD</option>
           <option value="bpd">💔 Borderline PD</option>
+          <option value="medication_refusal">💊 Medication Refusal</option>
         </select>
       </div>
       <div id="scenario-box" style="background:#f8fafc;border:2px solid #e2e8f0;border-radius:1rem;padding:1.25rem;min-height:140px;font-size:.875rem;color:#374151;line-height:1.7;font-style:italic;font-weight:500">Click Generate to receive a crisis scenario...</div>
@@ -2435,6 +2459,7 @@ function getSlides14to27() { return `
           <option value="bpd">Borderline PD</option>
           <option value="ptsd">PTSD</option>
           <option value="bipolar">Bipolar (Manic)</option>
+          <option value="medication_refusal">Medication Refusal</option>
         </select>
       </div>
       <div>
@@ -2766,14 +2791,167 @@ function getSlides14to27() { return `
   </div>
 </div>
 
-<!-- SLIDE 28 — FINAL KNOWLEDGE CHECK -->
+<!-- SLIDE 28 — MEDICATION REFUSAL -->
+<div class="slide" style="background:#f8fafc;padding-bottom:5rem">
+  <div style="padding:2.5rem 2rem 1rem">
+    <span class="badge" style="background:#fee2e2;color:#991b1b;margin-bottom:1rem">Module 5 · Clinical Scenarios</span>
+    <h2 style="font-size:2rem;font-weight:900;color:#0f172a;font-family:Montserrat,sans-serif">💊 Medication Refusal</h2>
+    <p style="color:#64748b;font-weight:600;margin-top:.4rem;font-size:.9rem">Refusal is a right, not a behavior problem. Your response determines whether it becomes a crisis — or a conversation.</p>
+  </div>
+  <div style="padding:0 2rem 2rem;display:grid;grid-template-columns:1fr 1fr;gap:1.25rem">
+    <div class="card p-6">
+      <h3 style="font-weight:900;font-size:.95rem;color:#0f172a;text-transform:uppercase;margin-bottom:1rem">🔍 Why Patients Refuse</h3>
+      <div style="display:flex;flex-direction:column;gap:.75rem">
+        <div style="background:#fef2f2;padding:.875rem;border-radius:.875rem;border-left:4px solid #ef4444"><p style="font-size:.8rem;font-weight:800;color:#dc2626;margin-bottom:.3rem">Side Effects</p><p style="font-size:.78rem;color:#7f1d1d">"It makes me feel like a zombie" / Sedation, weight gain, sexual dysfunction — these are real and valid.</p></div>
+        <div style="background:#fffbeb;padding:.875rem;border-radius:.875rem;border-left:4px solid #f59e0b"><p style="font-size:.8rem;font-weight:800;color:#92400e;margin-bottom:.3rem">Loss of Control</p><p style="font-size:.78rem;color:#78350f">Trauma survivors especially resist anything that alters their mind-state. Medication = feeling helpless.</p></div>
+        <div style="background:#eff6ff;padding:.875rem;border-radius:.875rem;border-left:4px solid #3b82f6"><p style="font-size:.8rem;font-weight:800;color:#1d4ed8;margin-bottom:.3rem">Lack of Trust</p><p style="font-size:.78rem;color:#1e3a8a">No therapeutic alliance = no medication compliance. The relationship IS the treatment.</p></div>
+        <div style="background:#f0fdf4;padding:.875rem;border-radius:.875rem;border-left:4px solid #22c55e"><p style="font-size:.8rem;font-weight:800;color:#166534;margin-bottom:.3rem">Denial of Illness</p><p style="font-size:.78rem;color:#14532d">"I don't need it" — common in mania/psychosis where insight is impaired neurologically, not willfully.</p></div>
+      </div>
+    </div>
+    <div class="card p-6">
+      <h3 style="font-weight:900;font-size:.95rem;color:#0f172a;text-transform:uppercase;margin-bottom:1rem">✓ The Collaborative Approach</h3>
+      <div style="display:flex;flex-direction:column;gap:.75rem">
+        <div style="background:#f8fafc;padding:1rem;border-radius:.875rem;border:1px solid #e2e8f0">
+          <p style="font-size:.75rem;font-weight:900;color:#6d28d9;text-transform:uppercase;margin-bottom:.4rem">Step 1 — Validate Without Reinforcing Refusal</p>
+          <p style="font-size:.8rem;color:#1e3a8a;font-style:italic">"I hear that you don't want to take it right now. Can you tell me what's making you hesitant?"</p>
+        </div>
+        <div style="background:#f8fafc;padding:1rem;border-radius:.875rem;border:1px solid #e2e8f0">
+          <p style="font-size:.75rem;font-weight:900;color:#6d28d9;text-transform:uppercase;margin-bottom:.4rem">Step 2 — Explore and Educate</p>
+          <p style="font-size:.8rem;color:#1e3a8a;font-style:italic">"The side effect you're describing is real — can we talk to the prescriber about adjusting it?"</p>
+        </div>
+        <div style="background:#f8fafc;padding:1rem;border-radius:.875rem;border:1px solid #e2e8f0">
+          <p style="font-size:.75rem;font-weight:900;color:#6d28d9;text-transform:uppercase;margin-bottom:.4rem">Step 3 — Offer Choice Architecture</p>
+          <p style="font-size:.8rem;color:#1e3a8a;font-style:italic">"Would it help to take it with food? Or at a different time? You have some options here."</p>
+        </div>
+        <div style="background:#f8fafc;padding:1rem;border-radius:.875rem;border:1px solid #e2e8f0">
+          <p style="font-size:.75rem;font-weight:900;color:#6d28d9;text-transform:uppercase;margin-bottom:.4rem">Step 4 — Respect & Document</p>
+          <p style="font-size:.8rem;color:#1e3a8a">Document: time, stated reason, interventions tried, who was notified. Never pressure or coerce outside legal involuntary procedures.</p>
+        </div>
+      </div>
+    </div>
+    <div class="card p-5 red-box">
+      <h3 style="font-weight:900;font-size:.9rem;color:#dc2626;text-transform:uppercase;margin-bottom:.875rem">✕ What NOT to Do</h3>
+      <ul style="font-size:.82rem;color:#7f1d1d;line-height:2;font-weight:600">
+        <li>✕ "You HAVE to take this" — coercion escalates and damages trust</li>
+        <li>✕ Threatening consequences during the conversation</li>
+        <li>✕ Repeated prompting (3+ times = harassment)</li>
+        <li>✕ Dismissing side-effect concerns as exaggerated</li>
+        <li>✕ Involving security for refusal alone (non-threatening)</li>
+      </ul>
+    </div>
+    <div class="card p-5 amber-box">
+      <h3 style="font-weight:900;font-size:.9rem;color:#92400e;text-transform:uppercase;margin-bottom:.875rem">⚖️ Legal Framework</h3>
+      <p style="font-size:.82rem;color:#78350f;line-height:1.75;font-weight:600">Competent adults have the <strong>legal right to refuse medication</strong> under informed consent law. Exceptions: court-ordered medication, acute danger to self/others (emergency involuntary), or determined incompetent by court. Always consult charge nurse/prescriber. Never administer against will outside legal protocols.</p>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 29 — NSSI & SELF-HARM DE-ESCALATION -->
+<div class="slide" style="background:white;padding-bottom:5rem">
+  <div style="padding:2.5rem 2rem 1rem">
+    <span class="badge" style="background:#fce7f3;color:#831843;margin-bottom:1rem">Module 5 · Safety Response</span>
+    <h2 style="font-size:2rem;font-weight:900;color:#0f172a;font-family:Montserrat,sans-serif">🩹 Non-Suicidal Self-Injury (NSSI)</h2>
+    <p style="color:#64748b;font-weight:600;margin-top:.4rem;font-size:.9rem">NSSI is a coping strategy, not a manipulation. Understanding the function is the first step to offering alternatives.</p>
+  </div>
+  <div style="padding:0 2rem 2rem;display:grid;grid-template-columns:1fr 1fr 1fr;gap:1.25rem">
+    <div class="card p-5 blue-box">
+      <h3 style="font-weight:900;font-size:.9rem;color:#1d4ed8;text-transform:uppercase;margin-bottom:.875rem">🧠 Understanding the Function</h3>
+      <p style="font-size:.8rem;color:#1e3a8a;font-weight:600;margin-bottom:.75rem">NSSI provides neurological relief from emotional pain through:</p>
+      <ul style="font-size:.82rem;color:#1e3a8a;line-height:2;font-weight:600">
+        <li>🔴 Endorphin release (pain → calm)</li>
+        <li>🎯 Focus / "feeling something" vs. numbness</li>
+        <li>🛑 Self-punishment / shame release</li>
+        <li>📢 Communication when words fail</li>
+        <li>🧊 Interrupting dissociation / grounding</li>
+      </ul>
+      <div style="background:white;padding:.75rem;border-radius:.75rem;margin-top:.75rem"><p style="font-size:.75rem;color:#1d4ed8;font-weight:700">Key: NSSI is distinct from suicide. Most people who self-harm are not trying to die — they are trying to survive.</p></div>
+    </div>
+    <div class="card p-5 green-box">
+      <h3 style="font-weight:900;font-size:.9rem;color:#166534;text-transform:uppercase;margin-bottom:.875rem">✓ Safe Responding</h3>
+      <ul style="font-size:.82rem;color:#14532d;line-height:2;font-weight:600">
+        <li>✓ Stay calm — visible distress escalates</li>
+        <li>✓ Provide first aid calmly, without drama</li>
+        <li>✓ No lectures during wound care</li>
+        <li>✓ "I'm glad you told me / asked for help"</li>
+        <li>✓ Assess for suicidality separately (C-SSRS)</li>
+        <li>✓ Notify charge RN and document</li>
+        <li>✓ Explore what happened right before</li>
+        <li>✓ Collaborate on an alternate coping plan</li>
+      </ul>
+    </div>
+    <div class="card p-5">
+      <h3 style="font-weight:900;font-size:.9rem;color:#0f172a;text-transform:uppercase;margin-bottom:.875rem">🔄 Safer Alternatives</h3>
+      <p style="font-size:.78rem;color:#475569;font-weight:600;margin-bottom:.75rem">Offer same neurological function without harm:</p>
+      <div style="display:flex;flex-direction:column;gap:.6rem">
+        <div style="background:#fef2f2;padding:.6rem .875rem;border-radius:.75rem;font-size:.78rem;color:#7f1d1d;font-weight:700">⬡ <strong>Cold:</strong> Ice cubes on skin, cold shower, face in cold water</div>
+        <div style="background:#fff7ed;padding:.6rem .875rem;border-radius:.75rem;font-size:.78rem;color:#9a3412;font-weight:700">🖊 <strong>Mark:</strong> Draw red lines on skin with marker</div>
+        <div style="background:#f0fdf4;padding:.6rem .875rem;border-radius:.75rem;font-size:.78rem;color:#166534;font-weight:700">✋ <strong>Pressure:</strong> Snap rubber band, grip ice</div>
+        <div style="background:#eef2ff;padding:.6rem .875rem;border-radius:.75rem;font-size:.78rem;color:#3730a3;font-weight:700">💪 <strong>Intense Exercise:</strong> Run in place, push-ups</div>
+        <div style="background:#faf5ff;padding:.6rem .875rem;border-radius:.75rem;font-size:.78rem;color:#5b21b6;font-weight:700">🎨 <strong>Expression:</strong> Rip paper, draw, scream into pillow</div>
+      </div>
+    </div>
+    <div class="card p-5 red-box" style="grid-column:1/-1">
+      <h3 style="font-weight:900;font-size:.9rem;color:#dc2626;text-transform:uppercase;margin-bottom:.875rem">⚠️ What NOT to Say</h3>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:.5rem;font-size:.8rem">
+        <div style="background:white;padding:.5rem .75rem;border-radius:.5rem;color:#dc2626;font-weight:700">"Why would you do that to yourself?" — shame-inducing</div>
+        <div style="background:white;padding:.5rem .75rem;border-radius:.5rem;color:#dc2626;font-weight:700">"That's so stupid" — invalidating</div>
+        <div style="background:white;padding:.5rem .75rem;border-radius:.5rem;color:#dc2626;font-weight:700">"You're just doing this for attention" — never true</div>
+        <div style="background:white;padding:.5rem .75rem;border-radius:.5rem;color:#dc2626;font-weight:700">"If you do that again, you'll lose privileges" — punitive, worsens shame</div>
+        <div style="background:white;padding:.5rem .75rem;border-radius:.5rem;color:#dc2626;font-weight:700">"That's not that bad" — minimizing real pain</div>
+        <div style="background:white;padding:.5rem .75rem;border-radius:.5rem;color:#dc2626;font-weight:700">"You can't hide things from us" — adversarial</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 30 — RESTRAINT & SECLUSION REDUCTION -->
+<div class="slide" style="background:linear-gradient(135deg,#1e3a8a,#1e40af);padding-bottom:5rem">
+  <div style="padding:2.5rem 2rem 1.5rem;text-align:center">
+    <span class="badge" style="background:rgba(255,255,255,.15);color:#bfdbfe;margin-bottom:1rem">Module 6 · Safety &amp; Ethics</span>
+    <h2 style="font-size:2rem;font-weight:900;color:white;font-family:Montserrat,sans-serif">🚫 Restraint &amp; Seclusion Reduction</h2>
+    <p style="color:#93c5fd;font-weight:600;margin-top:.4rem;font-size:.9rem">Every restraint carries risk. The goal is zero — and it is achievable with training, environment, and culture change.</p>
+  </div>
+  <div style="padding:0 2rem 2rem;display:grid;grid-template-columns:1fr 1fr;gap:1.25rem">
+    <div style="background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);border-radius:1.25rem;padding:1.5rem">
+      <h3 style="font-weight:900;color:white;font-size:.95rem;text-transform:uppercase;margin-bottom:1rem">⚠️ Why Restraint is a Last Resort</h3>
+      <ul style="font-size:.82rem;color:#bfdbfe;line-height:2;font-weight:600">
+        <li>🫀 Physical risk: positional asphyxia, cardiac arrest</li>
+        <li>🧠 Psychological: re-traumatization, lasting fear</li>
+        <li>⚗️ Chemical: over-sedation, respiratory depression</li>
+        <li>📋 Legal: JCAHO, CMS, state law requirements</li>
+        <li>💔 Relational: destroys therapeutic alliance</li>
+        <li>📈 Research: restraint often increases violence long-term</li>
+      </ul>
+    </div>
+    <div style="background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);border-radius:1.25rem;padding:1.5rem">
+      <h3 style="font-weight:900;color:white;font-size:.95rem;text-transform:uppercase;margin-bottom:1rem">✓ The Prevention Hierarchy</h3>
+      <div style="display:flex;flex-direction:column;gap:.75rem">
+        <div style="background:rgba(34,197,94,.15);border:1px solid rgba(34,197,94,.3);border-radius:.875rem;padding:.875rem"><p style="font-size:.75rem;font-weight:900;color:#86efac;text-transform:uppercase;margin-bottom:.3rem">1. Environment First</p><p style="font-size:.78rem;color:#bbf7d0">Reduce triggers: noise, crowding, poor lighting, lack of choice, staff behavior</p></div>
+        <div style="background:rgba(59,130,246,.15);border:1px solid rgba(59,130,246,.3);border-radius:.875rem;padding:.875rem"><p style="font-size:.75rem;font-weight:900;color:#93c5fd;text-transform:uppercase;margin-bottom:.3rem">2. Relationship &amp; De-escalation</p><p style="font-size:.78rem;color:#bfdbfe">The skills you've learned here: validation, choice, grounding, trauma-informed presence</p></div>
+        <div style="background:rgba(251,191,36,.15);border:1px solid rgba(251,191,36,.3);border-radius:.875rem;padding:.875rem"><p style="font-size:.75rem;font-weight:900;color:#fde68a;text-transform:uppercase;margin-bottom:.3rem">3. Sensory &amp; Comfort Strategies</p><p style="font-size:.78fm;color:#fef3c7">Comfort rooms, weighted vests, snacks, music, preferred staff — before physical intervention</p></div>
+        <div style="background:rgba(239,68,68,.15);border:1px solid rgba(239,68,68,.3);border-radius:.875rem;padding:.875rem"><p style="font-size:.75rem;font-weight:900;color:#fca5a5;text-transform:uppercase;margin-bottom:.3rem">4. Physical Hold — Only If Imminent Danger</p><p style="font-size:.78rem;color:#fecaca">All else failed + patient is actively harming self/others + least restrictive method used</p></div>
+      </div>
+    </div>
+    <div style="grid-column:1/-1;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:1.25rem;padding:1.5rem">
+      <h3 style="font-weight:900;color:white;font-size:.95rem;text-transform:uppercase;margin-bottom:1rem">📋 Required Documentation for Every Restraint</h3>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;font-size:.8rem">
+        <div style="background:rgba(255,255,255,.06);padding:.875rem;border-radius:.875rem;text-align:center"><div style="font-size:1.5rem;margin-bottom:.4rem">⏰</div><p style="color:#bfdbfe;font-weight:800">Time Applied &amp; Released</p></div>
+        <div style="background:rgba(255,255,255,.06);padding:.875rem;border-radius:.875rem;text-align:center"><div style="font-size:1.5rem;margin-bottom:.4rem">⚕️</div><p style="color:#bfdbfe;font-weight:800">Physician Order Obtained</p></div>
+        <div style="background:rgba(255,255,255,.06);padding:.875rem;border-radius:.875rem;text-align:center"><div style="font-size:1.5rem;margin-bottom:.4rem">👁️</div><p style="color:#bfdbfe;font-weight:800">15-Min Monitoring Checks</p></div>
+        <div style="background:rgba(255,255,255,.06);padding:.875rem;border-radius:.875rem;text-align:center"><div style="font-size:1.5rem;margin-bottom:.4rem">📝</div><p style="color:#bfdbfe;font-weight:800">Post-Incident Debrief with Patient</p></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 31 — FINAL KNOWLEDGE CHECK -->
 <div class="slide" style="background:linear-gradient(135deg,#0f172a 0%,#1e1b4b 50%,#0f172a 100%);padding-bottom:5rem">
   <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:3rem 2rem;text-align:center">
     <div style="font-size:5rem;margin-bottom:1rem;animation:bounce 1s ease infinite">🎓</div>
     <h2 style="font-size:clamp(1.75rem,5vw,3rem);font-weight:900;color:white;font-family:Montserrat,sans-serif;margin-bottom:.75rem">Final Knowledge Check</h2>
-    <p style="color:#a5b4fc;font-size:1rem;margin-bottom:2.5rem">Score 90% or higher to unlock your certificate on the next slide.</p>
+    <p style="color:#a5b4fc;font-size:1rem;margin-bottom:2.5rem">Score 93% or higher (14/15) to unlock your certificate on the next slide.</p>
     <div id="final-quiz-card" style="background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);border-radius:1rem;padding:1.25rem;max-width:960px;width:100%;margin-bottom:1.5rem">
-      <div style="display:flex;align-items:center;gap:.75rem;margin-bottom:.75rem"><div style="font-size:1.5rem">📝</div><div><div style="font-weight:900;color:white;font-size:1rem">10-question knowledge check</div><div style="color:#cbd5e1;font-size:.85rem;font-weight:600">Pass to continue.</div></div></div>
+      <div style="display:flex;align-items:center;gap:.75rem;margin-bottom:.75rem"><div style="font-size:1.5rem">📝</div><div><div style="font-weight:900;color:white;font-size:1rem">15-question knowledge check</div><div style="color:#cbd5e1;font-size:.85rem;font-weight:600">Score 14/15 (93%) to pass.</div></div></div>
       <div id="final-quiz-questions" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:.85rem"></div>
       <div style="display:flex;align-items:center;justify-content:space-between;gap:1rem;margin-top:1rem;flex-wrap:wrap">
         <div id="final-quiz-result" style="color:#cbd5e1;font-weight:700;font-size:.9rem">Answer all questions, then submit.</div>
@@ -2798,7 +2976,7 @@ function getSlides14to27() { return `
   <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:3rem 2rem;text-align:center">
     <div style="font-size:4.5rem;margin-bottom:1rem">📜</div>
     <h2 style="font-size:clamp(1.85rem,5vw,3rem);font-weight:900;color:white;font-family:Montserrat,sans-serif;margin-bottom:.5rem">Certificate of Completion</h2>
-    <p style="color:#a5b4fc;font-size:1rem;margin-bottom:2rem">Available after you score 90% or higher on the quiz.</p>
+    <p style="color:#a5b4fc;font-size:1rem;margin-bottom:2rem">Available after you score 93% or higher on the quiz (14/15).</p>
     <div style="background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);border-radius:1.5rem;padding:2rem;max-width:640px;width:100%;backdrop-filter:blur(12px);box-shadow:0 14px 40px rgba(0,0,0,.25)">
       <p id="cert-locked-msg" style="color:#cbd5e1;font-weight:700;font-size:.95rem;margin-bottom:1rem">Pass the quiz to unlock your certificate.</p>
       <button id="cert-btn" onclick="downloadCertificate()" disabled style="width:100%;background:linear-gradient(135deg,#2563eb,#7c3aed);color:white;font-weight:900;font-size:1rem;padding:1rem;border-radius:1rem;border:none;cursor:pointer;font-family:Montserrat,sans-serif;letter-spacing:.02em;box-shadow:0 8px 24px rgba(37,99,235,.4);opacity:.8;margin-bottom:1rem">
@@ -2867,8 +3045,8 @@ function applyTenantContent() {
   if(el('auth-tagline'))    el('auth-tagline').textContent   = `Master psychiatric de-escalation techniques through immersive training built for ${T.orgName} staff.`;
   if(el('auth-org-logo'))  { el('auth-org-logo').src = T.logoUrl; el('auth-org-logo').alt = T.orgName; }
   if(el('auth-privacy'))   el('auth-privacy').textContent   = `Your information is stored securely and used only for ${T.orgName} training purposes.`;
-  if(el('auth-copyright')) el('auth-copyright').textContent = `\u00A9 ${T.copyrightYear} ${T.brandName}`;
-  if(el('hub-heading'))    el('hub-heading').textContent    = `Welcome back to the ${T.orgName} ${T.brandName}`;
+  if(el('auth-copyright')) el('auth-copyright').textContent = `\u00A9 ${T.copyrightYear} NyxLab\u2122 \u00b7 ${T.copyrightHolder||'Nyx Collective LLC'}`;
+  if(el('hub-heading'))    el('hub-heading').textContent    = `Welcome back to NyxLab\u2122`;
   if(el('hub-org-pill'))   el('hub-org-pill').textContent   = T.orgName;
   if(el('admin-role-badge')) el('admin-role-badge').textContent = `${T.orgName} \u2014 Training Management`;
   if(el('lab-patient-name')) el('lab-patient-name').innerHTML = `${T.patientName} <span style="font-size:.75rem;font-weight:600;color:#94a3b8">\u2014 ${T.patientDx}</span>`;
@@ -3006,10 +3184,18 @@ async function doSignIn() {
   const email = document.getElementById('li-email').value.trim();
   const pass  = document.getElementById('li-pass').value;
   const err   = document.getElementById('auth-error');
+  const btn   = document.querySelector('#login-form .btn-primary');
   err.style.display='none';
   if (!email||!pass){err.textContent='Please enter email and password.';err.style.display='block';return;}
-  try { await window._signIn(email,pass); }
-  catch(e){ err.textContent = e.message.replace('Firebase: ',''); err.style.display='block'; }
+  if(btn){ btn.disabled=true; btn.textContent='Signing in…'; btn.style.opacity='0.75'; }
+  try {
+    await window._signIn(email,pass);
+    // onAuthStateChanged takes over from here — button stays in loading state until app loads
+  } catch(e) {
+    err.textContent = e.message.replace('Firebase: ','').replace(/\(.*?\)/g,'').trim() || 'Sign in failed. Check your email and password.';
+    err.style.display='block';
+    if(btn){ btn.disabled=false; btn.textContent='Sign In →'; btn.style.opacity='1'; }
+  }
 }
 
 async function doSignUp() {
@@ -3093,9 +3279,24 @@ function initApp() {
     currentSlide = 1;
     showSlide(1);
     hideHomeGateway();
+  } else if(completed) {
+    // Finished training: go straight to the certificate slide with a welcome-back message
+    showSlide(totalSlides - 1);
+    hideHomeGateway();
+    // Brief toast so they know they're not starting over
+    setTimeout(() => {
+      const fname = currentFirstName();
+      scheduleVance(() => showAvatarAndSpeak('_direct_', fname,
+        `Welcome back, ${fname}! Your certificate is right here. Feel free to explore or jump into the Lab.`), 500);
+    }, 400);
+  } else if(seenBefore && hasProgress) {
+    // Returning user mid-training: resume directly without the gateway
+    const resumeTarget = Math.max(1, currentSlide);
+    currentSlide = resumeTarget;
+    showSlide(resumeTarget);
+    hideHomeGateway();
   } else {
-    // Returning user: mark hasOnboarded in memory FIRST so showHomeGateway
-    // doesn't mistakenly fire the tutorial before the hub is shown
+    // Returning user but no measurable progress: show the hub gateway
     if(window._userData) window._userData.hasOnboarded = true;
     showSlide(currentSlide);
     showHomeGateway();
@@ -3170,10 +3371,12 @@ function showSlide(n) {
     const certBtn = document.getElementById('cert-btn');
     if(certBtn && !finalQuizPassed) certBtn.disabled = true;
   }
-  // Progress bar
+  // Progress bar (top strip + nav strip)
   const pct = totalSlides>1 ? (target/(totalSlides-1))*100 : 0;
   const pb = document.getElementById('progress-bar');
   if(pb) pb.style.width = pct+'%';
+  const npf = document.getElementById('nav-progress-fill');
+  if(npf) npf.style.width = pct+'%';
   // Counter
   const sc = document.getElementById('nav-slide-counter');
   if(sc) sc.textContent = `${target+1} / ${totalSlides}`;
@@ -3278,9 +3481,9 @@ function updateNavUI() {
   const navLevel = document.getElementById('nav-level');
   const navXP    = document.getElementById('nav-xp');
   const navLC    = document.getElementById('nav-lc');
-  if(navName)  navName.textContent  = firstName;
+  if(navName)  navName.textContent  = firstName || 'Account';
   if(navInit)  navInit.textContent  = initials;
-  if(navLevel) navLevel.textContent = `Level ${level}`;
+  if(navLevel) navLevel.textContent = level;
   if(navXP)    navXP.textContent    = `${xp.toLocaleString()} XP`;
   if(navLC)    navLC.textContent    = `${labCredits.toLocaleString()} LC`;
 }
@@ -3305,6 +3508,9 @@ function showHomeGateway() {
   const na = document.getElementById('side-arrow-next');
   if(pa) pa.style.display = 'none';
   if(na) na.style.display = 'none';
+  // Hide Vance FAB on hub
+  const vFab = document.getElementById('vance-fab');
+  if(vFab) vFab.style.display = 'none';
   // Show Professor Vance on the hub with a welcome greeting
   const fname = currentFirstName();
   const isReturning = !!(window._userData?.currentSlide > 0 || window._userData?.completedTraining || window._userData?.hasOnboarded);
@@ -3314,7 +3520,7 @@ function showHomeGateway() {
   if(window._vanceAudio) { window._vanceAudio.pause(); window._vanceAudio.currentTime = 0; }
   // Update hub heading with user's first name
   const hubHeading = document.getElementById('hub-heading');
-  if(hubHeading) hubHeading.textContent = isReturning ? 'Welcome back, ' + fname + '! \uD83D\uDC4B' : 'Welcome, ' + fname + '! Ready to get started?';
+  if(hubHeading) hubHeading.textContent = isReturning ? `Welcome back, ${fname}! \uD83D\uDC4B` : `Welcome to NyxLab\u2122, ${fname}!`;
   scheduleVance(()=>showAvatarAndSpeak('_direct_', fname, hubMsg), 300);
 }
 
@@ -3326,6 +3532,9 @@ function hideHomeGateway() {
   const na = document.getElementById('side-arrow-next');
   if(pa) pa.style.display = '';
   if(na) na.style.display = '';
+  // Show persistent Vance FAB during training
+  const vFab = document.getElementById('vance-fab');
+  if(vFab) vFab.style.display = 'flex';
 }
 
 function startTrainingFromHub() {
@@ -3493,7 +3702,12 @@ const finalQuizQuestions = [
   {q:'The CPI model pillars are:', a:['Care, Welfare, Safety, Security','Control, Warning, Safety, Supervision','Calm, Wait, Separate, Contain'], correct:0},
   {q:'If Marcus is in an active PTSD flashback, your FIRST action is:', a:['Increase lighting and speak louder to orient him','Call a code team immediately','Lower stimulation, announce every movement, use grounding language'], correct:2},
   {q:'Non-punitive limit setting sounds like:', a:['Do it again and you lose phone privileges.','I cannot allow that for safety. What I CAN offer is...','Calm down or I will have to restrain you.'], correct:1},
-  {q:'After a crisis stabilizes, when is the best time to debrief Marcus?', a:['Immediately while emotions are high','After stabilization, with his consent, in a safe environment','Only when mandated by the incident report'], correct:1}
+  {q:'After a crisis stabilizes, when is the best time to debrief Marcus?', a:['Immediately while emotions are high','After stabilization, with his consent, in a safe environment','Only when mandated by the incident report'], correct:1},
+  {q:'A patient with ASD begins rocking and covering their ears. Your FIRST intervention should be:', a:['Ask them to stop and use their words','Reduce environmental stimulation (turn off TV, dim lights)','Place your hand on their shoulder to reassure them'], correct:1},
+  {q:'A competent adult refuses their prescribed medication. The correct response is:', a:['Administer it anyway for their safety','Document the refusal, explore reasons, notify prescriber, and respect the right to refuse','Threaten to extend their stay if they refuse'], correct:1},
+  {q:'NSSI (non-suicidal self-injury) is best understood as:', a:['Attention-seeking manipulation that should be ignored','A dangerous coping strategy for emotional pain that requires non-judgmental clinical response','Automatic evidence of suicidal intent requiring immediate seclusion'], correct:1},
+  {q:'Which of the following is TRUE about restraint use?', a:['Restraint is a routine intervention for agitated patients','Restraint always requires a physician order and 15-minute checks and carries significant physical and psychological risks','Restraint is only dangerous when used incorrectly'], correct:1},
+  {q:'When a patient in a manic state says they are a famous CEO and are giving away their belongings, the best de-escalation approach is:', a:['Loudly correct the delusion in front of other patients to avoid reinforcing it','Calmly redirect without arguing the grandiosity: acknowledge the energy, offer a quieter space, brief directives','Tell them they will be restrained if they continue distributing items'], correct:1}
 ];
 
 function renderFinalQuiz() {
@@ -3511,7 +3725,7 @@ function renderFinalQuiz() {
   const lockMsg = document.getElementById('cert-locked-msg');
   if(lockMsg) lockMsg.textContent = finalQuizPassed ? 'Certificate unlocked — go to the next slide to download.' : 'Pass the quiz to unlock your certificate.';
   const res = document.getElementById('final-quiz-result');
-  if(res && finalQuizPassed) res.textContent = `Passed ${finalQuizScore}/10 — certificate unlocked.`;
+  if(res && finalQuizPassed) res.textContent = `Passed ${finalQuizScore}/15 — certificate unlocked.`;
 }
 
 function submitFinalQuiz() {
@@ -3522,16 +3736,16 @@ function submitFinalQuiz() {
     if(sel){ answered++; if(Number(sel.value)===q.correct) score++; }
   });
   if(answered < finalQuizQuestions.length){
-    alert('Please answer all 10 questions.');
+    alert('Please answer all 15 questions.');
     return;
   }
   finalQuizScore = score;
-  const pass = score >= 9; // 90% threshold
+  const pass = score >= 14; // 93% threshold
   finalQuizPassed = pass;
   const certBtn = document.getElementById('cert-btn');
   if(certBtn) { certBtn.disabled = !pass; certBtn.style.opacity = pass ? '1' : '.8'; }
   const res = document.getElementById('final-quiz-result');
-  if(res) res.textContent = pass ? `Great work — you passed ${score}/10. Certificate unlocked on the next slide.` : `Score ${score}/10. Need 9+ to unlock. Review and retry.`;
+  if(res) res.textContent = pass ? `Great work — you passed ${score}/15. Certificate unlocked on the next slide.` : `Score ${score}/15. Need 14+ to unlock. Review and retry.`;
   const lockMsg = document.getElementById('cert-locked-msg');
   if(lockMsg) lockMsg.textContent = pass ? 'Certificate unlocked — proceed to the next slide to download.' : 'Pass the quiz to unlock your certificate.';
   completedTraining = pass;
@@ -4149,7 +4363,7 @@ const TUTORIAL_STEPS = [
     title: 'Welcome to the Lab',
     subtitle: 'De-escalation Training Simulation',
     body: `I'm Professor Vance, your Clinical Mentor. Today we're working with ${window.TENANT?.patientName||'Marcus'} — a patient who's been waiting a long time for his evaluation and the tension is rising. Before we step into the unit, let's cover your three core tools.`,
-    tip: `Welcome to the Lab, Trainee. Your goal isn't to control ${window.TENANT?.patientName||'Marcus'} — it's to help him regain control of himself. Accuracy is better than speed, but in a crisis you'll need both. Let's begin.`
+    tip: `Welcome to the Lab. Your goal isn't to control ${window.TENANT?.patientName||'Marcus'} — it's to help him regain control of himself. Accuracy matters more than speed, but in a real crisis you'll need both. Ready when you are.`
   },
   {
     icon: '🔍',
@@ -4553,7 +4767,11 @@ async function loadLeaderboard() {
     const medals=['🥇','🥈','🥉'];
     const T = window.TENANT;
     const totalSl = (T?.moduleCount||27);
-    el.innerHTML = `<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:.85rem">
+    el.innerHTML = `<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;flex-wrap:wrap;gap:.5rem">
+      <p style="font-weight:900;font-size:.9rem;color:#0f172a;margin:0">${sorted.length} staff members ranked by XP</p>
+      <button onclick="exportUsersCSV()" style="background:linear-gradient(135deg,#2563eb,#7c3aed);color:white;border:none;padding:.45rem .85rem;border-radius:.7rem;font-weight:800;font-size:.75rem;cursor:pointer">⬇ Export CSV</button>
+    </div>
+    <div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:.85rem">
       <thead><tr style="background:#f8fafc;border-bottom:2px solid #e2e8f0">
         <th style="padding:.875rem;text-align:left;font-weight:900;color:#0f172a">#</th>
         <th style="padding:.875rem;text-align:left;font-weight:900;color:#0f172a">Name</th>
@@ -5047,7 +5265,7 @@ async function loadCompletion() {
         </div>
         ${isDone
           ? `<div style="text-align:right;flex-shrink:0">
-              ${score!==null?`<div style="font-size:.75rem;font-weight:800;color:${score>=9?'#15803d':'#92400e'}">Quiz: ${score}/10</div>`:''}
+              ${score!==null?`<div style="font-size:.75rem;font-weight:800;color:${score>=14?'#15803d':'#92400e'}">Quiz: ${score}/15</div>`:''}
               <div style="font-size:.72rem;color:#64748b">${completedStr}</div>
              </div>
              <span style="background:#dcfce7;color:#15803d;padding:.25rem .65rem;border-radius:999px;font-size:.72rem;font-weight:800;flex-shrink:0">✅ Done</span>`
@@ -5062,6 +5280,13 @@ async function loadCompletion() {
     };
 
     el.innerHTML = `
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;flex-wrap:wrap;gap:.75rem">
+        <div>
+          <p style="font-weight:900;font-size:.95rem;color:#0f172a;margin:0">Training Completion Status</p>
+          <p style="font-size:.72rem;color:#64748b;margin:.2rem 0 0">${done.length} completed · ${pending.length} in progress or not started</p>
+        </div>
+        <button onclick="exportUsersCSV()" style="background:linear-gradient(135deg,#2563eb,#7c3aed);color:white;border:none;padding:.55rem 1rem;border-radius:.75rem;font-weight:800;font-size:.8rem;cursor:pointer">⬇ Export CSV</button>
+      </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.25rem">
         <div style="border:1px solid #e2e8f0;border-radius:1rem;overflow:hidden">
           <div style="background:#f0fdf4;padding:.875rem 1rem;border-bottom:1px solid #e2e8f0">
@@ -5086,6 +5311,35 @@ async function loadCompletion() {
 }
 
 // ─── Settings ─────────────────────────────────────────────
+// ─── Admin CSV Export ─────────────────────────────────────
+async function exportUsersCSV() {
+  try {
+    const users = await window._loadAllUsers() || {};
+    const T = window.TENANT;
+    const totalSl = T?.moduleCount || 27;
+    const rows = [['Name','Email','Department','Job Title','Employee ID','Progress %','Slide','XP','Level','Lab Credits','Quiz Score','Completed','Last Login','Training Year']];
+    Object.values(users).forEach(u => {
+      const name = [u.firstName,u.lastName].filter(Boolean).join(' ') || u.name || 'Unknown';
+      const pct  = Math.min(100, Math.round(((u.currentSlide||0)/(totalSl-1))*100));
+      const done = (u.currentSlide||0) >= totalSl-1 ? 'Yes' : 'No';
+      const lastLogin = u.lastLogin ? new Date(u.lastLogin).toLocaleDateString('en-US') : '';
+      rows.push([
+        name, u.email||'', u.department||'', u.jobTitle||'', u.employeeId||'',
+        pct+'%', u.currentSlide||0, u.xp||0, u.level||1, u.labCredits||0,
+        u.finalQuizScore!=null ? `${u.finalQuizScore}/15` : '',
+        done, lastLogin, u.trainingYear||''
+      ]);
+    });
+    const csv = rows.map(r => r.map(v => `"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
+    const blob = new Blob([csv], {type:'text/csv'});
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `NyxLab_TrainingReport_${new Date().toISOString().slice(0,10)}.csv`;
+    a.click();
+  } catch(e) {
+    alert('Export failed: ' + e.message);
+  }
+}
 async function loadSettings() {
   if(currentAdminRole!=='owner') return;
   const el = document.getElementById('at-settings');
@@ -6019,7 +6273,7 @@ function submitLabScenario() {
   document.getElementById('lab-score-panel').style.display='block';
   document.getElementById('lab-score-letter').textContent = grade;
   document.getElementById('lab-lc-earned').textContent = lcEarned;
-  document.getElementById('lab-feedback').textContent = feedback[grade];
+  document.getElementById('lab-feedback').innerHTML = '<span style="color:#94a3b8;font-size:.82rem;font-style:italic">🎓 Prof. Vance is reviewing your response…</span>';
   document.getElementById('lab-modal-credits').textContent = labCredits.toLocaleString();
   document.getElementById('lab-submit-btn').disabled=true;
 
@@ -6056,9 +6310,10 @@ function submitLabScenario() {
   }).catch(()=>{});
   window._emitXAPI('experienced', { completion:true, success: grade==='A'||grade==='B', score:{ raw:xpGain,min:0,max:250 } }).catch(()=>{});
 
-  // Marcus in-character reply
+  // Marcus in-character reply + AI clinical feedback
   const scenarioText = document.getElementById('lab-scenario-box')?.textContent || '';
   generateMarcusReply(grade, scenarioText, resp);
+  generateAIFeedback(grade, scenarioText, resp, currentLabDx || 'general');
 }
 
 async function generateMarcusReply(grade, scenario, staffResponse) {
@@ -6110,23 +6365,65 @@ How do you respond right now?`;
   }
 }
 
+// ─── AI-Powered Lab Feedback (Prof. Vance clinical coaching) ────────────────
+async function generateAIFeedback(grade, scenario, staffResponse, diagnosis) {
+  const feedbackEl = document.getElementById('lab-feedback');
+  if(!feedbackEl) return;
+  const dxLabel = {
+    autism:'Autism Spectrum Disorder', adhd:'ADHD',
+    schizophrenia:'Schizophrenia', bipolar:'Bipolar Disorder',
+    ptsd:'PTSD', bpd:'Borderline Personality Disorder',
+    medication_refusal:'Medication Refusal', general:'General'
+  }[diagnosis] || diagnosis;
+  const gradeDesc = {A:'Excellent (A)',B:'Good (B)',C:'Fair (C)',D:'Needs Improvement (D)'}[grade] || grade;
+  const sys = `You are Professor Vance, a clinical de-escalation mentor at a high-acuity inpatient psychiatric facility. A BHT just submitted a response in a NyxLab™ training simulation. The grade has already been assigned (${gradeDesc}) — do NOT re-grade. Provide specific, actionable clinical feedback tied to THIS scenario and THIS response for a patient with ${dxLabel}. Reference real techniques by name: LEAP model, Choice Architecture, Reaction Gap, Trauma-Informed Care, or diagnosis-specific adaptations for ${dxLabel}. For B/C/D grades: give 2-3 concrete improvements the BHT can apply NEXT TIME. For A grade: identify 2-3 specific strengths and one advanced technique to elevate further. Limit to 5 sentences maximum. Begin directly with feedback — no introductions, no repetition of grade. Plain text only.`;
+  const userMsg = `SCENARIO (${dxLabel}): ${scenario.slice(0,400)}\n\nBHT RESPONSE: "${staffResponse.slice(0,280)}"\n\nGrade: ${gradeDesc}. Provide specific clinical mentor feedback now.`;
+  try {
+    const res = await fetch(CHAT_ENDPOINT, {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ system: sys, messages:[{role:'user', content: userMsg}] })
+    });
+    const data = await res.json();
+    const reply = (data?.reply || data?.choices?.[0]?.message?.content || '').trim();
+    if(reply && feedbackEl) {
+      feedbackEl.style.transition = 'opacity .35s';
+      feedbackEl.style.opacity = '0';
+      setTimeout(() => {
+        feedbackEl.textContent = reply || feedback[grade];
+        feedbackEl.style.opacity = '1';
+      }, 260);
+    }
+  } catch(_e) {
+    // Graceful fallback to static feedback
+    if(feedbackEl) feedbackEl.textContent = feedback[grade];
+  }
+}
+
 // ─── Crisis Scenario Lab ──────────────────────────────────
 const scenarios = {
   autism:[
     `James, 28, ASD Level 2, is eating in the dining room. The TV was turned on at high volume by another patient. He begins rocking rapidly, covers his ears, and makes a high-pitched sound. Staff approached him from behind and touched his shoulder. He spun around and shoved them away. He is now standing in the corner, rocking, eyes shut. He hasn't responded to verbal prompts for 4 minutes.`,
-    `Maria, 19, non-verbal ASD, has been pacing the hallway for 30 minutes. Her AAC device fell earlier and hasn't been given back. She is now hitting the wall repeatedly with her palm and appears to be escalating.`
+    `Maria, 19, non-verbal ASD, has been pacing the hallway for 30 minutes. Her AAC device fell earlier and hasn't been given back. She is now hitting the wall repeatedly with her palm and appears to be escalating.`,
+    `Eli, 24, ASD Level 1, is in group therapy when the facilitator changes the scheduled topic without warning. He immediately stands up, knocks his chair back, and begins repeating "This is wrong, this is wrong" loudly. He refuses to sit and is blocking the doorway.`,
+    `Sophie, 31, ASD/ID, completed her morning routine in the wrong order due to a staff scheduling change. She is now sitting on the floor of the bathroom, rocking, holding her toothbrush, and crying. She has not come to breakfast and refuses to leave.`
   ],
   adhd:[
     `Devon, 14, ADHD combined type, was told he must wait 30 minutes before his phone time. He immediately began yelling "This is stupid!" and threw a pillow across the room. He's now pacing rapidly and muttering to himself.`,
-    `Lexi, 22, ADHD-I, has been sitting in group for 45 minutes. She is now standing up, pushing her chair back, and declaring she "can't do this anymore" — she's moving toward the door.`
+    `Lexi, 22, ADHD-I, has been sitting in group for 45 minutes. She is now standing up, pushing her chair back, and declaring she "can't do this anymore" — she's moving toward the door.`,
+    `Marcus T., 17, ADHD/ODD, was asked to put his phone away three times during evening programming. On the third ask he threw the phone across the room, said "You can't make me do anything," and is now standing in the corner of the day room refusing to engage.`,
+    `Destiny, 29, ADHD combined type, became frustrated during an art group when another patient took her supplies. She has been speaking loudly and rapidly for 10 minutes about "everything being unfair here" and is starting to draw attention from other patients.`
   ],
   schizophrenia:[
     `Robert, 45, schizophrenia paranoid type, approaches you in the hallway and says the night staff have been poisoning his food. He's not eaten in 36 hours. He's escalating and says he needs to "get out before they hurt him." He's blocking the hallway exit.`,
-    `Diane, 34, is responding to internal stimuli during a quiet hour. She's whispering rapidly and pointing at the wall. Another patient approaches to see what's happening — Diane suddenly shouts "Get away from me, I know what you are!"`
+    `Diane, 34, is responding to internal stimuli during a quiet hour. She's whispering rapidly and pointing at the wall. Another patient approaches to see what's happening — Diane suddenly shouts "Get away from me, I know what you are!"`,
+    `Victor, 58, schizophrenia with command hallucinations, refused his evening medications saying "the voice told me not to take them — they'll kill me if I do." He is pacing the hallway, agitated, and has refused to return to his room.`,
+    `Camille, 42, has been calm for two days but this morning woke up believing she is being filmed for a government surveillance program. She is covering every reflective surface in her room with cloth and refuses to allow staff in. She is not threatening but is clearly distressed and disorganized.`
   ],
   bipolar:[
     `Tyler, 30, bipolar I, manic episode, has been awake for 48 hours. He's writing a 40-page business plan, insists he doesn't need medication today, and has been speaking so fast staff cannot interrupt. He's asked 6 times to use the phone.`,
-    `Sarah, 26, bipolar I, depressive phase, has not left her room in 18 hours. Staff found her lying on the floor staring at the ceiling. She says "What's the point of anything" and won't respond to further prompts.`
+    `Sarah, 26, bipolar I, depressive phase, has not left her room in 18 hours. Staff found her lying on the floor staring at the ceiling. She says "What's the point of anything" and won't respond to further prompts.`,
+    `James, 35, bipolar I manic, is in the common room loudly announcing that he is the CEO of a major corporation and that the other patients "work for him." He has been giving out his personal belongings to other patients as "bonuses" and is becoming irritable when staff try to redirect.`,
+    `Priya, 22, bipolar II in a mixed state, was found crying in her room at 3AM and then 20 minutes later was laughing uncontrollably. She has now called the nurses station three times in the past hour. She states she has a plan to hurt herself but "doesn't really want to." She appears to be high risk.`
   ],
   ptsd:[
     `A male nurse entered Ana's room without knocking while she was changing. Ana is a trauma survivor. She has now barricaded behind her bed, is hyperventilating, and keeps shouting "Don't come near me." She doesn't appear to recognize staff.`,
@@ -6134,19 +6431,75 @@ const scenarios = {
     `Marcus refused his morning medications and told staff "Those pills make me feel like I'm not myself." He is now pacing the hallway with fists clenched, and just told another patient to "stay out of my space." His voice is rising. Vitals were last taken 4 hours ago.`,
     `During group therapy, another patient described a combat story. Marcus abruptly stood up, knocked his chair backwards, and walked out of the room without a word. He is now sitting alone in the corner of the dayroom, hood up, knees pulled to his chest, with his back to the wall. He has not responded to two verbal check-ins from staff.`,
     `Marcus asked staff twice to lower the TV volume in the common room. It was not addressed. He is now standing at the nursing station, voice at a raised level, saying "Nobody listens in this place. I'm done with all of you." His affect is intense and his hands are visibly shaking.`,
-    `It is 2:00 AM. Marcus was found by night staff sitting on the floor of the hallway outside his room, arms wrapped around himself, whispering. When asked if he is okay, he said "Just leave me alone. You wouldn't understand." He appears tearful and is not making eye contact.`
+    `It is 2:00 AM. Marcus was found by night staff sitting on the floor of the hallway outside his room, arms wrapped around himself, whispering. When asked if he is okay, he said "Just leave me alone. You wouldn't understand." He appears tearful and is not making eye contact.`,
+    `Karen, 44, complex trauma/PTSD, has been admitted 24 hours. During her first vital signs check she became extremely distressed when the blood pressure cuff was applied without warning. She now refuses all physical assessments and says "Nobody touches me here." The charge nurse has asked you to obtain her morning vitals.`,
+    `A care team meeting was called to discuss Marcus's treatment plan. He was not invited. When he overheard staff discussing his case in the hallway, he immediately went to his room and has refused to come out for the past two hours, stating "You're doing things to me without telling me. Just like before."`
   ],
   bpd:[
     `Leah, 25, BPD, feels her discharge date was changed without her input. She approached the nursing desk crying and then began shouting that "nobody here cares about me." She said "I'll hurt myself if you discharge me." She's now in her room with the door locked.`,
-    `Jaylen, 32, BPD, had a positive interaction with Staff A. When Staff B took over for the shift, Jaylen immediately said "You're the mean one — I hate when you work here." Staff B has set a limit. Jaylen is now escalating.`
+    `Jaylen, 32, BPD, had a positive interaction with Staff A. When Staff B took over for the shift, Jaylen immediately said "You're the mean one — I hate when you work here." Staff B has set a limit. Jaylen is now escalating.`,
+    `Monique, 27, BPD, overheard two staff members laughing near the nurses station during a difficult moment for her. She has now approached the station demanding to know "what's so funny" and is raising her voice. She's threatening to file a formal complaint and says "I know you were laughing at me."`,
+    `Daniel, 20, BPD/MDD, was placed on 1:1 monitoring following a self-harm incident last night. He tells you he feels "like a prisoner" and that the monitoring itself is making him want to hurt himself more. He becomes tearful and says "You're punishing me for being sick." His affect is rapidly shifting from tearful to angry.`
+  ],
+  medication_refusal:[
+    `Marcus, 38, PTSD, is refusing his morning Prazosin. He tells you: "Last time I took that stuff I had nightmares so bad I woke up screaming. I'm not doing it again." He is sitting with his arms crossed, tone firm but calm. He has not been aggressive.`,
+    `Victor, 58, schizophrenia, is refusing his depot injection appointment saying "I don't need that anymore. I'm better." He has been stable for 6 weeks post-last injection. He is at risk of rapid decompensation if the injection is missed. He is walking away from you.`,
+    `Leah, 25, BPD, is refusing her evening Seroquel stating "It makes me feel fat and I can't think straight on it." She appears tearful and frustrated. She has not eaten today. Her psychiatrist is not immediately available.`,
+    `James, 35, bipolar I, in early mania, is refusing his mood stabilizer, saying he "feels great for the first time in years" and that the medication is "ruining" that feeling. He is animated, fast-talking, and insists he knows better than the doctors about what he needs.`
   ]
 };
 
 const feedback = {
-  A:`✅ EXCELLENT RESPONSE: You demonstrated strong clinical judgment. Key strengths:\n\n• Prioritized safety and de-escalation before any clinical objective\n• Used trauma-informed language and approach\n• Offered choice and control to the patient\n• Matched your energy level to the patient's need\n• Called for support appropriately\n\nThis is the standard every staff member at DSH should strive for. Outstanding work.`,
-  B:`✅ GOOD RESPONSE: Solid clinical instincts. Most elements were present:\n\n• You correctly identified the escalation stage\n• Your language was mostly therapeutic\n• Consider: offering more specific choice options next time\n• Consider: reducing verbal prompts when patient is overwhelmed\n\nStrong performance — refine the finer points with experience.`,
-  C:`⚠️ FAIR RESPONSE: You had some good elements but missed key interventions:\n\n• Check: Did you remove environmental triggers first?\n• Check: Did you avoid crowding or touching without consent?\n• Check: Was your tone truly calm, or just your words?\n• Check: Did you document specific behaviors or interpretations?\n\nPractice the specific techniques from the slides to strengthen this area.`,
-  D:`🔴 NEEDS IMPROVEMENT: This response lacked critical de-escalation elements:\n\n• Confrontational or directive language increases escalation\n• Proximity and touch without consent re-traumatizes\n• Clinical goals must come AFTER safety and rapport\n• Re-review slides on the relevant diagnosis and escalation stages\n\nThis is a learning moment — these skills develop with practice and feedback.`
+  A:`✅ EXCELLENT RESPONSE: Outstanding clinical judgment demonstrated.
+
+Key strengths shown:
+• Safety and de-escalation were prioritized before any clinical task
+• Trauma-informed language used throughout — you met the patient where they were
+• Patient autonomy was honored through choice and collaboration
+• Your emotional regulation (calm tone, non-threatening posture) modeled regulation for the patient
+• You assessed before acting — no rushing to fix the problem
+
+Clinical takeaway: The best de-escalation interventions feel like a conversation, not a procedure. You embodied that here. This is the DSH standard of excellence.`,
+  B:`✅ GOOD RESPONSE: Solid clinical skills with room to sharpen.
+
+Strengths demonstrated:
+• You correctly identified the escalation stage and adjusted your approach
+• Your language was largely therapeutic and non-confrontational
+• You maintained appropriate boundaries while showing genuine care
+
+To elevate to A-level:
+• Try offering two specific, concrete choices next time (Choice Architecture)
+• Reduce verbal input when the patient is overwhelmed — silence can de-escalate
+• Lead with validation before problem-solving or offering resources
+• Always announce your physical movements before making them
+
+Clinical takeaway: Strong foundations — refine the fine-tuning with repetition and peer feedback.`,
+  C:`⚠️ FAIR RESPONSE: Genuine effort, but key clinical elements were missing.
+
+Gaps to address:
+• Did you reduce environmental triggers BEFORE speaking? (noise, crowding, lighting)
+• Did you approach from the side at 45°, not head-on?
+• Was your tone actually calm, or just your words?
+• Did you start with validation, or did you jump to explaining/fixing?
+• Did you offer the patient any choices or sense of control?
+
+Specific technique to practice: The LEAP model — Listen, Empathize, Agree (on something small), Partner in a plan. Use it verbatim until it becomes natural.
+
+Clinical takeaway: The instinct to help is there — now build the technical muscle memory around it.`,
+  D:`🔴 NEEDS IMPROVEMENT: This response used approaches that are likely to escalate a crisis.
+
+Critical issues to correct:
+• Commands, directives, and threats increase arousal in already-distressed patients
+• Approaching without announcing yourself or entering personal space without consent re-traumatizes
+• Clinical tasks (vitals, meds, compliance) must ALWAYS come after safety and rapport, not before
+• Managing your own reactions (frustration, urgency) is part of the clinical intervention
+
+Required review:
+• Reread the module for this patient’s diagnosis
+• Practice the Validation + Choice + Presence formula: “I hear you. Here are two options. I’m not going anywhere.”
+• Complete a peer supervision session on a similar scenario
+
+Clinical takeaway: Everyone starts somewhere — this feedback is a learning tool, not a judgment. These skills are trainable with practice.`
 };
 
 function generateScenario() {
@@ -6189,7 +6542,7 @@ function buildScript() {
   const topic = document.getElementById('slide-script-topic').value.trim() || 'Medication Refusal';
   const dx    = document.getElementById('script-dx').value;
   const level = document.getElementById('script-level').value;
-  const dxMap = {general:'General',autism:'Autism Spectrum Disorder',schizophrenia:'Schizophrenia',bpd:'Borderline Personality Disorder',ptsd:'PTSD',bipolar:'Bipolar Disorder (Manic)'};
+  const dxMap = {general:'General',autism:'Autism Spectrum Disorder',schizophrenia:'Schizophrenia',bpd:'Borderline Personality Disorder',ptsd:'PTSD',bipolar:'Bipolar Disorder (Manic)',medication_refusal:'Medication Refusal'};
   const dxLabel = dxMap[dx]||dx;
   const script = `
 ╔══════════════════════════════════════════════════════════
@@ -6316,7 +6669,7 @@ function downloadCertificate() {
       </div>
     </div>
     <div style="margin-top:2.2rem;font-size:.7rem;color:#94a3b8;border-top:1px solid #e2e8f0;padding-top:1rem">
-      © ${(window.TENANT?.copyrightYear||'2026')} ${(window.TENANT?.brandName||'De-escalation Mastery Lab™')}. All Rights Reserved.
+      © ${(window.TENANT?.copyrightYear||'2026')} NyxLab™ · ${(window.TENANT?.copyrightHolder||'Nyx Collective LLC')} · All Rights Reserved · Deployed for ${(window.TENANT?.orgName||'Destiny Springs Healthcare')}
     </div>
   </div>`;
   const d = document.createElement('div');
