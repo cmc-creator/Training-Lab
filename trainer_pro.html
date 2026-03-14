@@ -111,18 +111,37 @@ onAuthStateChanged(auth, user => {
   }
 });
 async function loadUserData(user) {
-  const fallbackEmail = user.email || `${user.uid}@guest.local`; // supports anonymous users
-  const snap = await get(_ref('users/' + user.uid));
-  if (snap.exists()) {
-    window._userData = snap.val();
-    // Update last login and training year each session
-    await update(_ref('users/' + user.uid), { lastLogin: Date.now(), trainingYear: new Date().getFullYear() });
-    window._writeAudit('login', { slide: window._userData?.currentSlide || 0 });
-    window._checkAchievements && window._checkAchievements({ _justLoggedIn: true }).catch(()=>{});
-  } else {
-    // Legacy / admin-created account fallback
+  try {
+    const fallbackEmail = user.email || `${user.uid}@guest.local`; // supports anonymous users
+    const snap = await get(_ref('users/' + user.uid));
+    if (snap.exists()) {
+      window._userData = snap.val();
+      // Update last login and training year each session
+      update(_ref('users/' + user.uid), { lastLogin: Date.now(), trainingYear: new Date().getFullYear() }).catch(()=>{});
+      window._writeAudit('login', { slide: window._userData?.currentSlide || 0 });
+      window._checkAchievements && window._checkAchievements({ _justLoggedIn: true }).catch(()=>{});
+    } else {
+      // Legacy / admin-created account fallback
+      const parts = (user.displayName || '').split(' ');
+      window._userData = {
+        name: user.displayName || fallbackEmail.split('@')[0],
+        firstName: parts[0] || fallbackEmail.split('@')[0],
+        lastName: parts.slice(1).join(' ') || '',
+        email: fallbackEmail, phone: '', jobTitle: '', department: '', employeeId: '',
+        xp: 0, level: 1, scenariosDone: 0, scoreTotal: 0,
+        labCredits: 0, lastLabRun: {}, weekXP: 0,
+        startDate: Date.now(), lastLogin: Date.now(), trainingYear: new Date().getFullYear(),
+        hasOnboarded: false, currentSlide: 0, sessionMode: 'training'
+      };
+      set(_ref('users/' + user.uid), window._userData).catch(()=>{});
+    }
+  } catch (err) {
+    // Firebase read failed (offline, permission, timeout) — boot with empty profile
+    // so the loader is never stuck and the user can at least use local training mode
+    console.warn('[DSH] loadUserData error — booting with fallback profile:', err?.message||err);
+    const fallbackEmail = user.email || `${user.uid}@guest.local`;
     const parts = (user.displayName || '').split(' ');
-    window._userData = {
+    window._userData = window._userData || {
       name: user.displayName || fallbackEmail.split('@')[0],
       firstName: parts[0] || fallbackEmail.split('@')[0],
       lastName: parts.slice(1).join(' ') || '',
@@ -132,7 +151,6 @@ async function loadUserData(user) {
       startDate: Date.now(), lastLogin: Date.now(), trainingYear: new Date().getFullYear(),
       hasOnboarded: false, currentSlide: 0, sessionMode: 'training'
     };
-    await set(_ref('users/' + user.uid), window._userData);
   }
   initApp();
 }
@@ -299,13 +317,16 @@ window._scorm = (function(){
   let api = null, version = null, initialized = false;
   function _find() {
     // SCORM 1.2: window.API  |  SCORM 2004: window.API_1484_11
-    let w = window;
-    for (let i = 0; i < 7; i++) {
-      if (w.API_1484_11) { api = w.API_1484_11; version = '2004'; return; }
-      if (w.API)        { api = w.API;         version = '1.2';  return; }
-      if (!w.parent || w.parent === w) break;
-      w = w.parent;
-    }
+    // Wrapped in try/catch to guard against cross-origin SecurityError
+    try {
+      let w = window;
+      for (let i = 0; i < 7; i++) {
+        if (w.API_1484_11) { api = w.API_1484_11; version = '2004'; return; }
+        if (w.API)        { api = w.API;         version = '1.2';  return; }
+        if (!w.parent || w.parent === w) break;
+        try { w = w.parent; } catch(_ce) { break; }
+      }
+    } catch(_e) { /* not in a SCORM iframe — ignore */ }
   }
   function init() {
     _find();
@@ -1428,8 +1449,26 @@ h1,h2,.font-display{font-family:'Montserrat',sans-serif}
 <div id="app-loading" style="position:fixed;inset:0;z-index:300;background:#0b1224;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1.25rem">
   <img src="destiny-springs-logo.png" alt="Destiny Springs Healthcare" style="height:80px;width:auto">
   <div style="width:48px;height:48px;border:4px solid rgba(255,255,255,.15);border-top-color:#60a5fa;border-radius:50%;animation:spin .8s linear infinite"></div>
-  <p style="color:#94a3b8;font-size:.9rem;font-weight:600">Loading your training profile�</p>
+  <p style="color:#94a3b8;font-size:.9rem;font-weight:600">Loading your training profile&hellip;</p>
+  <p id="app-loading-hint" style="color:#475569;font-size:.75rem;font-weight:600;display:none">Taking longer than usual &mdash; <a href="" onclick="location.reload();return false;" style="color:#60a5fa;text-decoration:underline">tap here to reload</a></p>
 </div>
+<script>
+// Failsafe: if the app never initialises within 10 s, show a reload hint.
+// If still stuck at 20 s, force a hard reload to bust any stale cache.
+(function(){
+  var hint = document.getElementById('app-loading-hint');
+  var t1 = setTimeout(function(){ if(document.getElementById('app-loading') && document.getElementById('app-loading').style.display !== 'none') hint && (hint.style.display = ''); }, 10000);
+  var t2 = setTimeout(function(){
+    var l = document.getElementById('app-loading');
+    if(l && l.style.display !== 'none') {
+      // Hard reload bypassing the service worker cache
+      if('serviceWorker' in navigator) {
+        navigator.serviceWorker.getRegistrations().then(function(regs){ regs.forEach(function(r){ r.unregister(); }); location.reload(true); });
+      } else { location.reload(true); }
+    }
+  }, 20000);
+})();
+</script>
 <div id="avatar-container" style="position:fixed;top:clamp(4.25rem,8vw,6rem);right:clamp(.85rem,calc((100vw - 1100px)/2 + 1rem),2.2rem);z-index:90;display:none;flex-direction:column;align-items:flex-end;max-width:min(340px,92vw);cursor:grab">
   <!-- Speech bubble -->
   <div id="avatar-speech" style="position:relative;background:#fff;border-radius:1.1rem;border-bottom-right-radius:.3rem;padding:1rem 1.1rem;width:min(320px,90vw);box-shadow:0 8px 32px rgba(0,0,0,.2);font-size:.9rem;font-weight:600;color:#0f172a;display:none;line-height:1.65;margin-bottom:.6rem;cursor:pointer;max-width:100%" title="Click to open chat">
