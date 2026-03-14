@@ -166,6 +166,15 @@ window._signUp = async function(fname, lname, email, pass, phone, title, dept, e
     labCredits: 0, lastLabRun: {}, weekXP: 0,
     startDate: Date.now(), lastLogin: Date.now(), trainingYear: new Date().getFullYear()
   });
+  // Fire onboarding webhook (non-blocking)
+  if (window._fireWebhook) {
+    window._fireWebhook('user_created', {
+      email, displayName, firstName: fname, lastName: lname,
+      department: dept||'', jobTitle: title||'', employeeId: empid||'',
+      welcomeMessage: `Welcome to ${window.TENANT?.name||'De-escalation Training'}! Click below to begin.`,
+      trainingUrl: window.location.origin,
+    }).catch(()=>{});
+  }
 };
 window._signIn = async function(email, pass) {
   await signInWithEmailAndPassword(auth, email, pass);
@@ -195,8 +204,8 @@ window._getAdminRole = async function(uid) {
   const snap = await get(_ref('admins/' + uid));
   return snap.exists() ? snap.val().role : null; // 'owner' | 'admin' | null
 };
-window._setAdminRole = async function(uid, role) {
-  if(role) await set(_ref('admins/' + uid), { role, grantedAt: Date.now() });
+window._setAdminRole = async function(uid, role, extras) {
+  if(role) await set(_ref('admins/' + uid), { role, grantedAt: Date.now(), ...(extras||{}) });
   else await remove(_ref('admins/' + uid));
 };
 window._loadAllAdmins = async function() {
@@ -5090,6 +5099,8 @@ async function openAdminPrompt() {
     }
     const role = await window._getAdminRole(uid);
     currentAdminRole = role;
+    // Cache full admin records so openAdminDashboard can read dept for managers
+    window._allAdminsCache = allAdmins;
     if(role) {
       if(adminCodeHash) {
         msg.textContent = 'Enter access code to continue.';
@@ -5130,14 +5141,32 @@ async function claimOwnerAccount() {
 }
 
 function openAdminDashboard() {
-  const badge = document.getElementById('admin-role-badge');
-  if(badge) badge.textContent = `Destiny Springs Healthcare � Signed in as ${currentAdminRole==='owner' ? '?? Owner' : '??? Admin'}`;
-  // Show/hide owner-only tabs based on role
-  const auditBtn = document.getElementById('audit-tab-btn');
-  if(auditBtn) auditBtn.style.display = currentAdminRole==='owner' ? '' : 'none';
-  const stBtn = document.getElementById('settings-tab-btn');
-  if(stBtn) stBtn.style.display = currentAdminRole==='owner' ? 'block' : 'none';
-  document.getElementById('admin-modal').style.display='flex';
+  const badge    = document.getElementById('admin-role-badge');
+  const myInfo   = (window._allAdminsCache || {})[window._currentUser?.uid] || {};
+  window._adminManagerDept = (currentAdminRole === 'manager' && myInfo.department)
+    ? myInfo.department : null;
+
+  const roleLabel = currentAdminRole === 'owner'  ? '\uD83D\uDD11 Owner'
+                  : currentAdminRole === 'manager' ? `\uD83C\uDFD7 Manager \u2014 ${window._adminManagerDept || 'All'}`
+                  :                                  '\uD83D\uDEE1 Admin';
+  if(badge) badge.textContent = `${window.TENANT?.orgName || 'Destiny Springs Healthcare'} \u2014 ${roleLabel}`;
+
+  const tabVisibility = {
+    'audit-tab-btn':       currentAdminRole === 'owner',
+    'settings-tab-btn':    currentAdminRole === 'owner',
+    'scenarios-tab-btn':   currentAdminRole !== 'manager',
+    'analytics-tab-btn':   currentAdminRole !== 'manager',
+    'reports-tab-btn':     true,
+    'completion-tab-btn':  true,
+    'users-tab-btn':       true,
+    'leaderboard-tab-btn': true,
+  };
+  Object.entries(tabVisibility).forEach(([id, visible]) => {
+    const btn = document.getElementById(id);
+    if(btn) btn.style.display = visible ? '' : 'none';
+  });
+
+  document.getElementById('admin-modal').style.display = 'flex';
   loadLeaderboard();
 }
 
@@ -5261,8 +5290,13 @@ async function loadUsers() {
     if(!users||!Object.keys(users).length){
       el.innerHTML='<p style="color:#94a3b8;font-size:.875rem;padding:1rem">No registered users yet.</p>'; return;
     }
-    window._adminUsersCache = users;
-    _renderUsersGrid(users);
+    // Manager filter: only show own department
+    const managerDept = window._adminManagerDept;
+    const filtered = managerDept
+      ? Object.fromEntries(Object.entries(users).filter(([,u]) => (u.department||'Unassigned') === managerDept))
+      : users;
+    window._adminUsersCache = filtered;
+    _renderUsersGrid(filtered);
   } catch(e){
     el.innerHTML=`<p style="color:#ef4444;font-size:.875rem;padding:1rem">Error: ${e.message}</p>`;
   }
@@ -5421,7 +5455,9 @@ async function loadReports() {
   el.innerHTML=`<p style="color:#94a3b8;font-size:.875rem;padding:1rem">Loading reports�</p>`;
   try {
     const users = await window._loadAllUsers() || {};
-    const list = Object.entries(users).map(([uid,d])=>({uid,...d}));
+    let list = Object.entries(users).map(([uid,d])=>({uid,...d}));
+    // Manager filter — only show own department's staff
+    if (window._adminManagerDept) list = list.filter(u => (u.department||'Unassigned') === window._adminManagerDept);
     if(!list.length){ el.innerHTML='<p style="color:#94a3b8;font-size:.875rem;padding:1rem">No user data yet.</p>'; return; }
 
     // Group by department
@@ -5957,21 +5993,38 @@ async function loadSettings() {
     el.innerHTML = `
       <!-- Training Year -->
       <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:1.25rem;padding:1.5rem;margin-bottom:1.5rem">
-        <h3 style="font-weight:900;font-size:.875rem;color:#0f172a;text-transform:uppercase;letter-spacing:.07em;margin-bottom:1rem">?? Training Year</h3>
-        <div style="display:flex;align-items:center;gap:.75rem">
+        <h3 style="font-weight:900;font-size:.875rem;color:#0f172a;text-transform:uppercase;letter-spacing:.07em;margin-bottom:1rem">🗓 Training Year &amp; Cert Rollover</h3>
+        <div style="display:flex;align-items:center;gap:.75rem;flex-wrap:wrap;margin-bottom:.75rem">
           <input id="setting-year" type="number" value="${currentYear}" min="2020" max="2099" class="input-field" style="max-width:9rem;font-weight:800;font-size:1.1rem;text-align:center">
           <button onclick="saveTrainingYear()" class="btn btn-primary" style="font-size:.82rem;padding:.55rem 1.25rem">Save Year</button>
         </div>
-        <p style="font-size:.75rem;color:#64748b;margin-top:.75rem">Changing the year marks all users' current training as outdated at year-end rollover.</p>
+        <div style="display:flex;align-items:center;gap:.75rem;flex-wrap:wrap;background:#fffbeb;border:1px solid #fde68a;border-radius:.875rem;padding:.875rem">
+          <div style="flex:1">
+            <div style="font-size:.8rem;font-weight:800;color:#92400e;margin-bottom:.15rem">🔄 Auto-Rollover Expired Certifications</div>
+            <div style="font-size:.72rem;color:#b45309">Resets progress for all staff whose cert has passed its renewal date (${T?.certRenewalMonths||12} months). Does not affect staff still within their active cert window.</div>
+          </div>
+          <button onclick="rolloverExpiredCerts()" style="background:linear-gradient(135deg,#f59e0b,#d97706);color:white;border:none;border-radius:.65rem;padding:.55rem 1.25rem;font-size:.8rem;font-weight:800;cursor:pointer;white-space:nowrap">🔄 Roll Over Now</button>
+        </div>
+        <div id="rollover-result" style="margin-top:.5rem"></div>
+        <p style="font-size:.72rem;color:#94a3b8;margin-top:.5rem">Tip: Run this at the start of each new training year, or let the auto-rollover detect expired certs year-round.</p>
       </div>
 
-      <!-- Grant Admin -->
+      <!-- Grant Admin / Manager -->
       <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:1.25rem;padding:1.5rem;margin-bottom:1.5rem">
-        <h3 style="font-weight:900;font-size:.875rem;color:#0f172a;text-transform:uppercase;letter-spacing:.07em;margin-bottom:1rem">??? Grant Admin Access</h3>
-        <div style="display:flex;gap:.75rem;flex-wrap:wrap">
-          <select id="grant-admin-uid" class="input-field" style="flex:1;min-width:200px;font-size:.85rem">${userOptions}</select>
-          <button onclick="grantAdminRole('admin')" class="btn" style="background:#f0fdf4;color:#15803d;border:1px solid #bbf7d0;font-size:.82rem;padding:.55rem 1.25rem;font-weight:800">Grant Admin</button>
-          <button onclick="grantAdminRole('owner')" class="btn" style="background:#fef3c7;color:#92400e;border:1px solid #fcd34d;font-size:.82rem;padding:.55rem 1.25rem;font-weight:800">Grant Owner</button>
+        <h3 style="font-weight:900;font-size:.875rem;color:#0f172a;text-transform:uppercase;letter-spacing:.07em;margin-bottom:1rem">🛡️ Grant Access Roles</h3>
+        <div style="display:flex;gap:.6rem;flex-wrap:wrap;margin-bottom:.6rem">
+          <select id="grant-admin-uid" class="input-field" style="flex:2;min-width:180px;font-size:.85rem">${userOptions}</select>
+          <button onclick="grantAdminRole('admin')" class="btn" style="background:#f0fdf4;color:#15803d;border:1px solid #bbf7d0;font-size:.82rem;padding:.55rem 1rem;font-weight:800">🛡️ Admin</button>
+          <button onclick="grantAdminRole('owner')" class="btn" style="background:#fef3c7;color:#92400e;border:1px solid #fcd34d;font-size:.82rem;padding:.55rem 1rem;font-weight:800">🔑 Owner</button>
+        </div>
+        <div style="display:flex;gap:.6rem;flex-wrap:wrap;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:.875rem;padding:.875rem">
+          <div style="flex:1;min-width:200px">
+            <div style="font-size:.75rem;font-weight:800;color:#14532d;margin-bottom:.35rem">🏗️ Dept Manager — sees only their department's staff</div>
+            <select id="grant-manager-dept" class="input-field" style="font-size:.82rem;width:100%">
+              ${[...new Set(Object.values(allUsers||{}).map(u=>u.department||'Unassigned'))].sort().map(d=>`<option value="${d}">${d}</option>`).join('')}
+            </select>
+          </div>
+          <button onclick="grantManagerRole()" style="background:linear-gradient(135deg,#16a34a,#15803d);color:white;border:none;border-radius:.65rem;padding:.55rem 1.1rem;font-size:.82rem;font-weight:800;cursor:pointer;align-self:flex-end;white-space:nowrap">🏗️ Grant Manager</button>
         </div>
       </div>
 
@@ -6189,6 +6242,18 @@ async function grantAdminRole(role) {
   if(!uid) return;
   if(!confirm(role==='owner'?'Grant OWNER access to this user?':'Grant ADMIN access to this user?')) return;
   await window._setAdminRole(uid, role);
+  loadSettings();
+}
+
+async function grantManagerRole() {
+  const uid  = document.getElementById('grant-admin-uid')?.value;
+  const dept = document.getElementById('grant-manager-dept')?.value;
+  if(!uid || !dept) return;
+  const users = window._adminUsersCache || {};
+  const name  = [users[uid]?.firstName, users[uid]?.lastName].filter(Boolean).join(' ') || uid;
+  if(!confirm(`Grant Manager access for department "${dept}" to ${name}?`)) return;
+  await window._setAdminRole(uid, 'manager', { department: dept });
+  await window._writeAudit('grant_manager', { targetUid: uid, department: dept });
   loadSettings();
 }
 
@@ -8006,6 +8071,7 @@ async function loadScenarioBuilder() {
             ${s.tags ? s.tags.split(',').map(t => `<span style="background:#ede9fe;color:#5b21b6;padding:.15rem .5rem;border-radius:999px;font-size:.66rem;font-weight:800">${t.trim()}</span>`).join('') : ''}
           </div>
           <div style="display:flex;gap:.4rem;flex-shrink:0;flex-wrap:wrap">
+            <button onclick="previewScenario('${id}')" style="background:#eff6ff;color:#1d4ed8;border:1px solid #bfdbfe;border-radius:.5rem;padding:.35rem .65rem;font-size:.72rem;font-weight:800;cursor:pointer">👁 Preview</button>
             <button onclick="toggleScenarioActive('${id}',${!isDraft})" style="background:${isDraft?'#d1fae5':'#fef3c7'};color:${isDraft?'#065f46':'#92400e'};border:1px solid ${isDraft?'#a7f3d0':'#fde68a'};border-radius:.5rem;padding:.35rem .65rem;font-size:.72rem;font-weight:800;cursor:pointer">${isDraft ? '▶ Publish' : '⏸ Draft'}</button>
             <button onclick="deleteCustomScenario('${id}')" style="background:#fee2e2;color:#dc2626;border:1px solid #fecaca;border-radius:.5rem;padding:.35rem .65rem;font-size:.72rem;font-weight:800;cursor:pointer">🗑 Delete</button>
           </div>
@@ -8169,6 +8235,95 @@ async function toggleScenarioActive(id, makeActive) {
   await update(_ref('scenarios/' + id), { active: makeActive });
   await window._writeAudit('scenario_toggled', { id, active: makeActive });
   await loadScenarioBuilder();
+}
+
+// ---------------------------------------------------------------------------
+
+// ===========================================================================
+// CERT AUTO-ROLLOVER
+// ===========================================================================
+async function rolloverExpiredCerts() {
+  const btn = event?.target;
+  if(btn) { btn.disabled = true; btn.textContent = 'Checking…'; }
+  const resultEl = document.getElementById('rollover-result');
+  try {
+    const settings = await window._getSettings() || {};
+    const renewalMonths = settings.certRenewalMonths || window.TENANT?.certRenewalMonths || 12;
+    const now = Date.now();
+    const users = await window._loadAllUsers() || {};
+
+    const expired = Object.entries(users).filter(([, u]) => {
+      if (!u.completedAt) return false;
+      const exp = new Date(u.completedAt);
+      exp.setMonth(exp.getMonth() + renewalMonths);
+      return exp.getTime() < now;
+    });
+
+    if (!expired.length) {
+      if(resultEl) resultEl.innerHTML = '<p style="font-size:.8rem;color:#15803d;font-weight:700;margin:.5rem 0">✅ No expired certifications found — everyone is current.</p>';
+      if(btn) { btn.disabled = false; btn.textContent = '🔄 Roll Over Now'; }
+      return;
+    }
+
+    const trainingYear = new Date().getFullYear();
+    await Promise.all(expired.map(([uid]) =>
+      window._updateUserData(uid, { currentSlide: 0, completedAt: null, trainingYear })
+    ));
+    await window._writeAudit('cert_rollover', { count: expired.length, renewalMonths });
+
+    if(resultEl) resultEl.innerHTML = `<p style="font-size:.8rem;color:#b45309;font-weight:700;margin:.5rem 0">🔄 Rolled over ${expired.length} staff member${expired.length!==1?'s':''} whose ${renewalMonths}-month cert window had expired. They will need to complete training again.</p>`;
+  } catch(e) {
+    if(resultEl) resultEl.innerHTML = `<p style="font-size:.8rem;color:#dc2626;font-weight:700;margin:.5rem 0">Error: ${e.message}</p>`;
+  }
+  if(btn) { btn.disabled = false; btn.textContent = '🔄 Roll Over Now'; }
+}
+
+// ===========================================================================
+// SCENARIO PREVIEW MODAL
+// ===========================================================================
+async function previewScenario(id) {
+  // Fetch scenario data
+  const snap = await get(_ref('scenarios/' + id));
+  if (!snap.exists()) { alert('Scenario not found.'); return; }
+  const s = snap.val();
+
+  // Remove any existing preview modal
+  document.getElementById('scenario-preview-modal')?.remove();
+
+  const overlay = document.createElement('div');
+  overlay.id = 'scenario-preview-modal';
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(15,23,42,.65);backdrop-filter:blur(4px);z-index:99999;display:flex;align-items:center;justify-content:center;padding:1rem';
+  overlay.onclick = (e) => { if(e.target === overlay) overlay.remove(); };
+
+  const tagsHtml = s.tags ? s.tags.split(',').map(t=>`<span style="background:#ede9fe;color:#5b21b6;padding:.2rem .6rem;border-radius:999px;font-size:.7rem;font-weight:800">${t.trim()}</span>`).join(' ') : '';
+  const roleHtml = s.role ? `<span style="background:#dbeafe;color:#1d4ed8;padding:.2rem .6rem;border-radius:999px;font-size:.7rem;font-weight:800">👤 ${s.role}</span>` : '';
+  const statusBadge = s.active === false
+    ? '<span style="background:#fef3c7;color:#92400e;padding:.15rem .6rem;border-radius:999px;font-size:.7rem;font-weight:900">DRAFT</span>'
+    : '<span style="background:#dcfce7;color:#15803d;padding:.15rem .6rem;border-radius:999px;font-size:.7rem;font-weight:900">• LIVE</span>';
+
+  overlay.innerHTML = `
+    <div style="background:white;border-radius:1.5rem;max-width:38rem;width:100%;box-shadow:0 24px 64px rgba(0,0,0,.25);overflow:hidden">
+      <div style="background:linear-gradient(135deg,#7c3aed,#4f46e5);padding:1.5rem">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start">
+          <div>
+            <div style="font-size:.65rem;font-weight:900;color:rgba(255,255,255,.7);text-transform:uppercase;letter-spacing:.1em;margin-bottom:.3rem">Scenario Preview</div>
+            <div style="font-size:1.1rem;font-weight:900;color:white">${s.title || 'Untitled Scenario'}</div>
+          </div>
+          <button onclick="document.getElementById('scenario-preview-modal').remove()" style="background:rgba(255,255,255,.15);color:white;border:none;border-radius:.5rem;padding:.35rem .6rem;font-size:.9rem;cursor:pointer;font-weight:800">✕</button>
+        </div>
+        <div style="margin-top:.75rem;display:flex;gap:.4rem;flex-wrap:wrap">${statusBadge}${roleHtml}${tagsHtml}</div>
+      </div>
+      <div style="padding:1.5rem">
+        ${s.description ? `<div style="font-size:.82rem;color:#475569;line-height:1.6;margin-bottom:1.25rem">${s.description}</div>` : ''}
+        <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:1rem;padding:1.25rem">
+          <div style="font-size:.65rem;font-weight:900;text-transform:uppercase;letter-spacing:.08em;color:#7c3aed;margin-bottom:.6rem">🤖 Lab opening message</div>
+          <div style="font-size:.85rem;color:#0f172a;line-height:1.65;font-style:italic">&ldquo;${(s.opener || 'No opener text set.').replace(/</g,'&lt;')}&rdquo;</div>
+        </div>
+        <p style="font-size:.7rem;color:#94a3b8;margin-top:.75rem;text-align:center">This is how the scenario will appear at the start of a Lab session.</p>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(overlay);
 }
 
 // ---------------------------------------------------------------------------
