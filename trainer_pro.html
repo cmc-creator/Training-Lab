@@ -176,6 +176,7 @@ window._sendPasswordReset = async function(email) {
 window._signOut = () => signOut(auth);
 window._saveUserData = async function(data) {
   if (!window._currentUser) return;
+  if (window._demoMode) { window._userData = Object.assign(window._userData || {}, data); return; }
   await update(_ref('users/' + window._currentUser.uid), data);
   window._userData = Object.assign(window._userData || {}, data);
 };
@@ -775,6 +776,13 @@ h1,h2,.font-display{font-family:'Montserrat',sans-serif}
         Forgot your password?
         <button onclick="doForgotPassword()" style="background:none;border:none;color:#2563eb;font-weight:800;cursor:pointer;font-size:.75rem">Reset it</button>
       </p>
+      <div style="border-top:1px solid #e2e8f0;padding-top:1.25rem;margin-top:1.25rem">
+        <p style="text-align:center;font-size:.72rem;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.06em;margin:0 0 .75rem">Exploring for your organization?</p>
+        <button onclick="startDemoMode()" style="background:linear-gradient(135deg,#f59e0b,#d97706);color:white;border:none;border-radius:12px;padding:.9rem;font-size:.9rem;font-weight:800;cursor:pointer;width:100%;box-shadow:0 4px 16px rgba(245,158,11,.32);display:flex;align-items:center;justify-content:center;gap:.6rem">
+          <span style="font-size:1.1rem">🎨</span> See the Platform in Action
+        </button>
+        <p style="text-align:center;font-size:.7rem;color:#94a3b8;margin:.5rem 0 0">Sales demo &mdash; full platform, no account needed</p>
+      </div>
     </div>
 
     <!-- Create Account Form -->
@@ -937,6 +945,12 @@ h1,h2,.font-display{font-family:'Montserrat',sans-serif}
         <div style="font-size:.7rem;font-weight:900;color:#64748b;text-transform:uppercase;letter-spacing:.07em;margin-bottom:.45rem">Your Role Track</div>
         <div id="hub-role-pills" style="display:flex;flex-wrap:wrap;gap:.35rem"></div>
       </div>
+      <!-- Push notification opt-in -->
+      <div id="hub-push-wrap" style="margin-top:.35rem">
+        <button onclick="subscribeToPush()" style="width:100%;background:rgba(124,58,237,.07);border:1px solid rgba(124,58,237,.18);color:#7c3aed;border-radius:.875rem;padding:.5rem 1rem;font-size:.75rem;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:.45rem">
+          🔔 Enable Training Deadline Reminders
+        </button>
+      </div>
     </div>
     <div style="display:grid;grid-template-columns:1fr;gap:1rem">
       <button onclick="resumeTrainingFromHub()" style="border:none;cursor:pointer;padding:0;border-radius:1.1rem;text-align:left;overflow:hidden;position:relative;box-shadow:0 20px 50px rgba(34,197,94,.28);transition:transform .2s,box-shadow .2s;min-height:110px">
@@ -1005,7 +1019,8 @@ h1,h2,.font-display{font-family:'Montserrat',sans-serif}
       <button class="admin-tab-btn py-3 px-4 text-xs font-black uppercase tracking-widest border-b-2 border-transparent text-slate-400 whitespace-nowrap" onclick="adminTab('reports',this)">?? Reports</button>
       <button class="admin-tab-btn py-3 px-4 text-xs font-black uppercase tracking-widest border-b-2 border-transparent text-slate-400 whitespace-nowrap" onclick="adminTab('completion',this)">? Completion</button>
       <button id="settings-tab-btn" class="admin-tab-btn py-3 px-4 text-xs font-black uppercase tracking-widest border-b-2 border-transparent text-slate-400 whitespace-nowrap" onclick="adminTab('settings',this)" style="display:none">?? Settings</button>
-      <button id="audit-tab-btn" class="admin-tab-btn py-3 px-4 text-xs font-black uppercase tracking-widest border-b-2 border-transparent text-slate-400 whitespace-nowrap" onclick="adminTab('audit',this)" style="display:none">?? Audit Log</button>
+      <button id="audit-tab-btn" class="admin-tab-btn py-3 px-4 text-xs font-black uppercase tracking-widest border-b-2 border-transparent text-slate-400 whitespace-nowrap" onclick="adminTab('audit',this)" style="display:none">📜 Audit Log</button>
+      <button id="scenarios-tab-btn" class="admin-tab-btn py-3 px-4 text-xs font-black uppercase tracking-widest border-b-2 border-transparent text-slate-400 whitespace-nowrap" onclick="adminTab('scenarios',this)" style="display:none">📚 Scenarios</button>
     </div>
     <div class="flex-1 overflow-y-auto p-6">
       <div id="at-leaderboard"></div>
@@ -1015,6 +1030,99 @@ h1,h2,.font-display{font-family:'Montserrat',sans-serif}
       <div id="at-completion" style="display:none"></div>
       <div id="at-settings" style="display:none"></div>
       <div id="at-audit" style="display:none"></div>
+      <div id="at-scenarios" style="display:none"></div>
+    </div>
+  </div>
+</div>
+
+<!-- --------------------------------- USER MANAGE MODAL -- -->
+<div id="user-manage-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:200;align-items:center;justify-content:center;padding:1rem">
+  <div style="background:white;border-radius:1.5rem;width:100%;max-width:520px;max-height:90vh;overflow-y:auto;box-shadow:0 24px 60px rgba(0,0,0,.3)">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:1.5rem;border-bottom:1px solid #e2e8f0">
+      <div><h2 id="umm-name" style="font-weight:900;font-size:1.1rem;color:#0f172a;margin:0">Manage User</h2><p id="umm-email" style="font-size:.78rem;color:#64748b;margin:0;font-weight:600"></p></div>
+      <button onclick="closeUserManageModal()" style="width:2.25rem;height:2.25rem;border-radius:50%;background:#f1f5f9;border:none;font-size:1rem;cursor:pointer;font-weight:900;color:#64748b">&times;</button>
+    </div>
+    <div style="padding:1.5rem;display:flex;flex-direction:column;gap:1.25rem">
+      <div id="umm-stats" style="display:grid;grid-template-columns:repeat(3,1fr);gap:.6rem"></div>
+      <div style="display:flex;flex-direction:column;gap:.6rem">
+        <h3 style="font-size:.75rem;font-weight:900;color:#64748b;text-transform:uppercase;letter-spacing:.07em;margin:0">✏️ Edit Profile</h3>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:.6rem">
+          <div><label style="font-size:.7rem;font-weight:800;color:#475569;display:block;margin-bottom:.25rem">First Name</label><input id="umm-fname" class="input-field" style="font-weight:700"></div>
+          <div><label style="font-size:.7rem;font-weight:800;color:#475569;display:block;margin-bottom:.25rem">Last Name</label><input id="umm-lname" class="input-field" style="font-weight:700"></div>
+          <div><label style="font-size:.7rem;font-weight:800;color:#475569;display:block;margin-bottom:.25rem">Department</label><input id="umm-dept" class="input-field" style="font-weight:700"></div>
+          <div><label style="font-size:.7rem;font-weight:800;color:#475569;display:block;margin-bottom:.25rem">Job Title</label><input id="umm-title" class="input-field" style="font-weight:700"></div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr auto;gap:.6rem;align-items:end">
+          <div><label style="font-size:.7rem;font-weight:800;color:#475569;display:block;margin-bottom:.25rem">Due Date</label><input id="umm-due" type="date" class="input-field" style="font-weight:700"></div>
+          <button onclick="document.getElementById('umm-due').value=''" style="background:#fee2e2;color:#dc2626;border:1px solid #fecaca;border-radius:.5rem;padding:.55rem .875rem;font-size:.78rem;font-weight:800;cursor:pointer;white-space:nowrap">Clear</button>
+        </div>
+        <button onclick="saveUserManage()" class="btn btn-primary" style="font-size:.85rem;padding:.75rem;font-weight:800">💾 Save Changes</button>
+      </div>
+      <div style="border-top:1px solid #f1f5f9;padding-top:1rem">
+        <h3 style="font-size:.75rem;font-weight:900;color:#64748b;text-transform:uppercase;letter-spacing:.07em;margin:0 0 .65rem">⚠️ Training Actions</h3>
+        <div style="display:flex;flex-wrap:wrap;gap:.5rem">
+          <button onclick="adminResetTraining()" style="background:#fef3c7;color:#92400e;border:1px solid #fde68a;border-radius:.5rem;padding:.45rem .875rem;font-size:.78rem;font-weight:800;cursor:pointer">🔄 Reset Training Year</button>
+          <button onclick="adminExtendDeadline(30)" style="background:#dbeafe;color:#1d4ed8;border:1px solid #bfdbfe;border-radius:.5rem;padding:.45rem .875rem;font-size:.78rem;font-weight:800;cursor:pointer">📅 +30 Days</button>
+          <button onclick="adminExtendDeadline(90)" style="background:#f0fdf4;color:#15803d;border:1px solid #bbf7d0;border-radius:.5rem;padding:.45rem .875rem;font-size:.78rem;font-weight:800;cursor:pointer">📅 +90 Days</button>
+          <button onclick="adminSendNudge()" style="background:#ede9fe;color:#5b21b6;border:1px solid #ddd6fe;border-radius:.5rem;padding:.45rem .875rem;font-size:.78rem;font-weight:800;cursor:pointer">📣 Send Reminder</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- -------------------------------- ORG SETUP WIZARD -- -->
+<div id="org-wizard-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:200;align-items:center;justify-content:center;padding:1rem">
+  <div style="background:white;border-radius:1.5rem;width:100%;max-width:620px;max-height:90vh;overflow-y:auto;box-shadow:0 24px 60px rgba(0,0,0,.3)">
+    <div style="background:linear-gradient(135deg,#1e3a8a,#4c1d95);border-radius:1.5rem 1.5rem 0 0;padding:1.75rem;color:white">
+      <h2 style="font-weight:900;font-size:1.2rem;margin:0 0 .3rem">🏥 White-Label Org Setup Wizard</h2>
+      <p style="font-size:.8rem;opacity:.8;margin:0">Configure branding, certification, and reminders for this organization.</p>
+    </div>
+    <div style="padding:1.75rem;display:flex;flex-direction:column;gap:1.5rem">
+      <div>
+        <h3 style="font-size:.75rem;font-weight:900;color:#0f172a;text-transform:uppercase;letter-spacing:.06em;border-bottom:2px solid #e2e8f0;padding-bottom:.4rem;margin:0 0 .875rem">1 &middot; Organization Identity</h3>
+        <div style="display:grid;gap:.6rem">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:.6rem">
+            <div><label style="font-size:.7rem;font-weight:800;color:#475569;display:block;margin-bottom:.3rem">Org Name</label><input id="wiz-orgname" class="input-field"></div>
+            <div><label style="font-size:.7rem;font-weight:800;color:#475569;display:block;margin-bottom:.3rem">Brand Name</label><input id="wiz-brand" class="input-field"></div>
+          </div>
+          <div><label style="font-size:.7rem;font-weight:800;color:#475569;display:block;margin-bottom:.3rem">Address</label><input id="wiz-address" class="input-field"></div>
+          <div><label style="font-size:.7rem;font-weight:800;color:#475569;display:block;margin-bottom:.3rem">Logo URL (path or https://)</label><input id="wiz-logo" class="input-field" placeholder="dsh.png or https://cdn.yourorg.com/logo.png"></div>
+        </div>
+      </div>
+      <div>
+        <h3 style="font-size:.75rem;font-weight:900;color:#0f172a;text-transform:uppercase;letter-spacing:.06em;border-bottom:2px solid #e2e8f0;padding-bottom:.4rem;margin:0 0 .875rem">2 &middot; Brand Colors</h3>
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:.6rem">
+          <div><label style="font-size:.68rem;font-weight:800;color:#475569;display:block;margin-bottom:.25rem">Primary</label><input id="wiz-cprimary" type="color" style="height:2.75rem;width:100%;border-radius:.5rem;border:1px solid #e2e8f0;cursor:pointer;padding:.2rem"></div>
+          <div><label style="font-size:.68rem;font-weight:800;color:#475569;display:block;margin-bottom:.25rem">Accent</label><input id="wiz-caccent" type="color" style="height:2.75rem;width:100%;border-radius:.5rem;border:1px solid #e2e8f0;cursor:pointer;padding:.2rem"></div>
+          <div><label style="font-size:.68rem;font-weight:800;color:#475569;display:block;margin-bottom:.25rem">Button</label><input id="wiz-cbutton" type="color" style="height:2.75rem;width:100%;border-radius:.5rem;border:1px solid #e2e8f0;cursor:pointer;padding:.2rem"></div>
+          <div><label style="font-size:.68rem;font-weight:800;color:#475569;display:block;margin-bottom:.25rem">Background</label><input id="wiz-cbg" type="color" style="height:2.75rem;width:100%;border-radius:.5rem;border:1px solid #e2e8f0;cursor:pointer;padding:.2rem"></div>
+        </div>
+      </div>
+      <div>
+        <h3 style="font-size:.75rem;font-weight:900;color:#0f172a;text-transform:uppercase;letter-spacing:.06em;border-bottom:2px solid #e2e8f0;padding-bottom:.4rem;margin:0 0 .875rem">3 &middot; Certification Config</h3>
+        <div style="display:grid;gap:.6rem">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:.6rem">
+            <div><label style="font-size:.7rem;font-weight:800;color:#475569;display:block;margin-bottom:.3rem">Cert Type</label><input id="wiz-certtype" class="input-field" placeholder="Internal Competency Verification"></div>
+            <div><label style="font-size:.7rem;font-weight:800;color:#475569;display:block;margin-bottom:.3rem">Contact Hours</label><input id="wiz-certhours" type="number" step=".5" class="input-field"></div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:.6rem">
+            <div><label style="font-size:.7rem;font-weight:800;color:#475569;display:block;margin-bottom:.3rem">Provider Name</label><input id="wiz-certprovider" class="input-field"></div>
+            <div><label style="font-size:.7rem;font-weight:800;color:#475569;display:block;margin-bottom:.3rem">Renewal (months)</label><input id="wiz-certrenewal" type="number" class="input-field"></div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <h3 style="font-size:.75rem;font-weight:900;color:#0f172a;text-transform:uppercase;letter-spacing:.06em;border-bottom:2px solid #e2e8f0;padding-bottom:.4rem;margin:0 0 .875rem">4 &middot; Email Reminder Automation</h3>
+        <div style="display:grid;gap:.6rem">
+          <div><label style="font-size:.7rem;font-weight:800;color:#475569;display:block;margin-bottom:.3rem">Reminder Webhook URL (Zapier / Make.com)</label><input id="wiz-remwh" class="input-field" placeholder="https://hooks.zapier.com/hooks/catch/&hellip;"></div>
+          <div><label style="font-size:.7rem;font-weight:800;color:#475569;display:block;margin-bottom:.3rem">Send reminder this many days before due date</label><input id="wiz-remdays" type="number" value="3" min="1" max="30" class="input-field"></div>
+        </div>
+      </div>
+      <div style="display:flex;gap:.75rem;justify-content:flex-end;padding-top:.75rem;border-top:1px solid #e2e8f0">
+        <button onclick="closeOrgWizard()" style="background:#f1f5f9;color:#0f172a;border:none;border-radius:.75rem;padding:.75rem 1.5rem;font-size:.85rem;font-weight:800;cursor:pointer">Cancel</button>
+        <button onclick="saveOrgWizard()" class="btn btn-primary" style="font-size:.85rem;padding:.75rem 1.75rem;font-weight:800">✅ Apply &amp; Save</button>
+      </div>
     </div>
   </div>
 </div>
@@ -1469,6 +1577,12 @@ h1,h2,.font-display{font-family:'Montserrat',sans-serif}
   }, 20000);
 })();
 </script>
+<!-- Demo Mode Banner -->
+<div id="demo-banner" style="display:none;position:fixed;top:0;left:0;right:0;z-index:9998;background:linear-gradient(90deg,#f59e0b,#d97706);color:white;padding:.45rem 1.25rem;text-align:center;font-size:.8rem;font-weight:800;letter-spacing:.04em;box-shadow:0 2px 8px rgba(0,0,0,.25)">
+  🎨 DEMO MODE &nbsp;&mdash;&nbsp; Progress is not saved to any account
+  <button onclick="doSignOut()" style="background:rgba(0,0,0,.2);color:white;border:none;border-radius:.4rem;padding:.15rem .875rem;font-size:.78rem;font-weight:800;cursor:pointer;margin-left:1rem">Exit Demo &times;</button>
+</div>
+
 <div id="avatar-container" style="position:fixed;top:clamp(4.25rem,8vw,6rem);right:clamp(.85rem,calc((100vw - 1100px)/2 + 1rem),2.2rem);z-index:90;display:none;flex-direction:column;align-items:flex-end;max-width:min(340px,92vw);cursor:grab">
   <!-- Speech bubble -->
   <div id="avatar-speech" style="position:relative;background:#fff;border-radius:1.1rem;border-bottom-right-radius:.3rem;padding:1rem 1.1rem;width:min(320px,90vw);box-shadow:0 8px 32px rgba(0,0,0,.2);font-size:.9rem;font-weight:600;color:#0f172a;display:none;line-height:1.65;margin-bottom:.6rem;cursor:pointer;max-width:100%" title="Click to open chat">
@@ -5056,7 +5170,7 @@ function adminTab(name, el) {
     t.className='admin-tab-btn py-3 px-4 text-xs font-black uppercase tracking-widest border-b-2 border-transparent text-slate-400 whitespace-nowrap';
   });
   if(el){ el.className='admin-tab-btn py-3 px-4 text-xs font-black uppercase tracking-widest border-b-2 border-blue-600 text-blue-600 whitespace-nowrap'; }
-  ['leaderboard','users','analytics','reports','completion','settings','audit'].forEach(t=>{
+  ['leaderboard','users','analytics','reports','completion','settings','audit','scenarios'].forEach(t=>{
     const d=document.getElementById('at-'+t);
     if(d) d.style.display=(t===name)?'block':'none';
   });
@@ -5067,6 +5181,7 @@ function adminTab(name, el) {
   if(name==='completion')  loadCompletion();
   if(name==='settings')    loadSettings();
   if(name==='audit')       loadAudit();
+  if(name==='scenarios')   loadScenarioBuilder();
 }
 
 async function loadLeaderboard() {
@@ -5359,6 +5474,7 @@ async function loadReports() {
         <td style="padding:.6rem 1rem;text-align:center;color:#475569;font-size:.8rem">${completedDate}</td>
         <td style="padding:.6rem 1rem;text-align:center;font-size:.8rem;font-weight:700">${u.dueDate&&!done?`<span style="color:${Math.ceil((u.dueDate-Date.now())/864e5)<0?'#dc2626':Math.ceil((u.dueDate-Date.now())/864e5)<=3?'#d97706':'#2563eb'};">${Math.ceil((u.dueDate-Date.now())/864e5)<0?'?? Overdue':'?? '+new Date(u.dueDate).toLocaleDateString()}</span>`:done?'�':'Not set'}</td>
         <td style="padding:.6rem 1rem;text-align:center;color:${loginColor};font-size:.8rem;font-weight:${daysAgo>7&&!done?'800':'400'}">${loginStr}</td>
+        <td style="padding:.6rem 1rem;text-align:center"><button onclick="openUserManageModal('${u.uid}')" style="background:#ede9fe;color:#5b21b6;border:1px solid #ddd6fe;border-radius:.5rem;padding:.3rem .75rem;font-size:.75rem;font-weight:800;cursor:pointer;white-space:nowrap">✏️ Manage</button></td>
       </tr>`;
     }).join('');
 
@@ -5394,6 +5510,7 @@ async function loadReports() {
             <th style="padding:.6rem 1rem;text-align:center;font-weight:900;color:#0f172a">Completed</th>
             <th style="padding:.6rem 1rem;text-align:center;font-weight:900;color:#0f172a">Due Date</th>
             <th style="padding:.6rem 1rem;text-align:center;font-weight:900;color:#0f172a">Last Login</th>
+            <th style="padding:.6rem 1rem;text-align:center;font-weight:900;color:#0f172a">Actions</th>
           </tr></thead>
           <tbody>${userRows}</tbody>
         </table>
@@ -5931,6 +6048,40 @@ async function loadSettings() {
           </div>
           <div id="roster-import-log" style="margin-top:.65rem"></div>
         </div>
+      </div>
+
+      <!-- Email Reminder Automation -->
+      <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:1.25rem;padding:1.5rem;margin-bottom:1.5rem">
+        <h3 style="font-weight:900;font-size:.875rem;color:#0f172a;text-transform:uppercase;letter-spacing:.07em;margin-bottom:.25rem">📨 Email Reminder Automation</h3>
+        <p style="font-size:.78rem;color:#64748b;margin:0 0 1.1rem">Automatically send training deadline reminders to employees via Zapier, Make.com, or any webhook. Reads the webhook URL from your org settings.</p>
+        <div style="display:grid;grid-template-columns:1fr auto;gap:.75rem;align-items:end;margin-bottom:.75rem">
+          <div>
+            <label style="font-size:.72rem;font-weight:800;color:#475569;display:block;margin-bottom:.3rem">Days-before-due to trigger reminder</label>
+            <input id="reminder-days-input" type="number" min="1" max="60" value="${settings?.reminderDays||3}" class="input-field" style="max-width:120px;font-weight:700">
+          </div>
+          <button onclick="sendDueDateReminders()" class="btn btn-primary" style="font-size:.82rem;padding:.6rem 1.25rem;font-weight:800;white-space:nowrap">🚀 Send Nudge Reminders Now</button>
+        </div>
+        <div style="background:#fffbeb;border:1px solid #fde68a;border-radius:.75rem;padding:.65rem .9rem">
+          <p style="font-size:.75rem;color:#92400e;margin:0;font-weight:700">⚡ Webhook URL is configured in the Org Setup Wizard below. Each eligible user's data is POSTed with <code>event: 'training_reminder'</code>.</p>
+        </div>
+        <div id="reminder-result" style="margin-top:.65rem"></div>
+      </div>
+
+      <!-- Push Notification Config -->
+      <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:1.25rem;padding:1.5rem;margin-bottom:1.5rem">
+        <h3 style="font-weight:900;font-size:.875rem;color:#0f172a;text-transform:uppercase;letter-spacing:.07em;margin-bottom:.25rem">🔔 Push Notification Config (Vercel)</h3>
+        <p style="font-size:.78rem;color:#64748b;margin:0 0 1rem">Generate a VAPID key pair once and save the public key here. Add VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY, and VAPID_SUBJECT as Vercel environment variables to enable <code>/api/push.js</code>.</p>
+        <div style="display:grid;gap:.6rem">
+          <div><label style="font-size:.7rem;font-weight:800;color:#475569;display:block;margin-bottom:.3rem">VAPID Public Key</label><input id="setting-vapid-pub" class="input-field" style="font-size:.78rem;font-family:monospace" placeholder="BG5Hdlkjd..." value="${settings?.vapidPublicKey||''}"></div>
+          <button onclick="saveVapidKey()" class="btn btn-primary" style="font-size:.8rem;padding:.55rem 1.1rem;align-self:start;font-weight:800">Save VAPID Key</button>
+        </div>
+      </div>
+
+      <!-- Org Setup Wizard -->
+      <div style="background:linear-gradient(135deg,#ede9fe,#dbeafe);border:1px solid #c4b5fd;border-radius:1.25rem;padding:1.5rem;margin-bottom:1.5rem">
+        <h3 style="font-weight:900;font-size:.875rem;color:#4c1d95;text-transform:uppercase;letter-spacing:.07em;margin-bottom:.25rem">🎨 White-Label Org Setup</h3>
+        <p style="font-size:.78rem;color:#5b21b6;margin:0 0 1rem">Configure branding, colors, certification details, logo, and reminder webhooks for your organization. Settings are saved to Firebase and applied immediately on next login.</p>
+        <button onclick="openOnboardingWizard()" style="background:linear-gradient(135deg,#4c1d95,#1e3a8a);color:white;border:none;border-radius:.875rem;padding:.75rem 1.75rem;font-size:.9rem;font-weight:800;cursor:pointer;box-shadow:0 4px 16px rgba(76,29,149,.3)">🎨 Open Org Setup Wizard</button>
       </div>
 
       <!-- Admin List -->
@@ -7471,6 +7622,418 @@ function answerMicroExp(chosen) {
   }
 }
 // ---------------------------------------------------------------------------
-</script>
+// ====================== FEATURE SUITE v2 ====================================
+// ---------------------------------------------------------------------------
+
+// ===========================================================================
+// DEMO MODE
+// ===========================================================================
+async function startDemoMode() {
+  try {
+    await signInAnonymously(auth);
+    window._demoMode = true;
+    window._userData = {
+      uid: window._currentUser?.uid || 'demo',
+      firstName: 'Alex', lastName: 'Demo', name: 'Alex Demo',
+      email: 'demo@destinysprings.com',
+      department: 'Clinical Education', jobTitle: 'RN, Staff Nurse',
+      xp: 4200, level: 9, tier: 'Gold',
+      currentSlide: 14, labCredits: 3, moduleCount: 31,
+      finalQuizScore: 13, trainingYear: new Date().getFullYear(),
+    };
+    const banner = document.getElementById('demo-banner');
+    if (banner) { banner.style.display = 'block'; document.body.style.paddingTop = '2.5rem'; }
+  } catch(e) {
+    alert('Demo mode unavailable: ' + e.message);
+  }
+}
+
+// ===========================================================================
+// MANAGER REASSIGNMENT — User Manage Modal
+// ===========================================================================
+let _ummUid = null;
+async function openUserManageModal(uid) {
+  _ummUid = uid;
+  const modal = document.getElementById('user-manage-modal');
+  if (!modal) return;
+  modal.style.display = 'flex';
+  document.getElementById('umm-name').textContent = 'Loading…';
+  document.getElementById('umm-email').textContent = '';
+  try {
+    const users = await window._loadAllUsers();
+    const u = users[uid];
+    if (!u) { alert('User not found.'); closeUserManageModal(); return; }
+    const T = window.TENANT;
+    const totalSl = T?.moduleCount || 31;
+    const done = (u.currentSlide || 0) >= totalSl - 1;
+    document.getElementById('umm-name').textContent = [u.firstName, u.lastName].filter(Boolean).join(' ') || u.email || uid;
+    document.getElementById('umm-email').textContent = u.email || uid;
+    document.getElementById('umm-fname').value = u.firstName || '';
+    document.getElementById('umm-lname').value = u.lastName || '';
+    document.getElementById('umm-dept').value = u.department || '';
+    document.getElementById('umm-title').value = u.jobTitle || '';
+    document.getElementById('umm-due').value = u.dueDate ? new Date(u.dueDate).toISOString().slice(0, 10) : '';
+    const daysAgo = u.lastLogin ? Math.round((Date.now() - u.lastLogin) / 864e5) : null;
+    const loginStr = daysAgo === 0 ? 'Today' : daysAgo === 1 ? 'Yesterday' : daysAgo != null ? `${daysAgo}d ago` : '—';
+    document.getElementById('umm-stats').innerHTML = [
+      { label: 'XP', val: (u.xp || 0).toLocaleString(), color: '#7c3aed' },
+      { label: 'Status', val: done ? '✅ Done' : `Slide ${u.currentSlide || 0}/${totalSl}`, color: done ? '#15803d' : '#d97706' },
+      { label: 'Last Login', val: loginStr, color: '#475569' },
+    ].map(s => `<div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:.75rem;padding:.6rem;text-align:center"><div style="font-size:1rem;font-weight:900;color:${s.color}">${s.val}</div><div style="font-size:.65rem;font-weight:800;color:#94a3b8;text-transform:uppercase;letter-spacing:.06em">${s.label}</div></div>`).join('');
+  } catch(e) {
+    alert('Error loading user: ' + e.message);
+    closeUserManageModal();
+  }
+}
+
+function closeUserManageModal() {
+  const modal = document.getElementById('user-manage-modal');
+  if (modal) modal.style.display = 'none';
+  _ummUid = null;
+}
+
+async function saveUserManage() {
+  if (!_ummUid) return;
+  const btn = document.querySelector('#user-manage-modal .btn-primary');
+  if (btn) { btn.textContent = 'Saving…'; btn.disabled = true; }
+  try {
+    const dueRaw = document.getElementById('umm-due').value;
+    const data = {
+      firstName: document.getElementById('umm-fname').value.trim(),
+      lastName:  document.getElementById('umm-lname').value.trim(),
+      department: document.getElementById('umm-dept').value.trim(),
+      jobTitle:  document.getElementById('umm-title').value.trim(),
+      dueDate:   dueRaw ? new Date(dueRaw).getTime() : null,
+    };
+    await window._updateUserData(_ummUid, data);
+    if (btn) { btn.textContent = '✅ Saved!'; btn.disabled = false; }
+    setTimeout(() => { if (btn) btn.textContent = '💾 Save Changes'; }, 2000);
+    await window._writeAudit('admin_edit_user', { targetUid: _ummUid, fields: Object.keys(data) });
+    loadReports();
+  } catch(e) {
+    alert('Save failed: ' + e.message);
+    if (btn) { btn.textContent = '💾 Save Changes'; btn.disabled = false; }
+  }
+}
+
+async function adminResetTraining() {
+  if (!_ummUid) return;
+  const name = document.getElementById('umm-name').textContent;
+  if (!confirm(`Reset ALL training progress for ${name}? This cannot be undone.`)) return;
+  await window._updateUserData(_ummUid, {
+    currentSlide: 0, xp: 0, level: 1, tier: 'Bronze',
+    labCredits: 0, finalQuizScore: null, completedAt: null,
+    trainingYear: new Date().getFullYear(),
+  });
+  await window._writeAudit('admin_reset_training', { targetUid: _ummUid });
+  alert(`✅ Training reset for ${name}.`);
+  await openUserManageModal(_ummUid);
+  loadReports();
+}
+
+async function adminExtendDeadline(days) {
+  if (!_ummUid) return;
+  const users = await window._loadAllUsers();
+  const u = users[_ummUid];
+  const currentDue = u?.dueDate ? u.dueDate : Date.now();
+  const newDue = currentDue + days * 864e5;
+  await window._updateUserData(_ummUid, { dueDate: newDue });
+  document.getElementById('umm-due').value = new Date(newDue).toISOString().slice(0, 10);
+  alert(`✅ Deadline extended by ${days} days.`);
+  loadReports();
+}
+
+async function adminSendNudge() {
+  if (!_ummUid) return;
+  const users = await window._loadAllUsers();
+  const u = users[_ummUid];
+  if (!u) return;
+  try {
+    const settings = await window._getSettings();
+    const webhookUrl = settings?.reminderWebhookUrl || settings?.webhookUrl;
+    if (!webhookUrl) { alert('No webhook URL configured. Add one in Settings > Org Setup Wizard.'); return; }
+    await fetch(webhookUrl, {
+      method: 'POST', mode: 'no-cors',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ event: 'training_reminder', uid: _ummUid, ...u, triggeredBy: 'admin_manual' }),
+    });
+    alert('✅ Reminder webhook triggered for ' + (u.email || _ummUid));
+    await window._writeAudit('admin_send_reminder', { targetUid: _ummUid });
+  } catch(e) {
+    alert('Webhook error: ' + e.message);
+  }
+}
+
+// ===========================================================================
+// EMAIL REMINDER AUTOMATION
+// ===========================================================================
+async function sendDueDateReminders() {
+  const resultEl = document.getElementById('reminder-result');
+  if (resultEl) resultEl.innerHTML = '<p style="font-size:.8rem;color:#2563eb;font-weight:700">⏳ Sending reminders…</p>';
+  try {
+    const settings = await window._getSettings();
+    const reminderDays = parseInt(document.getElementById('reminder-days-input')?.value || settings?.reminderDays || 3);
+    const webhookUrl = settings?.reminderWebhookUrl || settings?.webhookUrl;
+    if (!webhookUrl) {
+      if (resultEl) resultEl.innerHTML = '<p style="font-size:.8rem;color:#dc2626;font-weight:700">⚠️ No reminder webhook URL configured. Add one in Settings > Org Setup Wizard.</p>';
+      return;
+    }
+    await window._saveSettings({ reminderDays });
+    const users = await window._loadAllUsers();
+    const now = Date.now();
+    const threshold = reminderDays * 864e5;
+    const eligible = Object.entries(users).filter(([, u]) => {
+      if (!u.dueDate) return false;
+      const totalSl = window.TENANT?.moduleCount || 31;
+      if ((u.currentSlide || 0) >= totalSl - 1) return false;
+      const msUntilDue = u.dueDate - now;
+      return msUntilDue > 0 && msUntilDue <= threshold;
+    });
+    let sent = 0, failed = 0;
+    for (const [uid, u] of eligible) {
+      try {
+        await fetch(webhookUrl, {
+          method: 'POST', mode: 'no-cors',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            event: 'training_reminder', uid,
+            email: u.email, firstName: u.firstName, lastName: u.lastName,
+            department: u.department, dueDate: new Date(u.dueDate).toLocaleDateString(),
+            daysUntilDue: Math.ceil((u.dueDate - now) / 864e5),
+            currentSlide: u.currentSlide || 0,
+            trainingUrl: window.location.origin,
+          }),
+        });
+        sent++;
+      } catch(_) { failed++; }
+    }
+    await window._writeAudit('bulk_reminders_sent', { count: sent, reminderDays });
+    if (resultEl) resultEl.innerHTML = `<p style="font-size:.8rem;font-weight:700;color:${sent > 0 ? '#15803d' : '#64748b'}">✅ Sent ${sent} reminder${sent !== 1 ? 's' : ''}${failed ? ` · ${failed} failed` : ''}. ${eligible.length === 0 ? 'No users with upcoming deadlines in the reminder window.' : ''}</p>`;
+  } catch(e) {
+    if (resultEl) resultEl.innerHTML = `<p style="font-size:.8rem;color:#dc2626;font-weight:700">Error: ${e.message}</p>`;
+  }
+}
+
+// ===========================================================================
+// WHITE-LABEL ORG SETUP WIZARD
+// ===========================================================================
+async function openOnboardingWizard() {
+  const modal = document.getElementById('org-wizard-modal');
+  if (!modal) return;
+  modal.style.display = 'flex';
+  try {
+    const settings = await window._getSettings();
+    const T = window.TENANT;
+    document.getElementById('wiz-orgname').value   = settings?.orgName      || T?.name           || '';
+    document.getElementById('wiz-brand').value     = settings?.brandName    || T?.shortName       || '';
+    document.getElementById('wiz-address').value   = settings?.address      || T?.address         || '';
+    document.getElementById('wiz-logo').value      = settings?.logoUrl      || T?.logoUrl         || '';
+    document.getElementById('wiz-cprimary').value  = settings?.colorPrimary || '#1e3a8a';
+    document.getElementById('wiz-caccent').value   = settings?.colorAccent  || '#7c3aed';
+    document.getElementById('wiz-cbutton').value   = settings?.colorButton  || '#2563eb';
+    document.getElementById('wiz-cbg').value       = settings?.colorBg      || '#0f172a';
+    document.getElementById('wiz-certtype').value  = settings?.certType          || T?.certType          || '';
+    document.getElementById('wiz-certhours').value = settings?.certContactHours  || T?.certContactHours  || '';
+    document.getElementById('wiz-certprovider').value = settings?.certProvider   || T?.certProvider      || '';
+    document.getElementById('wiz-certrenewal').value  = settings?.certRenewalMonths || T?.certRenewalMonths || 12;
+    document.getElementById('wiz-remwh').value     = settings?.reminderWebhookUrl || settings?.webhookUrl || '';
+    document.getElementById('wiz-remdays').value   = settings?.reminderDays || 3;
+  } catch(_) { /* pre-fill best-effort */ }
+}
+
+function closeOrgWizard() {
+  const modal = document.getElementById('org-wizard-modal');
+  if (modal) modal.style.display = 'none';
+}
+
+async function saveOrgWizard() {
+  const btn = document.querySelector('#org-wizard-modal .btn-primary');
+  if (btn) { btn.textContent = 'Saving…'; btn.disabled = true; }
+  try {
+    const overrides = {
+      orgName:             document.getElementById('wiz-orgname').value.trim(),
+      brandName:           document.getElementById('wiz-brand').value.trim(),
+      address:             document.getElementById('wiz-address').value.trim(),
+      logoUrl:             document.getElementById('wiz-logo').value.trim(),
+      colorPrimary:        document.getElementById('wiz-cprimary').value,
+      colorAccent:         document.getElementById('wiz-caccent').value,
+      colorButton:         document.getElementById('wiz-cbutton').value,
+      colorBg:             document.getElementById('wiz-cbg').value,
+      certType:            document.getElementById('wiz-certtype').value.trim(),
+      certContactHours:    parseFloat(document.getElementById('wiz-certhours').value)   || null,
+      certProvider:        document.getElementById('wiz-certprovider').value.trim(),
+      certRenewalMonths:   parseInt(document.getElementById('wiz-certrenewal').value)   || 12,
+      reminderWebhookUrl:  document.getElementById('wiz-remwh').value.trim(),
+      reminderDays:        parseInt(document.getElementById('wiz-remdays').value)        || 3,
+    };
+    await window._saveSettings(overrides);
+    // Apply brand color CSS vars live
+    const r = document.documentElement.style;
+    if (overrides.colorPrimary) r.setProperty('--color-primary', overrides.colorPrimary);
+    if (overrides.colorAccent)  r.setProperty('--color-accent',  overrides.colorAccent);
+    if (overrides.colorButton)  r.setProperty('--color-button',  overrides.colorButton);
+    // Patch TENANT in memory
+    if (window.TENANT) {
+      if (overrides.orgName)  window.TENANT.name    = overrides.orgName;
+      if (overrides.logoUrl)  window.TENANT.logoUrl = overrides.logoUrl;
+      if (overrides.certType) window.TENANT.certType = overrides.certType;
+    }
+    await window._writeAudit('org_wizard_saved', { fields: Object.keys(overrides) });
+    closeOrgWizard();
+    if (btn) { btn.textContent = '✅ Apply & Save'; btn.disabled = false; }
+    loadSettings();
+  } catch(e) {
+    alert('Save failed: ' + e.message);
+    if (btn) { btn.textContent = '✅ Apply & Save'; btn.disabled = false; }
+  }
+}
+
+// ===========================================================================
+// PUSH NOTIFICATIONS
+// ===========================================================================
+async function saveVapidKey() {
+  const key = document.getElementById('setting-vapid-pub')?.value.trim();
+  if (!key) { alert('Enter a VAPID public key first.'); return; }
+  await window._saveSettings({ vapidPublicKey: key });
+  alert('✅ VAPID public key saved.');
+}
+
+async function subscribeToPush() {
+  if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
+    alert('Push notifications are not supported in this browser.'); return;
+  }
+  try {
+    const settings = await window._getSettings();
+    const vapidKey = settings?.vapidPublicKey;
+    if (!vapidKey) {
+      alert('Push notifications are not configured yet. Ask your admin to set up the VAPID key in Settings → Push Notification Config.'); return;
+    }
+    const reg = await navigator.serviceWorker.ready;
+    const existing = await reg.pushManager.getSubscription();
+    if (existing) { alert('✅ You are already subscribed to training reminders!'); return; }
+    const sub = await reg.pushManager.subscribe({
+      userVisibleOnly: true,
+      applicationServerKey: _urlBase64ToUint8Array(vapidKey),
+    });
+    // Persist subscription object
+    await window._updateUserData(window._currentUser.uid, { pushSubscription: JSON.stringify(sub) });
+    // Register with server
+    await fetch('/api/push', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'subscribe', uid: window._currentUser.uid, subscription: sub }),
+    });
+    // Update UI
+    const btn = document.querySelector('#hub-push-wrap button');
+    if (btn) { btn.textContent = '✅ Reminders Enabled'; btn.disabled = true; btn.style.background = 'rgba(22,163,74,.08)'; btn.style.color = '#15803d'; btn.style.border = '1px solid rgba(22,163,74,.25)'; }
+    alert('✅ Training reminders enabled! You’ll receive a push notification before your deadline.');
+  } catch(e) {
+    alert('Could not subscribe: ' + e.message);
+  }
+}
+
+function _urlBase64ToUint8Array(base64String) {
+  const padding = '='.repeat((4 - base64String.length % 4) % 4);
+  const base64  = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+  const rawData = window.atob(base64);
+  return Uint8Array.from([...rawData].map(c => c.charCodeAt(0)));
+}
+
+// ===========================================================================
+// SCENARIO BUILDER (Admin)
+// ===========================================================================
+async function loadScenarioBuilder() {
+  const el = document.getElementById('at-scenarios');
+  if (!el) return;
+  el.innerHTML = '<p style="color:#94a3b8;font-size:.875rem;padding:1.25rem">Loading scenarios…</p>';
+  try {
+    const snap = await get(_ref('scenarios'));
+    const scenarios = snap.exists() ? Object.entries(snap.val()) : [];
+    const rows = scenarios.map(([id, s]) => `
+      <div style="background:white;border:1px solid #e2e8f0;border-radius:1rem;padding:1rem;margin-bottom:.65rem">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:.75rem;flex-wrap:wrap">
+          <div style="flex:1">
+            <div style="font-weight:900;font-size:.88rem;color:#0f172a;margin-bottom:.2rem">${s.title || 'Untitled'}</div>
+            <div style="font-size:.76rem;color:#64748b;line-height:1.5;margin-bottom:.4rem">${(s.description || '').slice(0, 200)}</div>
+            ${s.role ? `<span style="background:#dbeafe;color:#1d4ed8;padding:.15rem .55rem;border-radius:999px;font-size:.66rem;font-weight:800;margin-right:.35rem">👤 ${s.role}</span>` : ''}
+            ${s.tags ? s.tags.split(',').map(t => `<span style="background:#ede9fe;color:#5b21b6;padding:.15rem .5rem;border-radius:999px;font-size:.66rem;font-weight:800">${t.trim()}</span>`).join('') : ''}
+          </div>
+          <button onclick="deleteCustomScenario('${id}')" style="background:#fee2e2;color:#dc2626;border:1px solid #fecaca;border-radius:.5rem;padding:.35rem .65rem;font-size:.72rem;font-weight:800;cursor:pointer;flex-shrink:0">🗑 Delete</button>
+        </div>
+      </div>`).join('');
+    el.innerHTML = `
+      <div style="padding:1rem">
+        <div style="margin-bottom:1rem">
+          <h3 style="font-weight:900;font-size:.95rem;color:#0f172a;margin:0 0 .2rem">📚 Custom Scenario Library</h3>
+          <p style="font-size:.77rem;color:#64748b;margin:0">${scenarios.length} custom scenario${scenarios.length !== 1 ? 's' : ''} &mdash; automatically injected into Lab sessions alongside AI-generated ones</p>
+        </div>
+        ${rows || '<p style="color:#94a3b8;font-size:.83rem;padding:.25rem 0 1rem">No custom scenarios yet. Create your first one below.</p>'}
+        <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:1.25rem;padding:1.25rem;margin-top:.5rem">
+          <h4 style="font-weight:900;font-size:.8rem;color:#0f172a;text-transform:uppercase;letter-spacing:.06em;margin:0 0 .875rem">✏️ Create New Scenario</h4>
+          <div style="display:flex;flex-direction:column;gap:.6rem">
+            <div><label style="font-size:.7rem;font-weight:800;color:#475569;display:block;margin-bottom:.25rem">Title</label><input id="sc-title" class="input-field" placeholder="e.g. High-acuity patient refusing medications" style="font-weight:700"></div>
+            <div><label style="font-size:.7rem;font-weight:800;color:#475569;display:block;margin-bottom:.25rem">Patient / Situation Description <span style="font-weight:400;color:#94a3b8">(used as AI context)</span></label><textarea id="sc-description" class="input-field" rows="3" placeholder="Describe the patient's escalating behaviors, history, environment, and staff context…" style="font-weight:600;resize:vertical"></textarea></div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:.6rem">
+              <div><label style="font-size:.7rem;font-weight:800;color:#475569;display:block;margin-bottom:.25rem">Role Track</label>
+                <select id="sc-role" class="input-field" style="font-weight:700">
+                  <option value="">All staff</option>
+                  <option value="rn">RN / Clinical Nurse</option>
+                  <option value="tech">Behavioral Tech</option>
+                  <option value="charge">Charge Nurse</option>
+                  <option value="security">Security</option>
+                </select></div>
+              <div><label style="font-size:.7rem;font-weight:800;color:#475569;display:block;margin-bottom:.25rem">Tags (comma-separated)</label><input id="sc-tags" class="input-field" placeholder="aggression, meds, elopement" style="font-weight:600"></div>
+            </div>
+            <div><label style="font-size:.7rem;font-weight:800;color:#475569;display:block;margin-bottom:.25rem">Opening Patient Message <span style="font-weight:400;color:#94a3b8">(optional &mdash; AI generates if blank)</span></label><input id="sc-opener" class="input-field" placeholder="You're not touching me. I'm leaving." style="font-weight:600"></div>
+            <button onclick="saveCustomScenario()" class="btn btn-primary" id="sc-save-btn" style="font-size:.85rem;padding:.75rem;font-weight:800">💾 Save Scenario</button>
+          </div>
+        </div>
+      </div>`;
+  } catch(e) {
+    el.innerHTML = `<p style="color:#ef4444;font-size:.875rem;padding:1.25rem">Error: ${e.message}</p>`;
+  }
+}
+
+async function saveCustomScenario() {
+  const title       = document.getElementById('sc-title')?.value.trim();
+  const description = document.getElementById('sc-description')?.value.trim();
+  if (!title || !description) { alert('Title and description are required.'); return; }
+  const btn = document.getElementById('sc-save-btn');
+  if (btn) { btn.textContent = 'Saving…'; btn.disabled = true; }
+  try {
+    const id = `sc_${Date.now()}`;
+    await set(_ref('scenarios/' + id), {
+      title, description,
+      role:      document.getElementById('sc-role')?.value   || '',
+      tags:      document.getElementById('sc-tags')?.value.trim() || '',
+      opener:    document.getElementById('sc-opener')?.value.trim() || '',
+      createdAt: Date.now(),
+      createdBy: window._currentUser?.uid || 'admin',
+    });
+    await window._writeAudit('scenario_created', { id, title });
+    await loadScenarioBuilder();
+  } catch(e) {
+    alert('Failed to save: ' + e.message);
+    if (btn) { btn.textContent = '💾 Save Scenario'; btn.disabled = false; }
+  }
+}
+
+async function deleteCustomScenario(id) {
+  if (!confirm('Delete this scenario? It will be removed from the library immediately.')) return;
+  await remove(_ref('scenarios/' + id));
+  await window._writeAudit('scenario_deleted', { id });
+  await loadScenarioBuilder();
+}
+
+// ===========================================================================
+// CUSTOM SCENARIO INJECTION into Lab generateLabScenario
+// ===========================================================================
+window._getCustomScenarios = async function() {
+  try {
+    const snap = await get(_ref('scenarios'));
+    return snap.exists() ? Object.values(snap.val()) : [];
+  } catch(_) { return []; }
+};
+
+// ---------------------------------------------------------------------------
 </body>
 </html>

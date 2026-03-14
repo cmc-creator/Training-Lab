@@ -146,3 +146,30 @@ function offlineFallback() {
 </body>
 </html>`, { headers: { 'Content-Type': 'text/html' } });
 }
+// ─── Push Notifications ──────────────────────────────────────────────────────
+self.addEventListener('push', e => {
+  const data = e.data ? e.data.json() : {};
+  const title = data.title || 'Training Reminder — Destiny Springs';
+  const options = {
+    body:     data.body  || 'Your annual de-escalation training is due soon. Tap to complete it.',
+    icon:     data.icon  || '/dsh.png',
+    badge:    data.badge || '/dsh.png',
+    tag:      'training-reminder',
+    renotify: false,
+    data: { url: data.url || '/' },
+  };
+  e.waitUntil(self.registration.showNotification(title, options));
+});
+
+self.addEventListener('notificationclick', e => {
+  e.notification.close();
+  const target = e.notification.data?.url || '/';
+  e.waitUntil(
+    clients.matchAll({ type: 'window', includeUncontrolled: true }).then(windowClients => {
+      for (const client of windowClients) {
+        if (client.url === target && 'focus' in client) return client.focus();
+      }
+      if (clients.openWindow) return clients.openWindow(target);
+    })
+  );
+});
