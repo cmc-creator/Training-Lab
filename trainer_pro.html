@@ -5208,7 +5208,8 @@ async function loadLeaderboard() {
     const totalSl = (T?.moduleCount||31);
     el.innerHTML = `<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;flex-wrap:wrap;gap:.5rem">
       <p style="font-weight:900;font-size:.9rem;color:#0f172a;margin:0">${sorted.length} staff members ranked by XP</p>
-      <button onclick="exportUsersCSV()" style="background:linear-gradient(135deg,#2563eb,#7c3aed);color:white;border:none;padding:.45rem .85rem;border-radius:.7rem;font-weight:800;font-size:.75rem;cursor:pointer">? Export CSV</button>
+      <button onclick="exportUsersCSV()" style="background:linear-gradient(135deg,#2563eb,#7c3aed);color:white;border:none;padding:.45rem .85rem;border-radius:.7rem;font-weight:800;font-size:.75rem;cursor:pointer">📊 Export CSV</button>
+      <button onclick="shareLeaderboard()" style="background:linear-gradient(135deg,#0369a1,#0891b2);color:white;border:none;padding:.45rem .85rem;border-radius:.7rem;font-weight:800;font-size:.75rem;cursor:pointer">🔗 Share</button>
     </div>
     <div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:.85rem">
       <thead><tr style="background:#f8fafc;border-bottom:2px solid #e2e8f0">
@@ -5730,47 +5731,80 @@ async function clearDueDate(uid) {
 function openBulkDueDateModal() {
   const cached = window._adminUsersCache || {};
   const depts = [...new Set(Object.values(cached).map(u=>u.department||'Unassigned'))].sort();
+  const roleOptions = [
+    { val: '', label: 'No change' },
+    { val: 'rn',       label: 'RN / Clinical Nurse' },
+    { val: 'tech',     label: 'Behavioral Tech' },
+    { val: 'charge',   label: 'Charge Nurse' },
+    { val: 'security', label: 'Security' },
+    { val: 'clear',    label: '✕ Clear role (reset to default)' },
+  ];
   const modal = document.createElement('div');
   modal.id = 'bulk-due-modal';
   modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:300;display:flex;align-items:center;justify-content:center;padding:1.5rem';
   modal.innerHTML = `
-    <div style="background:white;border-radius:1.25rem;padding:2rem;max-width:480px;width:100%;box-shadow:0 25px 60px rgba(0,0,0,.35)">
-      <h3 style="font-weight:900;font-size:1.1rem;color:#0f172a;margin:0 0 .35rem">?? Bulk Assign Training Deadline</h3>
-      <p style="font-size:.85rem;color:#64748b;margin:0 0 1.5rem">Assign a deadline to an entire department or all staff. Overwrites any existing deadlines.</p>
-      <label style="font-size:.825rem;font-weight:700;color:#0f172a;display:block;margin-bottom:.4rem">Apply To</label>
-      <select id="bulk-dept-select"
-        style="width:100%;padding:.65rem .875rem;border:1.5px solid #e2e8f0;border-radius:.65rem;font-size:.9rem;font-weight:700;color:#0f172a;margin-bottom:1rem;background:white">
-        <option value="__all__">All Users (entire facility)</option>
-        ${depts.map(d=>`<option value="${d}">${d}</option>`).join('')}
+    <div style="background:white;border-radius:1.5rem;padding:2rem;max-width:520px;width:100%;box-shadow:0 25px 60px rgba(0,0,0,.35)">
+      <h3 style="font-weight:900;font-size:1.1rem;color:#0f172a;margin:0 0 .25rem">📅 Bulk Staff Assignment</h3>
+      <p style="font-size:.82rem;color:#64748b;margin:0 0 1.5rem">Assign a deadline and/or role track to an entire department or all staff at once.</p>
+
+      <label style="font-size:.8rem;font-weight:800;color:#0f172a;display:block;margin-bottom:.35rem">Apply To</label>
+      <select id="bulk-dept-select" style="width:100%;padding:.65rem .875rem;border:1.5px solid #e2e8f0;border-radius:.65rem;font-size:.875rem;font-weight:700;color:#0f172a;margin-bottom:1rem;background:white">
+        <option value="__all__">🏥 All Users (entire facility)</option>
+        ${depts.map(d=>`<option value="${d}">🏗 ${d}</option>`).join('')}
       </select>
-      <label style="font-size:.825rem;font-weight:700;color:#0f172a;display:block;margin-bottom:.4rem">Deadline Date</label>
-      <input id="bulk-date-input" type="date"
-        style="width:100%;padding:.65rem .875rem;border:1.5px solid #e2e8f0;border-radius:.65rem;font-size:1rem;font-weight:700;color:#0f172a;margin-bottom:1.25rem">
+
+      <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:1rem;padding:1rem;margin-bottom:.875rem">
+        <label style="font-size:.8rem;font-weight:800;color:#0f172a;display:block;margin-bottom:.35rem">📅 Training Deadline <span style="font-weight:500;color:#94a3b8">(leave blank to skip)</span></label>
+        <div style="display:flex;gap:.5rem;align-items:center">
+          <input id="bulk-date-input" type="date" style="flex:1;padding:.6rem .875rem;border:1.5px solid #e2e8f0;border-radius:.65rem;font-size:.9rem;font-weight:700;color:#0f172a">
+          <button onclick="document.getElementById('bulk-date-input').value=''" style="background:#fee2e2;color:#dc2626;border:none;border-radius:.5rem;padding:.5rem .75rem;font-size:.75rem;font-weight:800;cursor:pointer;white-space:nowrap">Clear</button>
+        </div>
+      </div>
+
+      <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:1rem;padding:1rem;margin-bottom:1.25rem">
+        <label style="font-size:.8rem;font-weight:800;color:#0f172a;display:block;margin-bottom:.35rem">👤 Role Track <span style="font-weight:500;color:#94a3b8">(leave on “No change” to skip)</span></label>
+        <select id="bulk-role-select" style="width:100%;padding:.6rem .875rem;border:1.5px solid #e2e8f0;border-radius:.65rem;font-size:.875rem;font-weight:700;color:#0f172a;background:white">
+          ${roleOptions.map(r=>`<option value="${r.val}">${r.label}</option>`).join('')}
+        </select>
+      </div>
+
       <div style="display:flex;gap:.75rem;justify-content:flex-end">
         <button onclick="document.getElementById('bulk-due-modal')?.remove()" style="background:#f1f5f9;color:#64748b;border:none;padding:.6rem 1.25rem;border-radius:.65rem;font-weight:700;font-size:.875rem;cursor:pointer">Cancel</button>
-        <button onclick="applyBulkDueDate()" style="background:linear-gradient(135deg,#2563eb,#7c3aed);color:white;border:none;padding:.6rem 1.5rem;border-radius:.65rem;font-weight:900;font-size:.875rem;cursor:pointer">Assign Deadline</button>
+        <button onclick="applyBulkAssignment()" style="background:linear-gradient(135deg,#2563eb,#7c3aed);color:white;border:none;padding:.6rem 1.5rem;border-radius:.65rem;font-weight:900;font-size:.875rem;cursor:pointer">✅ Apply to Staff</button>
       </div>
     </div>`;
   document.body.appendChild(modal);
   modal.addEventListener('click', e => { if(e.target===modal) modal.remove(); });
 }
 
-async function applyBulkDueDate() {
-  const dept  = document.getElementById('bulk-dept-select')?.value;
-  const dateV = document.getElementById('bulk-date-input')?.value;
-  if (!dateV) { alert('Please pick a date.'); return; }
-  const dueDate = new Date(dateV + 'T23:59:59').getTime();
-  const cached = window._adminUsersCache || {};
+async function applyBulkDueDate() { return applyBulkAssignment(); } // backwards-compat alias
+
+async function applyBulkAssignment() {
+  const dept     = document.getElementById('bulk-dept-select')?.value;
+  const dateV    = document.getElementById('bulk-date-input')?.value;
+  const roleTrack = document.getElementById('bulk-role-select')?.value;
+  if (!dateV && !roleTrack) { alert('Choose a deadline, a role track, or both.'); return; }
+  const dueDate = dateV ? new Date(dateV + 'T23:59:59').getTime() : null;
+  const cached  = window._adminUsersCache || {};
   const targets = Object.entries(cached).filter(([,u]) =>
     dept === '__all__' || (u.department||'Unassigned') === dept
   );
   if (!targets.length) { alert('No users found.'); return; }
-  if (!confirm(`Set deadline of ${new Date(dueDate).toLocaleDateString()} for ${targets.length} user${targets.length!==1?'s':''}?`)) return;
+  const parts = [];
+  if (dueDate) parts.push(`deadline ${new Date(dueDate).toLocaleDateString()}`);
+  if (roleTrack) parts.push(`role track “${roleTrack === 'clear' ? 'cleared' : roleTrack}”`);
+  if (!confirm(`Apply ${parts.join(' and ')} to ${targets.length} user${targets.length!==1?'s':''}?`)) return;
+  const update = {};
+  if (dueDate) update.dueDate = dueDate;
+  if (roleTrack === 'clear') update.roleTrack = null;
+  else if (roleTrack) update.roleTrack = roleTrack;
   try {
-    await Promise.all(targets.map(([uid]) => window._updateUserData(uid, { dueDate })));
-    targets.forEach(([uid]) => { if(cached[uid]) cached[uid].dueDate = dueDate; });
+    await Promise.all(targets.map(([uid]) => window._updateUserData(uid, update)));
+    targets.forEach(([uid]) => { if(cached[uid]) Object.assign(cached[uid], update); });
+    await window._writeAudit('bulk_assignment', { dept, dueDate, roleTrack, count: targets.length });
     document.getElementById('bulk-due-modal')?.remove();
     _renderUsersGrid(cached);
+    loadReports();
   } catch(e) { alert('Error: ' + e.message); }
 }
 
@@ -5998,9 +6032,10 @@ async function loadSettings() {
           <div style="margin-bottom:.75rem">
             <div style="font-size:.72rem;font-weight:800;color:#475569;margin-bottom:.4rem">Fire on events:</div>
             <div style="display:flex;flex-wrap:wrap;gap:.5rem">
-              ${['training_completed','cert_downloaded','lab_completed','user_created'].map(ev=>{
+              ${['training_completed','cert_downloaded','cert_email','lab_completed','user_created'].map(ev=>{
                 const on = (settings?.webhookEvents||['training_completed','cert_downloaded','lab_completed']).includes(ev);
-                return `<label style="display:flex;align-items:center;gap:.3rem;font-size:.78rem;font-weight:700;color:#374151;cursor:pointer"><input type="checkbox" id="wh-ev-${ev}" ${on?'checked':''} style="accent-color:#2563eb"> ${ev}</label>`;
+                const note = ev==='cert_email' ? ' <span style="font-size:.68rem;font-weight:600;color:#94a3b8">— auto-send cert to employee</span>' : '';
+                return `<label style="display:flex;align-items:center;gap:.35rem;font-size:.78rem;font-weight:700;color:#374151;cursor:pointer"><input type="checkbox" id="wh-ev-${ev}" ${on?'checked':''} style="accent-color:#2563eb"> ${ev}${note}</label>`;
               }).join('')}
             </div>
           </div>
@@ -6184,7 +6219,7 @@ async function saveIntegrationSettings() {
   const xapiUsername  = document.getElementById('setting-xapi-user')?.value.trim() || '';
   const xapiPassword  = document.getElementById('setting-xapi-pass')?.value.trim() || '';
   const xapiActivityId= document.getElementById('setting-xapi-activity')?.value.trim() || '';
-  const webhookEvents = ['training_completed','cert_downloaded','lab_completed','user_created']
+  const webhookEvents = ['training_completed','cert_downloaded','cert_email','lab_completed','user_created']
     .filter(ev => document.getElementById(`wh-ev-${ev}`)?.checked);
   const payload = { webhookUrl, webhookSecret, xapiEndpoint, xapiUsername, xapiPassword, xapiActivityId, webhookEvents };
   await window._saveSettings(payload);
@@ -7326,6 +7361,12 @@ function downloadCertificate() {
       };
       window._fireWebhook('training_completed', _compPayload).catch(()=>{});
       window._fireWebhook('cert_downloaded', _compPayload).catch(()=>{});
+      window._fireWebhook('cert_email', {
+        ..._compPayload,
+        subject: `Your ${window.TENANT?.name||'Training'} certificate is ready`,
+        message: `Congratulations! ${_compPayload.displayName||'You'} completed the ${window.TENANT?.name||'de-escalation'} training. The certificate PDF is attached or can be downloaded from the training platform.`,
+        trainingUrl: window.location.origin,
+      }).catch(()=>{});
       window._writeAudit('cert_downloaded', { xp, level, completedAt: new Date().toISOString() }).catch(()=>{});
       window._scorm?.complete(finalQuizScore || 0, 15); // SCORM: report score + completion to LMS
       window._checkAchievements && window._checkAchievements({ completedAt: true }).catch(()=>{});
@@ -7948,23 +7989,41 @@ async function loadScenarioBuilder() {
   try {
     const snap = await get(_ref('scenarios'));
     const scenarios = snap.exists() ? Object.entries(snap.val()) : [];
-    const rows = scenarios.map(([id, s]) => `
-      <div style="background:white;border:1px solid #e2e8f0;border-radius:1rem;padding:1rem;margin-bottom:.65rem">
+    const published  = scenarios.filter(([,s]) => s.active !== false);
+    const drafts     = scenarios.filter(([,s]) => s.active === false);
+    const renderRows = (list) => list.map(([id, s]) => {
+      const isDraft = s.active === false;
+      return `
+      <div style="background:white;border:1.5px solid ${isDraft?'#fde68a':'#e2e8f0'};border-radius:1rem;padding:1rem;margin-bottom:.65rem">
         <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:.75rem;flex-wrap:wrap">
           <div style="flex:1">
-            <div style="font-weight:900;font-size:.88rem;color:#0f172a;margin-bottom:.2rem">${s.title || 'Untitled'}</div>
+            <div style="display:flex;align-items:center;gap:.5rem;margin-bottom:.2rem">
+              <span style="font-weight:900;font-size:.88rem;color:#0f172a">${s.title || 'Untitled'}</span>
+              ${isDraft ? '<span style="background:#fef3c7;color:#92400e;padding:.1rem .5rem;border-radius:999px;font-size:.65rem;font-weight:900">DRAFT</span>' : '<span style="background:#dcfce7;color:#15803d;padding:.1rem .5rem;border-radius:999px;font-size:.65rem;font-weight:900">• LIVE</span>'}
+            </div>
             <div style="font-size:.76rem;color:#64748b;line-height:1.5;margin-bottom:.4rem">${(s.description || '').slice(0, 200)}</div>
             ${s.role ? `<span style="background:#dbeafe;color:#1d4ed8;padding:.15rem .55rem;border-radius:999px;font-size:.66rem;font-weight:800;margin-right:.35rem">👤 ${s.role}</span>` : ''}
             ${s.tags ? s.tags.split(',').map(t => `<span style="background:#ede9fe;color:#5b21b6;padding:.15rem .5rem;border-radius:999px;font-size:.66rem;font-weight:800">${t.trim()}</span>`).join('') : ''}
           </div>
-          <button onclick="deleteCustomScenario('${id}')" style="background:#fee2e2;color:#dc2626;border:1px solid #fecaca;border-radius:.5rem;padding:.35rem .65rem;font-size:.72rem;font-weight:800;cursor:pointer;flex-shrink:0">🗑 Delete</button>
+          <div style="display:flex;gap:.4rem;flex-shrink:0;flex-wrap:wrap">
+            <button onclick="toggleScenarioActive('${id}',${!isDraft})" style="background:${isDraft?'#d1fae5':'#fef3c7'};color:${isDraft?'#065f46':'#92400e'};border:1px solid ${isDraft?'#a7f3d0':'#fde68a'};border-radius:.5rem;padding:.35rem .65rem;font-size:.72rem;font-weight:800;cursor:pointer">${isDraft ? '▶ Publish' : '⏸ Draft'}</button>
+            <button onclick="deleteCustomScenario('${id}')" style="background:#fee2e2;color:#dc2626;border:1px solid #fecaca;border-radius:.5rem;padding:.35rem .65rem;font-size:.72rem;font-weight:800;cursor:pointer">🗑 Delete</button>
+          </div>
         </div>
-      </div>`).join('');
+      </div>`;
+    }).join('');
+    const publishedSection = published.length ? renderRows(published) : '';
+    const draftSection = drafts.length ? `
+      <div style="margin-top:.5rem;padding-top:.5rem;border-top:1px dashed #e2e8f0">
+        <div style="font-size:.67rem;font-weight:900;color:#94a3b8;text-transform:uppercase;letter-spacing:.07em;margin-bottom:.35rem">Drafts (${drafts.length})</div>
+        ${renderRows(drafts)}
+      </div>` : '';
+    const rows = publishedSection + draftSection;
     el.innerHTML = `
       <div style="padding:1rem">
         <div style="margin-bottom:1rem">
           <h3 style="font-weight:900;font-size:.95rem;color:#0f172a;margin:0 0 .2rem">📚 Custom Scenario Library</h3>
-          <p style="font-size:.77rem;color:#64748b;margin:0">${scenarios.length} custom scenario${scenarios.length !== 1 ? 's' : ''} &mdash; automatically injected into Lab sessions alongside AI-generated ones</p>
+          <p style="font-size:.77rem;color:#64748b;margin:0">${scenarios.length} scenario${scenarios.length !== 1 ? 's' : ''} (${published.length} live, ${drafts.length} draft) &mdash; live ones inject into Lab sessions alongside AI-generated ones</p>
         </div>
         ${rows || '<p style="color:#94a3b8;font-size:.83rem;padding:.25rem 0 1rem">No custom scenarios yet. Create your first one below.</p>'}
         <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:1.25rem;padding:1.25rem;margin-top:.5rem">
@@ -8006,6 +8065,7 @@ async function saveCustomScenario() {
       role:      document.getElementById('sc-role')?.value   || '',
       tags:      document.getElementById('sc-tags')?.value.trim() || '',
       opener:    document.getElementById('sc-opener')?.value.trim() || '',
+      active:    true,
       createdAt: Date.now(),
       createdBy: window._currentUser?.uid || 'admin',
     });
@@ -8030,9 +8090,86 @@ async function deleteCustomScenario(id) {
 window._getCustomScenarios = async function() {
   try {
     const snap = await get(_ref('scenarios'));
-    return snap.exists() ? Object.values(snap.val()) : [];
+    if (!snap.exists()) return [];
+    return Object.values(snap.val()).filter(s => s.active !== false);
   } catch(_) { return []; }
 };
+
+// ===========================================================================
+// SHAREABLE LEADERBOARD
+// ===========================================================================
+function shareLeaderboard() {
+  const T   = window.TENANT;
+  const cached = window._adminUsersCache || {};
+  const totalSl = T?.moduleCount || 31;
+  const sorted = Object.values(cached)
+    .sort((a, b) => (b.xp || 0) - (a.xp || 0));
+  if (!sorted.length) { alert('No user data loaded. Open the Leaderboard tab first.'); return; }
+  const medals = ['🥇', '🥈', '🥉'];
+  const rows = sorted.map((u, i) => {
+    const nm   = [u.firstName, u.lastName].filter(Boolean).join(' ') || u.email || 'Staff Member';
+    const done = (u.currentSlide || 0) >= totalSl - 1;
+    const pct  = Math.min(100, Math.round(((u.currentSlide || 0) / (totalSl - 1)) * 100));
+    return `<tr style="border-bottom:1px solid #f1f5f9;${i < 3 ? 'background:#fffbeb' : ''}">
+      <td style="padding:.75rem 1rem;font-weight:900;font-size:.9rem;color:#0f172a;white-space:nowrap">${medals[i] || i + 1}</td>
+      <td style="padding:.75rem 1rem;font-weight:700;color:#0f172a">${nm}</td>
+      <td style="padding:.75rem 1rem;color:#64748b;font-size:.82rem">${u.department || '—'}</td>
+      <td style="padding:.75rem 1rem;text-align:center;font-weight:900;color:#2563eb">${(u.xp || 0).toLocaleString()}</td>
+      <td style="padding:.75rem 1rem;text-align:center">
+        <div style="background:#e2e8f0;border-radius:999px;height:8px;width:80px;margin:auto">
+          <div style="background:#2563eb;height:8px;border-radius:999px;width:${pct}%"></div>
+        </div>
+      </td>
+      <td style="padding:.75rem 1rem;text-align:center">
+        <span style="background:${done ? '#dcfce7' : '#fef9c3'};color:${done ? '#15803d' : '#92400e'};padding:.2rem .6rem;border-radius:999px;font-size:.72rem;font-weight:800">${done ? '✅ Done' : pct + '%'}</span>
+      </td>
+    </tr>`;
+  }).join('');
+  const generatedAt = new Date().toLocaleString();
+  const html = `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>${T?.name || 'Training'} Leaderboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&display=swap" rel="stylesheet">
+<style>*{box-sizing:border-box;margin:0;padding:0}body{font-family:Montserrat,sans-serif;background:#f8fafc;color:#0f172a;padding:2rem 1rem}
+.card{background:white;border-radius:1.25rem;box-shadow:0 4px 24px rgba(0,0,0,.08);overflow:hidden;max-width:900px;margin:0 auto}
+.header{background:linear-gradient(135deg,#1e3a8a,#4c1d95);padding:2rem;color:white;text-align:center}
+.header h1{font-size:1.5rem;font-weight:900;margin-bottom:.25rem}
+.header p{font-size:.85rem;opacity:.75}table{width:100%;border-collapse:collapse;font-size:.9rem}
+thead tr{background:#f1f5f9}th{padding:.875rem 1rem;text-align:left;font-weight:900;font-size:.75rem;text-transform:uppercase;letter-spacing:.06em;color:#475569}
+.footer{text-align:center;padding:1.25rem;font-size:.72rem;color:#94a3b8;border-top:1px solid #f1f5f9}
+@media(max-width:600px){th,td{padding:.55rem .5rem;font-size:.78rem}}
+</style></head><body>
+<div class="card">
+  <div class="header">
+    ${T?.logoUrl ? `<img src="${T.logoUrl}" alt="" style="height:40px;margin-bottom:.75rem;border-radius:.4rem">` : ''}
+    <h1>${T?.name || 'Training Platform'} &mdash; Leaderboard</h1>
+    <p>Generated ${generatedAt} &middot; ${sorted.length} staff members</p>
+  </div>
+  <table>
+    <thead><tr>
+      <th>#</th><th>Name</th><th>Department</th><th>XP</th><th>Progress</th><th>Status</th>
+    </tr></thead>
+    <tbody>${rows}</tbody>
+  </table>
+  <div class="footer">Destiny Springs Healthcare &mdash; De-escalation Training &mdash; Confidential. For internal use only.</div>
+</div>
+</body></html>`;
+  const blob = new Blob([html], { type: 'text/html' });
+  const url  = URL.createObjectURL(blob);
+  const win  = window.open(url, '_blank');
+  // Offer print dialog immediately after load
+  if (win) win.addEventListener('load', () => win.focus());
+  setTimeout(() => URL.revokeObjectURL(url), 60000);
+}
+
+// ===========================================================================
+// SCENARIO PUBLISH TOGGLE
+// ===========================================================================
+async function toggleScenarioActive(id, makeActive) {
+  await update(_ref('scenarios/' + id), { active: makeActive });
+  await window._writeAudit('scenario_toggled', { id, active: makeActive });
+  await loadScenarioBuilder();
+}
 
 // ---------------------------------------------------------------------------
 </body>
