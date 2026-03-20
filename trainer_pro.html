@@ -3318,7 +3318,7 @@ function renderInlineLogos() {
   const t = window.TENANT;
   document.querySelectorAll('.logo-inline').forEach(el => {
     if(t?.logoUrl) {
-      el.innerHTML = `<img src="${t.logoUrl}" alt="${t.orgName || ''}" style="width:100%;height:auto;object-fit:contain;display:block;max-height:80px">`;
+      el.innerHTML = `<img src="${t.logoUrl}" alt="${t.orgName || ''}" style="width:auto;height:auto;object-fit:contain;display:block;max-height:100px;max-width:100%">`;
     } else {
       el.innerHTML = LOGO_SVG;
     }

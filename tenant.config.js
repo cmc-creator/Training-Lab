@@ -1,5 +1,5 @@
 // ─────────────────────────────────────────────────────────────────────────────
-// TENANT CONFIGURATION — NyxLab™ by Nyx Collective LLC
+// TENANT CONFIGURATION — NyxCodex™ by Nyx Collective LLC
 // ─────────────────────────────────────────────────────────────────────────────
 // To white-label this platform for a new organization:
 //   1. Copy this file into the new deployment folder
@@ -14,22 +14,22 @@ window.TENANT = {
 
   // ── Identity ──────────────────────────────────────────────────────────────
   // orgId MUST be lowercase, URL-safe, no spaces (used as Firebase path prefix)
-  orgId:         'destiny-springs',
-  orgName:       'Destiny Springs Healthcare',
-  orgWebsite:    'https://www.destinyspringshealthcare.com/',
-  orgAddress:    '17300 N Dysart Rd, Surprise AZ 85378',
+  orgId:         'nyxcodex',
+  orgName:       'NyxCodex\u2122',
+  orgWebsite:    'https://nyxcodex.com/',
+  orgAddress:    '',
 
   brandName:     'NyxCodex\u2122',
   productLine:   'NyxCodex\u2122 \u2014 A Nyx Collective LLC Platform',
   moduleCount:   31,
-  tagline:       'De-escalation &amp; Crisis Intervention Training \u2014 Destiny Springs Healthcare Edition',
+  tagline:       'De-escalation &amp; Crisis Intervention Training \u2014 NyxCodex\u2122 Training Lab',
   subtopics:     'CPI Model \u00B7 Diagnosis-Specific Care \u00B7 Trauma-Informed Practice \u00B7 Safety Protocols',
 
   // ── Certification & Compliance ────────────────────────────────────────────────────────────────────────────────────────
   // Displayed on the certificate and compliance reports. Update per org as needed.
   certContactHours:    4.0,
   certType:            'Internal Competency Verification',
-  certProvider:        'Destiny Springs Healthcare Education Dept.',
+  certProvider:        'NyxCodex\u2122 \u2014 Nyx Collective LLC',
   certRenewalMonths:   12,
   trainingAdminName:   'Training & Education Department',
   certCompetencyDomains: [
@@ -46,7 +46,7 @@ window.TENANT = {
 
   // ── Assets ────────────────────────────────────────────────────────────────
   // Relative or absolute URLs. Replace with CDN links for hosted tenants.
-  logoUrl:       'dsh.png',   // shown on login, hub, and certificate
+  logoUrl:       'nyxcodex-logo.png',   // shown on login, hub, and certificate
   labImageUrl:   'lab.png',   // background image for hub option cards
 
   // ── Brand Colors ──────────────────────────────────────────────────────────
