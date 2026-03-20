@@ -1,36 +1,43 @@
 import { onRequest } from "firebase-functions/v2/https";
 
-const DEFAULT_SYSTEM = "You are Professor Pax, a calm psychiatric training coach for Destiny Springs Healthcare staff. Keep replies under 120 words. If unsure or outside scope, recommend they ask their supervisor or leadership. Avoid PHI. Tone: supportive, concise.";
+const DEFAULT_SYSTEM = "You are Professor Vance, a calm, authoritative clinical mentor for psychiatric healthcare staff at Destiny Springs Healthcare. Keep replies under 120 words. If unsure or outside training scope, recommend the user ask their supervisor or clinical leadership. Never provide clinical orders or specific medication guidance. Avoid PHI. Tone: warm, concise, deeply supportive.";
 
-export const paxChat = onRequest({ cors: true, region: "us-central1", secrets:["OPENAI_API_KEY"] }, async (req, res) => {
+export const paxChat = onRequest({ cors: true, region: "us-central1", secrets:["GEMINI_API_KEY"] }, async (req, res) => {
   if (req.method !== "POST") {
     res.set("Allow", "POST");
     return res.status(405).json({ error: "Method not allowed" });
   }
 
-  const apiKey = process.env.OPENAI_API_KEY || process.env.openai_apikey;
+  const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) {
-    return res.status(500).json({ error: "Missing OPENAI_API_KEY" });
+    return res.status(500).json({ error: "Missing GEMINI_API_KEY" });
   }
 
   const body = req.body || {};
   const sys = body.system || DEFAULT_SYSTEM;
   const msgs = Array.isArray(body.messages) ? body.messages : [];
 
+  // Gemini uses 'user' / 'model' roles — map and normalize
+  const normalized = msgs
+    .map(m => ({ role: m.role === "assistant" ? "model" : "user", parts: [{ text: m.content || "" }] }))
+    .slice(-8);
+  const contents = normalized.length && normalized[0].role === "user"
+    ? normalized
+    : [{ role: "user", parts: [{ text: "Hello" }] }, ...normalized];
+
   const payload = {
-    model: "gpt-4o-mini",
-    messages: [{ role: "system", content: sys }, ...msgs.map(m => ({ role: m.role, content: m.content }))].slice(-9),
-    temperature: 0.6,
-    max_tokens: 256
+    system_instruction: { parts: [{ text: sys }] },
+    contents,
+    generationConfig: { temperature: 0.6, maxOutputTokens: 256, candidateCount: 1 }
   };
 
+  const model = "gemini-2.0-flash";
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+
   try {
-    const r = await fetch("https://api.openai.com/v1/chat/completions", {
+    const r = await fetch(url, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${apiKey}`
-      },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload)
     });
 
@@ -40,7 +47,8 @@ export const paxChat = onRequest({ cors: true, region: "us-central1", secrets:["
     }
 
     const data = await r.json();
-    const reply = data?.choices?.[0]?.message?.content?.trim() || "I might not have the answer here. Please check with your supervisor or leadership for the safest guidance.";
+    const reply = data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim()
+      || "I might not have the answer here. Please check with your supervisor or leadership for the safest guidance.";
     return res.status(200).json({ reply });
   } catch (e) {
     return res.status(500).json({ error: "Upstream error", detail: String(e) });
