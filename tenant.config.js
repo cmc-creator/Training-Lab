@@ -14,7 +14,7 @@ window.TENANT = {
 
   // ── Identity ──────────────────────────────────────────────────────────────
   // orgId MUST be lowercase, URL-safe, no spaces (used as Firebase path prefix)
-  orgId:         'nyxcodex',
+  orgId:         'destiny-springs',
   orgName:       'NyxCodex\u2122',
   orgWebsite:    'https://nyxcodex.com/',
   orgAddress:    '',
