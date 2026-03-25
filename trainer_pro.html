@@ -456,7 +456,7 @@ window._emitXAPI = async function(verb, resultData) {
   } catch(_e) { /* silent */ }
 };
 </script>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800;900&family=Montserrat:wght@700;800;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800;900&family=Montserrat:wght@700;800;900&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 <style>
 *{box-sizing:border-box}
 html,body{height:100%}
@@ -692,16 +692,15 @@ h1,h2,.font-display{font-family:'Montserrat',sans-serif}
   <!-- -- LEFT HERO PANEL -- -->
   <div style="flex:1.1;display:flex;flex-direction:column;position:relative;overflow:hidden;min-width:0">
 
-    <!-- Animated gradient background -->
-    <div style="position:absolute;inset:0;background:linear-gradient(160deg,#130c2f 0%,#20114a 32%,#4c1d95 68%,#0f1028 100%);z-index:0"></div>
+    <!-- Lab background -->
+    <div style="position:absolute;inset:0;background:radial-gradient(ellipse at 10% 30%,rgba(0,229,255,.07) 0%,transparent 50%),radial-gradient(ellipse at 90% 80%,rgba(74,222,128,.04) 0%,transparent 45%),#030810;z-index:0"></div>
 
-    <!-- Animated orbs (purple glow) -->
-    <div style="position:absolute;width:520px;height:520px;border-radius:50%;background:radial-gradient(circle,rgba(124,58,237,.28) 0%,transparent 70%);top:-120px;left:-80px;animation:orbFloat 9s ease-in-out infinite;z-index:1"></div>
-    <div style="position:absolute;width:380px;height:380px;border-radius:50%;background:radial-gradient(circle,rgba(168,85,247,.22) 0%,transparent 70%);bottom:-60px;right:-40px;animation:orbFloat 12s ease-in-out infinite reverse;z-index:1"></div>
-    <div style="position:absolute;width:220px;height:220px;border-radius:50%;background:radial-gradient(circle,rgba(217,70,239,.18) 0%,transparent 70%);top:45%;left:55%;animation:orbFloat 7s ease-in-out infinite 2s;z-index:1"></div>
+    <!-- Cyan glow orbs -->
+    <div style="position:absolute;width:480px;height:480px;border-radius:50%;background:radial-gradient(circle,rgba(0,229,255,.1) 0%,transparent 70%);top:-140px;left:-100px;animation:orbFloat 12s ease-in-out infinite;z-index:1"></div>
+    <div style="position:absolute;width:320px;height:320px;border-radius:50%;background:radial-gradient(circle,rgba(124,58,237,.12) 0%,transparent 70%);bottom:-60px;right:-50px;animation:orbFloat 16s ease-in-out infinite reverse;z-index:1"></div>
 
-    <!-- Subtle grid overlay -->
-    <div style="position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,.03) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.03) 1px,transparent 1px);background-size:48px 48px;z-index:1"></div>
+    <!-- Dot grid overlay -->
+    <div style="position:absolute;inset:0;background-image:radial-gradient(rgba(0,229,255,.12) 1px,transparent 1px);background-size:28px 28px;z-index:1"></div>
 
     <!-- Content -->
     <div style="position:relative;z-index:2;display:flex;flex-direction:column;height:100%;padding:3rem 3.5rem">
@@ -713,45 +712,46 @@ h1,h2,.font-display{font-family:'Montserrat',sans-serif}
 
       <!-- Hero headline -->
       <div style="flex:1;display:flex;flex-direction:column;justify-content:center;padding:2rem 0">
-        <div style="font-size:.72rem;font-weight:800;color:#38bdf8;letter-spacing:.2em;text-transform:uppercase;margin-bottom:1.25rem;display:flex;align-items:center;gap:.6rem">
-          <span style="display:inline-block;width:28px;height:2px;background:#38bdf8;border-radius:2px"></span>
-          Staff Training Portal
+        <div style="font-family:'Space Mono',monospace;font-size:.6rem;font-weight:700;color:rgba(0,229,255,.65);letter-spacing:.2em;text-transform:uppercase;margin-bottom:1.25rem;display:flex;align-items:center;gap:.6rem">
+          <span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:#4ade80;box-shadow:0 0 8px #4ade80,0 0 14px rgba(74,222,128,.35)"></span>
+          <span style="color:rgba(74,222,128,.8)">SYSTEM_ONLINE</span>
+          <span style="margin-left:.5rem;color:rgba(0,229,255,.45)">&nbsp;//&nbsp; STAFF PORTAL</span>
         </div>
         <h1 style="font-family:Montserrat,sans-serif;font-weight:900;font-size:clamp(1.75rem,3vw,2.8rem);color:white;line-height:1.1;letter-spacing:-.03em;margin-bottom:1rem">
           De-escalation Training<br>
-          <span style="background:linear-gradient(90deg,#38bdf8,#818cf8);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">Reimagined.</span>
+          <span style="background:linear-gradient(90deg,#00e5ff,#818cf8,#4ade80);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">Reimagined.</span>
         </h1>
-        <div id="auth-tagline" style="margin-bottom:2rem;max-width:420px;color:#94a3b8;font-size:.9rem;line-height:1.7;font-weight:500">
+        <div id="auth-tagline" style="margin-bottom:2rem;max-width:420px;color:#2d4a5a;font-size:.88rem;line-height:1.75;font-weight:500">
           AI-powered clinical simulation training for psychiatric professionals.
         </div>
         <div id="auth-hero-img" style="margin-top:.5rem;display:grid;grid-template-columns:repeat(2,1fr);gap:.65rem;max-width:380px">
-          <div style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:.75rem;padding:.75rem 1rem">
-            <div style="font-size:1.25rem;margin-bottom:.25rem">&#129504;</div>
-            <div style="color:white;font-size:.78rem;font-weight:800">AI Scenarios</div>
-            <div style="color:#94a3b8;font-size:.68rem">Real-time coaching</div>
+          <div style="background:rgba(0,229,255,.03);border:1px solid rgba(0,229,255,.12);border-top:1px solid rgba(0,229,255,.35);border-radius:.4rem;padding:.75rem 1rem">
+            <div style="font-size:1.1rem;margin-bottom:.25rem">&#129504;</div>
+            <div style="font-family:'Space Mono',monospace;color:rgba(0,229,255,.8);font-size:.65rem;font-weight:700;letter-spacing:.06em">AI_SCENARIOS</div>
+            <div style="color:#2d4a5a;font-size:.62rem;margin-top:.15rem">Real-time coaching</div>
           </div>
-          <div style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:.75rem;padding:.75rem 1rem">
-            <div style="font-size:1.25rem;margin-bottom:.25rem">&#128200;</div>
-            <div style="color:white;font-size:.78rem;font-weight:800">Progress Tracking</div>
-            <div style="color:#94a3b8;font-size:.68rem">XP &amp; leaderboards</div>
+          <div style="background:rgba(0,229,255,.03);border:1px solid rgba(0,229,255,.12);border-top:1px solid rgba(0,229,255,.35);border-radius:.4rem;padding:.75rem 1rem">
+            <div style="font-size:1.1rem;margin-bottom:.25rem">&#128200;</div>
+            <div style="font-family:'Space Mono',monospace;color:rgba(0,229,255,.8);font-size:.65rem;font-weight:700;letter-spacing:.06em">XP_TRACKING</div>
+            <div style="color:#2d4a5a;font-size:.62rem;margin-top:.15rem">XP &amp; leaderboards</div>
           </div>
-          <div style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:.75rem;padding:.75rem 1rem">
-            <div style="font-size:1.25rem;margin-bottom:.25rem">&#128218;</div>
-            <div style="color:white;font-size:.78rem;font-weight:800">30+ Slides</div>
-            <div style="color:#94a3b8;font-size:.68rem">Full curriculum</div>
+          <div style="background:rgba(0,229,255,.03);border:1px solid rgba(0,229,255,.12);border-top:1px solid rgba(0,229,255,.35);border-radius:.4rem;padding:.75rem 1rem">
+            <div style="font-size:1.1rem;margin-bottom:.25rem">&#128218;</div>
+            <div style="font-family:'Space Mono',monospace;color:rgba(0,229,255,.8);font-size:.65rem;font-weight:700;letter-spacing:.06em">CURRICULUM</div>
+            <div style="color:#2d4a5a;font-size:.62rem;margin-top:.15rem">30+ training slides</div>
           </div>
-          <div style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:.75rem;padding:.75rem 1rem">
-            <div style="font-size:1.25rem;margin-bottom:.25rem">&#9889;</div>
-            <div style="color:white;font-size:.78rem;font-weight:800">Daily Drills</div>
-            <div style="color:#94a3b8;font-size:.68rem">Build mastery</div>
+          <div style="background:rgba(0,229,255,.03);border:1px solid rgba(0,229,255,.12);border-top:1px solid rgba(0,229,255,.35);border-radius:.4rem;padding:.75rem 1rem">
+            <div style="font-size:1.1rem;margin-bottom:.25rem">&#9889;</div>
+            <div style="font-family:'Space Mono',monospace;color:rgba(0,229,255,.8);font-size:.65rem;font-weight:700;letter-spacing:.06em">DAILY_DRILLS</div>
+            <div style="color:#2d4a5a;font-size:.62rem;margin-top:.15rem">Build mastery</div>
           </div>
         </div>
       </div>
 
       <!-- Footer strip -->
-      <div style="border-top:1px solid rgba(255,255,255,.15);padding-top:1.5rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.75rem">
-        <span id="auth-copyright" style="font-size:.82rem;color:#cbd5e1;font-weight:600">© 2026 NyxCodex™ · Nyx Collective LLC</span>
-        <a href="https://nyxcodex.com" target="_blank" style="font-size:.82rem;color:#7dd3fc;text-decoration:none;font-weight:700">nyxcodex.com</a>
+      <div style="border-top:1px solid rgba(0,229,255,.12);padding-top:1.25rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.75rem">
+        <span id="auth-copyright" style="font-family:'Space Mono',monospace;font-size:.6rem;color:rgba(0,229,255,.35);font-weight:700;letter-spacing:.08em">&#169; 2026 NYXCODEX&#8482; &#9679; NYX COLLECTIVE LLC</span>
+        <a href="https://nyxcodex.com" target="_blank" style="font-family:'Space Mono',monospace;font-size:.6rem;color:rgba(0,229,255,.55);text-decoration:none;font-weight:700;letter-spacing:.08em">nyxcodex.com</a>
       </div>
     </div>
   </div>

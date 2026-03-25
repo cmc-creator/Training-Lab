@@ -3,128 +3,237 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>NyxCodex&#8482; &#8212; Clinical De-Escalation Training Platform</title>
+  <title>NyxCodex&#8482; | Clinical De-Escalation Training Platform</title>
   <meta name="description" content="NyxCodex&#8482; is an AI-powered clinical training platform for psychiatric healthcare professionals. Master de-escalation with immersive simulations.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&family=Montserrat:wght@800;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Montserrat:wght@800;900&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
   <style>
     *{box-sizing:border-box;margin:0;padding:0}
     html,body{height:100%;font-family:'Inter',sans-serif}
-    body{background:#070c1f;color:white;overflow-x:hidden}
+    body{background:#03080f;color:white;overflow-x:hidden}
 
-    /* ---- Animated background ---- */
-    .bg{position:fixed;inset:0;z-index:0;background:linear-gradient(160deg,#070c1f 0%,#0f1740 45%,#1a0a3d 100%)}
-    .orb{position:fixed;border-radius:50%;pointer-events:none;z-index:0}
-    .orb1{width:700px;height:700px;background:radial-gradient(circle,rgba(99,57,220,.18) 0%,transparent 70%);top:-200px;right:-100px;animation:drift 18s ease-in-out infinite}
-    .orb2{width:500px;height:500px;background:radial-gradient(circle,rgba(56,189,248,.12) 0%,transparent 70%);bottom:-100px;left:-150px;animation:drift 24s ease-in-out infinite reverse}
-    .orb3{width:300px;height:300px;background:radial-gradient(circle,rgba(168,85,247,.14) 0%,transparent 70%);top:50%;left:50%;animation:drift 14s ease-in-out infinite 3s}
-    .grid{position:fixed;inset:0;background-image:linear-gradient(rgba(255,255,255,.025) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.025) 1px,transparent 1px);background-size:56px 56px;z-index:0}
-    @keyframes drift{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(30px,-40px) scale(1.05)}}
+    /* ---- LAB BACKGROUND ---- */
+    .bg{position:fixed;inset:0;z-index:0;
+      background:
+        radial-gradient(ellipse at 12% 35%,rgba(0,229,255,.055) 0%,transparent 50%),
+        radial-gradient(ellipse at 88% 15%,rgba(124,58,237,.07) 0%,transparent 45%),
+        radial-gradient(ellipse at 55% 85%,rgba(74,222,128,.03) 0%,transparent 45%),
+        #03080f}
+    .grid{position:fixed;inset:0;z-index:0;
+      background-image:radial-gradient(rgba(0,229,255,.14) 1px,transparent 1px);
+      background-size:28px 28px}
+    .scan-line{position:fixed;left:0;right:0;height:1px;
+      background:linear-gradient(90deg,transparent 0%,rgba(0,229,255,.18) 30%,rgba(0,229,255,.45) 50%,rgba(0,229,255,.18) 70%,transparent 100%);
+      z-index:0;animation:scanDown 14s linear infinite;pointer-events:none}
+    @keyframes scanDown{0%{top:-2px;opacity:0}3%{opacity:1}97%{opacity:1}100%{top:100vh;opacity:0}}
 
-    /* ---- Layout ---- */
+    /* ---- LAYOUT ---- */
     .wrap{position:relative;z-index:1;min-height:100vh;display:flex;flex-direction:column}
 
-    /* ---- Nav ---- */
-    nav{display:flex;align-items:center;justify-content:space-between;padding:1.5rem 2.5rem;border-bottom:1px solid rgba(255,255,255,.06)}
-    .nav-logo{font-family:'Montserrat',sans-serif;font-weight:900;font-size:1.5rem;background:linear-gradient(90deg,#818cf8,#38bdf8);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;text-decoration:none}
-    .nav-cta{background:linear-gradient(135deg,#2563eb,#7c3aed);color:white;border:none;border-radius:.75rem;padding:.65rem 1.5rem;font-size:.9rem;font-weight:800;cursor:pointer;text-decoration:none;transition:opacity .2s}
-    .nav-cta:hover{opacity:.88}
+    /* ---- SYSTEM STATUS BAR ---- */
+    .sys-bar{
+      background:rgba(0,8,20,.85);border-bottom:1px solid rgba(0,229,255,.1);
+      padding:.38rem 2.5rem;display:flex;align-items:center;gap:2rem;
+      font-family:'Space Mono',monospace;font-size:.58rem;color:rgba(0,229,255,.45);
+      letter-spacing:.12em;backdrop-filter:blur(10px)}
+    .sys-status{display:flex;align-items:center;gap:.5rem;color:rgba(74,222,128,.8)}
+    .sys-dot{width:5px;height:5px;border-radius:50%;background:#4ade80;
+      box-shadow:0 0 6px #4ade80,0 0 14px rgba(74,222,128,.35);
+      animation:blink 2.5s ease-in-out infinite}
+    @keyframes blink{0%,100%{opacity:1}50%{opacity:.4}}
+    .sys-div{width:1px;height:10px;background:rgba(0,229,255,.12)}
+    .sys-right{margin-left:auto}
+    @media(max-width:640px){.sys-bar{padding:.35rem 1rem;gap:1rem;font-size:.52rem}.sys-engine,.sys-sec{display:none}}
 
-    /* ---- Hero ---- */
-    .hero{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:5rem 2rem 4rem}
-    .eyebrow{display:inline-flex;align-items:center;gap:.5rem;background:rgba(129,140,248,.12);border:1px solid rgba(129,140,248,.25);border-radius:2rem;padding:.45rem 1.1rem;font-size:.72rem;font-weight:800;color:#a5b4fc;letter-spacing:.14em;text-transform:uppercase;margin-bottom:2rem}
-    .eyebrow-dot{width:6px;height:6px;border-radius:50%;background:#818cf8;animation:pulse 2s infinite}
-    @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
-    h1{font-family:'Montserrat',sans-serif;font-weight:900;font-size:clamp(2.8rem,7vw,5.5rem);line-height:1.0;letter-spacing:-.04em;margin-bottom:1.5rem}
-    .gradient-text{background:linear-gradient(90deg,#818cf8 0%,#38bdf8 60%,#c084fc 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
-    .hero-sub{max-width:580px;color:#94a3b8;font-size:1.1rem;line-height:1.8;font-weight:600;margin-bottom:3rem}
-    .hero-actions{display:flex;gap:1rem;flex-wrap:wrap;justify-content:center}
-    .btn-primary{background:linear-gradient(135deg,#2563eb,#7c3aed);color:white;border:none;border-radius:.875rem;padding:1rem 2.25rem;font-size:1rem;font-weight:800;cursor:pointer;text-decoration:none;box-shadow:0 8px 28px rgba(99,57,220,.35);transition:transform .2s,box-shadow .2s;display:inline-flex;align-items:center;gap:.5rem}
-    .btn-primary:hover{transform:translateY(-2px);box-shadow:0 12px 36px rgba(99,57,220,.45)}
-    .btn-secondary{background:rgba(255,255,255,.06);color:#e2e8f0;border:1px solid rgba(255,255,255,.12);border-radius:.875rem;padding:1rem 2.25rem;font-size:1rem;font-weight:700;cursor:pointer;text-decoration:none;transition:background .2s;display:inline-flex;align-items:center;gap:.5rem}
-    .btn-secondary:hover{background:rgba(255,255,255,.1)}
+    /* ---- NAV ---- */
+    nav{display:flex;align-items:center;justify-content:space-between;
+      padding:1.1rem 2.5rem;border-bottom:1px solid rgba(0,229,255,.07);
+      background:rgba(3,8,15,.6);backdrop-filter:blur(14px)}
+    .nav-cta{
+      background:transparent;color:#00e5ff;
+      border:1px solid rgba(0,229,255,.38);border-radius:.35rem;
+      padding:.52rem 1.3rem;font-size:.75rem;font-weight:700;cursor:pointer;
+      text-decoration:none;font-family:'Space Mono',monospace;letter-spacing:.08em;
+      transition:all .2s}
+    .nav-cta:hover{background:rgba(0,229,255,.07);border-color:rgba(0,229,255,.7);
+      box-shadow:0 0 20px rgba(0,229,255,.18),inset 0 0 16px rgba(0,229,255,.03)}
 
-    /* ---- Stats strip ---- */
-    .stats{display:flex;justify-content:center;gap:3rem;flex-wrap:wrap;padding:2.5rem 2rem;border-top:1px solid rgba(255,255,255,.06);border-bottom:1px solid rgba(255,255,255,.06)}
-    .stat{text-align:center}
-    .stat-num{font-family:'Montserrat',sans-serif;font-weight:900;font-size:2rem;background:linear-gradient(90deg,#818cf8,#38bdf8);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
-    .stat-label{color:#64748b;font-size:.78rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;margin-top:.2rem}
+    /* ---- HERO ---- */
+    .hero{flex:1;display:flex;flex-direction:column;align-items:center;
+      justify-content:center;text-align:center;padding:5.5rem 2rem 4.5rem}
+    .eyebrow{
+      display:inline-flex;align-items:center;gap:.6rem;
+      background:rgba(0,229,255,.04);border:1px solid rgba(0,229,255,.18);
+      border-radius:.3rem;padding:.42rem 1rem;
+      font-size:.6rem;font-weight:700;color:rgba(0,229,255,.75);
+      letter-spacing:.2em;text-transform:uppercase;margin-bottom:2.25rem;
+      font-family:'Space Mono',monospace}
+    .eyebrow-dot{width:6px;height:6px;border-radius:50%;background:#00e5ff;
+      box-shadow:0 0 8px rgba(0,229,255,.7);animation:pulse 2s infinite}
+    @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.45;transform:scale(.8)}}
+    h1{font-family:'Montserrat',sans-serif;font-weight:900;
+      font-size:clamp(2.6rem,6.5vw,5rem);line-height:1.0;
+      letter-spacing:-.04em;margin-bottom:1.5rem}
+    .gradient-text{
+      background:linear-gradient(90deg,#00e5ff 0%,#818cf8 55%,#4ade80 100%);
+      -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+    .hero-sub{max-width:560px;color:#506070;font-size:1rem;line-height:1.85;
+      font-weight:500;margin-bottom:3rem}
+    .hero-actions{display:flex;gap:.85rem;flex-wrap:wrap;justify-content:center}
+    .btn-primary{
+      background:rgba(0,229,255,.08);color:#00e5ff;
+      border:1px solid rgba(0,229,255,.45);border-radius:.35rem;
+      padding:.9rem 2rem;font-size:.8rem;font-weight:700;cursor:pointer;
+      text-decoration:none;font-family:'Space Mono',monospace;letter-spacing:.07em;
+      transition:all .25s;
+      box-shadow:0 0 22px rgba(0,229,255,.1),inset 0 0 18px rgba(0,229,255,.03);
+      display:inline-flex;align-items:center;gap:.55rem}
+    .btn-primary:hover{background:rgba(0,229,255,.14);border-color:rgba(0,229,255,.75);
+      box-shadow:0 0 36px rgba(0,229,255,.22),inset 0 0 22px rgba(0,229,255,.06);
+      transform:translateY(-1px)}
+    .btn-secondary{
+      background:transparent;color:#405060;
+      border:1px solid rgba(255,255,255,.08);border-radius:.35rem;
+      padding:.9rem 2rem;font-size:.8rem;font-weight:600;cursor:pointer;
+      text-decoration:none;font-family:'Space Mono',monospace;letter-spacing:.07em;
+      transition:all .2s;display:inline-flex;align-items:center;gap:.55rem}
+    .btn-secondary:hover{background:rgba(255,255,255,.04);border-color:rgba(255,255,255,.16);color:#8aa0b0}
 
-    /* ---- Features ---- */
-    .features{padding:5rem 2rem;max-width:1100px;margin:0 auto;width:100%}
-    .section-label{text-align:center;font-size:.72rem;font-weight:800;color:#818cf8;letter-spacing:.2em;text-transform:uppercase;margin-bottom:.75rem}
-    .section-title{text-align:center;font-family:'Montserrat',sans-serif;font-weight:900;font-size:clamp(1.8rem,4vw,2.8rem);line-height:1.15;letter-spacing:-.03em;margin-bottom:1rem}
-    .section-sub{text-align:center;color:#64748b;font-size:1rem;max-width:500px;margin:0 auto 3.5rem;line-height:1.7}
-    .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1.25rem}
-    .card{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:1.25rem;padding:1.75rem;transition:background .25s,border-color .25s,transform .25s}
-    .card:hover{background:rgba(255,255,255,.07);border-color:rgba(129,140,248,.35);transform:translateY(-3px)}
-    .card-icon{font-size:2rem;margin-bottom:1rem}
-    .card-title{font-weight:800;font-size:1rem;margin-bottom:.5rem}
-    .card-body{color:#64748b;font-size:.9rem;line-height:1.7}
+    /* ---- STATS ---- */
+    .stats{
+      display:flex;justify-content:center;flex-wrap:wrap;gap:0;
+      border-top:1px solid rgba(0,229,255,.07);border-bottom:1px solid rgba(0,229,255,.07);
+      background:rgba(0,5,14,.55);backdrop-filter:blur(10px)}
+    .stat{text-align:center;padding:2rem 3rem;border-right:1px solid rgba(0,229,255,.07);
+      flex:1;min-width:130px}
+    .stat:last-child{border-right:none}
+    .stat-num{font-family:'Space Mono',monospace;font-weight:700;font-size:1.7rem;
+      color:#00e5ff;text-shadow:0 0 22px rgba(0,229,255,.4);letter-spacing:-.02em}
+    .stat-label{color:#2d4050;font-size:.58rem;font-weight:700;text-transform:uppercase;
+      letter-spacing:.16em;margin-top:.38rem;font-family:'Space Mono',monospace}
 
-    /* ---- For Who ---- */
-    .for-who{padding:4rem 2rem;max-width:800px;margin:0 auto;text-align:center}
-    .roles{display:flex;justify-content:center;flex-wrap:wrap;gap:.75rem;margin-top:2rem}
-    .role-pill{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:2rem;padding:.6rem 1.25rem;font-size:.85rem;font-weight:700;color:#cbd5e1}
+    /* ---- FEATURES ---- */
+    .features{padding:5.5rem 2rem;max-width:1120px;margin:0 auto;width:100%}
+    .section-label{text-align:center;font-size:.58rem;font-weight:700;
+      color:rgba(0,229,255,.5);letter-spacing:.22em;text-transform:uppercase;
+      margin-bottom:.6rem;font-family:'Space Mono',monospace}
+    .section-title{text-align:center;font-family:'Montserrat',sans-serif;font-weight:900;
+      font-size:clamp(1.7rem,3.8vw,2.6rem);line-height:1.12;
+      letter-spacing:-.03em;margin-bottom:.85rem}
+    .section-sub{text-align:center;color:#253545;font-size:.68rem;
+      max-width:580px;margin:0 auto 3.5rem;font-family:'Space Mono',monospace;letter-spacing:.04em}
+    .cards{
+      display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));
+      gap:1px;background:rgba(0,229,255,.07);
+      border:1px solid rgba(0,229,255,.07);border-radius:.6rem;overflow:hidden}
+    .card{background:#03080f;padding:2rem;transition:background .25s;position:relative;overflow:hidden}
+    .card::after{content:'';position:absolute;top:0;left:0;right:0;height:1px;
+      background:linear-gradient(90deg,transparent,rgba(0,229,255,.5),transparent);
+      opacity:0;transition:opacity .3s}
+    .card:hover{background:rgba(0,229,255,.025)}
+    .card:hover::after{opacity:1}
+    .card-mod{font-family:'Space Mono',monospace;font-size:.56rem;
+      color:rgba(0,229,255,.38);letter-spacing:.2em;text-transform:uppercase;
+      margin-bottom:.85rem}
+    .card-mod::before{content:'// ';color:rgba(0,229,255,.22)}
+    .card-icon{font-size:1.65rem;margin-bottom:.7rem;display:block}
+    .card-title{font-weight:800;font-size:.95rem;margin-bottom:.5rem;color:#dde8f0}
+    .card-body{color:#2d4050;font-size:.85rem;line-height:1.78}
 
-    /* ---- CTA Banner ---- */
-    .cta-banner{margin:2rem auto 5rem;max-width:960px;width:calc(100% - 4rem);background:linear-gradient(135deg,rgba(37,99,235,.2),rgba(124,58,237,.2));border:1px solid rgba(129,140,248,.2);border-radius:1.5rem;padding:3rem 2.5rem;text-align:center}
-    .cta-banner h2{font-family:'Montserrat',sans-serif;font-weight:900;font-size:clamp(1.6rem,3.5vw,2.4rem);margin-bottom:.75rem;letter-spacing:-.02em}
-    .cta-banner p{color:#94a3b8;margin-bottom:2rem;font-size:1rem;font-weight:600}
+    /* ---- FOR WHO ---- */
+    .for-who{padding:4rem 2rem;max-width:820px;margin:0 auto;text-align:center}
+    .roles{display:flex;justify-content:center;flex-wrap:wrap;gap:.55rem;margin-top:2rem}
+    .role-pill{
+      background:rgba(0,229,255,.025);border:1px solid rgba(0,229,255,.1);
+      border-radius:.3rem;padding:.5rem 1rem;
+      font-size:.68rem;font-weight:700;color:#2d4a5a;
+      font-family:'Space Mono',monospace;letter-spacing:.05em;
+      transition:all .2s}
+    .role-pill:hover{background:rgba(0,229,255,.055);border-color:rgba(0,229,255,.22);color:#5a8090}
 
-    /* ---- Footer ---- */
-    footer{border-top:1px solid rgba(255,255,255,.06);padding:2rem 2.5rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem}
-    .footer-brand{font-family:'Montserrat',sans-serif;font-weight:900;font-size:1rem;background:linear-gradient(90deg,#818cf8,#38bdf8);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
-    .footer-copy{font-size:.78rem;color:#475569;font-weight:600}
+    /* ---- CTA BANNER ---- */
+    .cta-banner{
+      margin:2rem auto 5rem;max-width:900px;width:calc(100% - 4rem);
+      background:rgba(0,5,14,.7);border:1px solid rgba(0,229,255,.13);
+      border-radius:.6rem;padding:3.5rem 2.5rem;text-align:center;
+      position:relative;overflow:hidden;backdrop-filter:blur(14px)}
+    .cta-banner::before{content:'';position:absolute;inset:0;
+      background:radial-gradient(ellipse at 50% 0%,rgba(0,229,255,.04) 0%,transparent 60%);
+      pointer-events:none}
+    .cta-banner::after{content:'';position:absolute;top:0;left:0;right:0;height:1px;
+      background:linear-gradient(90deg,transparent,rgba(0,229,255,.45),transparent)}
+    .cta-tag{font-family:'Space Mono',monospace;font-size:.58rem;
+      color:rgba(0,229,255,.4);letter-spacing:.2em;margin-bottom:1.25rem}
+    .cta-banner h2{font-family:'Montserrat',sans-serif;font-weight:900;
+      font-size:clamp(1.5rem,3vw,2.2rem);margin-bottom:.75rem;letter-spacing:-.02em}
+    .cta-cmd{font-family:'Space Mono',monospace;font-size:.67rem;
+      color:rgba(0,229,255,.35);letter-spacing:.06em;margin-bottom:2rem}
 
-    /* ---- Mobile ---- */
+    /* ---- FOOTER ---- */
+    footer{border-top:1px solid rgba(0,229,255,.07);padding:1.65rem 2.5rem;
+      display:flex;align-items:center;justify-content:space-between;
+      flex-wrap:wrap;gap:1rem;background:rgba(0,5,14,.6);backdrop-filter:blur(10px)}
+    .footer-copy{font-size:.58rem;color:#1c2d3a;font-family:'Space Mono',monospace;
+      font-weight:700;letter-spacing:.08em}
+
+    /* ---- MOBILE ---- */
     @media(max-width:640px){
-      nav{padding:1.25rem 1.25rem}
+      nav{padding:.9rem 1.25rem}
       .hero{padding:3.5rem 1.25rem 3rem}
-      .stats{gap:1.5rem;padding:2rem 1.25rem}
+      .stat{padding:1.5rem 1.25rem;min-width:110px}
       .features,.for-who{padding:3rem 1.25rem}
-      .cta-banner{margin:1rem 1rem 3rem;padding:2rem 1.5rem}
+      .cards{grid-template-columns:1fr}
+      .cta-banner{margin:1rem 1rem 3rem;padding:2.25rem 1.5rem}
       footer{padding:1.5rem 1.25rem;flex-direction:column;text-align:center}
-      .nav-logo{font-size:1.25rem}
     }
   </style>
 </head>
 <body>
   <div class="bg"></div>
-  <div class="orb orb1"></div>
-  <div class="orb orb2"></div>
-  <div class="orb orb3"></div>
   <div class="grid"></div>
+  <div class="scan-line"></div>
 
   <div class="wrap">
+
+    <!-- System Status Bar -->
+    <div class="sys-bar">
+      <div class="sys-status"><span class="sys-dot"></span>SYSTEM_ONLINE</div>
+      <div class="sys-div"></div>
+      <span>NXCX-TRAINING-v4.2.1</span>
+      <div class="sys-div sys-engine"></div>
+      <span class="sys-engine">ENGINE: GEMINI-2.0-FLASH</span>
+      <div class="sys-div sys-sec"></div>
+      <span class="sys-sec sys-right">SEC: TLS-1.3 &nbsp;&#9679;&nbsp; AUTH: FIREBASE</span>
+    </div>
+
     <!-- Nav -->
     <nav>
       <a href="index.html" style="display:flex;align-items:center;gap:.75rem;text-decoration:none">
-        <img src="nyxcodex-logo.png" alt="NyxCodex" style="height:72px;width:auto;object-fit:contain" onerror="this.style.display='none';this.nextElementSibling.style.display='inline'">
-        <span class="nav-logo" style="display:none">NyxCodex&#8482;</span>
+        <img src="nyxcodex-logo.png" alt="NyxCodex" style="height:72px;width:auto;object-fit:contain" onerror="this.style.display='none';this.nextElementSibling.style.display='block'">
+        <span style="display:none;font-family:'Montserrat',sans-serif;font-weight:900;font-size:1.35rem;background:linear-gradient(90deg,#00e5ff,#818cf8);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">NyxCodex&#8482;</span>
       </a>
-      <a href="trainer_pro.html" class="nav-cta">Sign In &#8594;</a>
+      <a href="trainer_pro.html" class="nav-cta">&gt; SIGN_IN</a>
     </nav>
 
     <!-- Hero -->
     <section class="hero">
       <div class="eyebrow">
         <span class="eyebrow-dot"></span>
-        AI-Powered Clinical Training
+        AI-POWERED &nbsp;&#9679;&nbsp; CLINICAL TRAINING &nbsp;&#9679;&nbsp; EVIDENCE-BASED
       </div>
       <h1>
         Train Smarter.<br>
         <span class="gradient-text">De-escalate Better.</span>
       </h1>
       <p class="hero-sub">
-        NyxCodex&#8482; is the clinical simulation platform built for psychiatric healthcare professionals&mdash;AI patient scenarios, real-time coaching, and evidence-based de-escalation training.
+        NyxCodex&#8482; is the clinical simulation platform built for psychiatric healthcare professionals. AI patient scenarios, real-time coaching, and evidence-based de-escalation training.
       </p>
       <div class="hero-actions">
         <a href="trainer_pro.html" class="btn-primary">
-          &#128275; Access Training Platform
+          &#9654; LAUNCH PLATFORM
         </a>
-        <a href="trainer_pro.html#demo" class="btn-secondary" onclick="event.preventDefault();window.location.href='trainer_pro.html'">
-          &#127916; See a Demo
+        <a href="trainer_pro.html" class="btn-secondary">
+          &#9632; VIEW DEMO
         </a>
       </div>
     </section>
@@ -133,91 +242,99 @@
     <div class="stats">
       <div class="stat">
         <div class="stat-num">30+</div>
-        <div class="stat-label">Training Slides</div>
+        <div class="stat-label">TRAINING SLIDES</div>
       </div>
       <div class="stat">
         <div class="stat-num">AI</div>
-        <div class="stat-label">Live Coaching</div>
+        <div class="stat-label">LIVE COACHING</div>
       </div>
       <div class="stat">
         <div class="stat-num">15+</div>
-        <div class="stat-label">Skill Scenarios</div>
+        <div class="stat-label">SKILL SCENARIOS</div>
       </div>
       <div class="stat">
         <div class="stat-num">100%</div>
-        <div class="stat-label">Evidence-Based</div>
+        <div class="stat-label">EVIDENCE-BASED</div>
       </div>
     </div>
 
     <!-- Features -->
     <section class="features">
-      <div class="section-label">Platform Features</div>
-      <h2 class="section-title">Everything your team needs to train confidently</h2>
-      <p class="section-sub">From onboarding to mastery, NyxCodex&#8482; covers the full clinical training cycle.</p>
+      <div class="section-label">// PLATFORM MODULES</div>
+      <h2 class="section-title">Everything your team needs<br>to train with confidence</h2>
+      <p class="section-sub">$ nxcx --list-modules --org=all --status=active</p>
       <div class="cards">
         <div class="card">
-          <div class="card-icon">&#129504;</div>
+          <div class="card-mod">MODULE_01</div>
+          <span class="card-icon">&#129504;</span>
           <div class="card-title">AI Patient Simulations</div>
           <div class="card-body">Interact with realistic simulated patients powered by AI. Practice responses and receive real-time clinical coaching from Professor Vance.</div>
         </div>
         <div class="card">
-          <div class="card-icon">&#127979;</div>
+          <div class="card-mod">MODULE_02</div>
+          <span class="card-icon">&#127979;</span>
           <div class="card-title">30-Slide Training Curriculum</div>
           <div class="card-body">Evidence-based de-escalation content covering trauma-informed care, PTSD, bipolar mania, paranoia, environmental safety, and more.</div>
         </div>
         <div class="card">
-          <div class="card-icon">&#128200;</div>
+          <div class="card-mod">MODULE_03</div>
+          <span class="card-icon">&#128200;</span>
           <div class="card-title">XP &amp; Progress Tracking</div>
           <div class="card-body">Gamified learning with experience points, skill levels, and leaderboards. Admins get full audit trails and completion reporting.</div>
         </div>
         <div class="card">
-          <div class="card-icon">&#127919;</div>
+          <div class="card-mod">MODULE_04</div>
+          <span class="card-icon">&#127919;</span>
           <div class="card-title">Daily Drill Mode</div>
           <div class="card-body">15 clinical flash-cards with spaced repetition. Scenario branching and hazard drills keep skills sharp between full training runs.</div>
         </div>
         <div class="card">
-          <div class="card-icon">&#128203;</div>
+          <div class="card-mod">MODULE_05</div>
+          <span class="card-icon">&#128203;</span>
           <div class="card-title">Admin Dashboard</div>
           <div class="card-body">Full org management: user invites, role assignment, department filtering, completion exports, and live staff progress monitoring.</div>
         </div>
         <div class="card">
-          <div class="card-icon">&#128241;</div>
+          <div class="card-mod">MODULE_06</div>
+          <span class="card-icon">&#128241;</span>
           <div class="card-title">Mobile-First Design</div>
-          <div class="card-body">Fully responsive&mdash;works on phones, tablets, and desktops. Train anywhere, on any shift, on any device.</div>
+          <div class="card-body">Fully responsive. Works on phones, tablets, and desktops. Train anywhere, on any shift, on any device.</div>
         </div>
       </div>
     </section>
 
     <!-- For Who -->
     <section class="for-who">
-      <div class="section-label">Built For</div>
+      <div class="section-label">// AUTHORIZED PERSONNEL</div>
       <h2 class="section-title">Designed for every role on the unit</h2>
       <div class="roles">
-        <span class="role-pill">&#127978; Behavioral Health Technicians</span>
-        <span class="role-pill">&#128138; Registered Nurses</span>
-        <span class="role-pill">&#129657; Mental Health Staff</span>
-        <span class="role-pill">&#128203; Clinical Supervisors</span>
-        <span class="role-pill">&#127968; Inpatient Teams</span>
-        <span class="role-pill">&#128736; Training Coordinators</span>
+        <span class="role-pill">BHT &nbsp;/&nbsp; Behavioral Health Technicians</span>
+        <span class="role-pill">RN &nbsp;/&nbsp; Registered Nurses</span>
+        <span class="role-pill">MH &nbsp;/&nbsp; Mental Health Staff</span>
+        <span class="role-pill">SUP &nbsp;/&nbsp; Clinical Supervisors</span>
+        <span class="role-pill">IPT &nbsp;/&nbsp; Inpatient Teams</span>
+        <span class="role-pill">TC &nbsp;/&nbsp; Training Coordinators</span>
       </div>
     </section>
 
     <!-- CTA Banner -->
     <div class="cta-banner">
-      <h2>Ready to elevate your team's clinical skills?</h2>
-      <p>Sign in to access NyxCodex&#8482; or explore the platform with a no-account demo.</p>
+      <div class="cta-tag">// READY TO DEPLOY?</div>
+      <h2>Elevate your team's<br>clinical capabilities</h2>
+      <p class="cta-cmd">$ ./nxcx-launch --team=all --mode=full-training --go</p>
       <a href="trainer_pro.html" class="btn-primary" style="display:inline-flex">
-        &#128275; Go to Training Platform
+        &#9654; LAUNCH TRAINING PLATFORM
       </a>
     </div>
 
     <!-- Footer -->
     <footer>
-      <span class="footer-brand">
-        <img src="nyxcodex-logo.png" alt="NyxCodex" style="height:52px;width:auto;object-fit:contain;vertical-align:middle" onerror="this.outerHTML='<span style=&quot;font-family:Montserrat,sans-serif;font-weight:900;font-size:1rem;background:linear-gradient(90deg,#818cf8,#38bdf8);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text&quot;>NyxCodex&#8482;</span>'">
+      <span>
+        <img src="nyxcodex-logo.png" alt="NyxCodex" style="height:52px;width:auto;object-fit:contain;vertical-align:middle" onerror="this.outerHTML='<span style=&quot;font-family:Montserrat,sans-serif;font-weight:900;font-size:1rem;color:#00e5ff&quot;>NyxCodex&#8482;</span>'">
       </span>
-      <span class="footer-copy">&#169; 2026 NyxCodex&#8482; &middot; Nyx Collective LLC &middot; All Rights Reserved</span>
+      <span class="footer-copy">&#169; 2026 NYXCODEX&#8482; &nbsp;&#9679;&nbsp; NYX COLLECTIVE LLC &nbsp;&#9679;&nbsp; ALL RIGHTS RESERVED</span>
     </footer>
+
   </div>
 </body>
 </html>
