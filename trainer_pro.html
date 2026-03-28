@@ -4636,9 +4636,10 @@ function openChat() {
   if(typeof restorePax === 'function') restorePax();
   if(!chatMessages.length) {
     const mode = sessionMode || 'training';
+    const _pn = window.TENANT?.patientName || 'the patient';
     const intro = mode === 'lab'
-      ? "Welcome to the unit. I'm Professor Vance. Marcus is waiting — tension is rising. Before you step in, take a breath. Your goal isn't to control him, it's to help him regain control of himself. Tell me how you plan to approach him."
-      : "Welcome to the unit. I'm Professor Vance. Today we're working with Marcus — he's been waiting a long time for his evaluation and the tension is rising. Your goal isn't to control him, it's to help him regain control of himself. When you're ready, tell me how you plan to approach him.";
+      ? `Welcome to the unit. I'm Professor Vance. ${_pn} is waiting — tension is rising. Before you step in, take a breath. Your goal isn't to control them, it's to help them regain control of themselves. Tell me how you plan to approach.`
+      : `Welcome to the unit. I'm Professor Vance. Today we're working with ${_pn} — they've been waiting a long time for their evaluation and the tension is rising. Your goal isn't to control them, it's to help them regain control of themselves. When you're ready, tell me how you plan to approach.`;
     chatMessages.push({role:'assistant', content:intro});
   }
   renderChatMessages();
@@ -4696,7 +4697,7 @@ async function sendChatMessage() {
     const data = await res.json();
     reply = (data?.reply || data?.choices?.[0]?.message?.content || '').trim();
   } catch(e) {
-    reply = "I might not have the answer here. Please check with your supervisor or leadership for the safest guidance.";
+    reply = "⚠️ Professor Vance is temporarily unreachable. Check your internet connection and try again, or ask your supervisor for guidance.";
   }
   chatMessages.push({role:'assistant', content:reply});
   chatLoading = false;
@@ -6899,9 +6900,8 @@ async function runDebrief() {
     if(output) output.textContent = reply;
     awardXP(100);
   } catch(e) {
-    if(output) output.textContent = 'Connection error. Make sure you have internet access and try again.';
+    if(output) output.textContent = '⚠️ Professor Vance is temporarily unreachable. Check your internet connection and try again.';
   } finally {
-    if(btn) { btn.disabled=false; btn.textContent='Get Clinical Feedback ?'; }
   }
 }
 
@@ -6923,7 +6923,7 @@ async function buildLabScriptAI() {
     if(output) output.innerHTML = reply.replace(/\n/g,'<br>').replace(/\[([^\]]+)\]/g,'[<em>$1</em>]');
     awardXP(50);
   } catch(e) {
-    if(output) output.textContent = 'Connection error. Make sure you have internet access and try again.';
+    if(output) output.textContent = '⚠️ Script generation unavailable — check your internet connection and try again.';
   } finally {
     if(btn) { btn.disabled=false; btn.textContent='Build Script ?'; }
   }
