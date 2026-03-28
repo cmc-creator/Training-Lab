@@ -575,16 +575,99 @@ h1,h2,.font-display{font-family:'Fraunces',serif}
 
 /* Landing-aligned auth visual language */
 #auth-screen{
+  display:flex;
+  position:fixed;
+  inset:0;
+  z-index:200;
+  overflow:hidden;
   background:
     radial-gradient(42rem 22rem at 16% 0%, rgba(240,184,109,.17), transparent 60%),
     radial-gradient(36rem 20rem at 82% 0%, rgba(125,211,252,.14), transparent 62%),
     linear-gradient(165deg,#090d15 0%, #101827 50%, #0a0f18 100%);
 }
+.auth-hero-panel{flex:1.1;display:flex;flex-direction:column;position:relative;overflow:hidden;min-width:0}
+.auth-hero-bg{position:absolute;inset:0;background:radial-gradient(ellipse at 10% 30%,rgba(0,229,255,.07) 0%,transparent 50%),radial-gradient(ellipse at 90% 80%,rgba(74,222,128,.04) 0%,transparent 45%),#030810;z-index:0}
+.auth-orb{position:absolute;border-radius:50%;z-index:1;animation:orbFloat 12s ease-in-out infinite}
+.auth-orb-cyan{width:480px;height:480px;background:radial-gradient(circle,rgba(0,229,255,.1) 0%,transparent 70%);top:-140px;left:-100px}
+.auth-orb-purple{width:320px;height:320px;background:radial-gradient(circle,rgba(124,58,237,.12) 0%,transparent 70%);bottom:-60px;right:-50px;animation-duration:16s;animation-direction:reverse}
+.auth-dot-grid{position:absolute;inset:0;background-image:radial-gradient(rgba(0,229,255,.12) 1px,transparent 1px);background-size:28px 28px;z-index:1}
+.auth-hero-content{position:relative;z-index:2;display:flex;flex-direction:column;height:100%;padding:3rem 3.5rem}
+.auth-logo-wrap{margin-bottom:auto}
+.auth-logo-lg{max-height:160px;max-width:380px;width:100%}
+.auth-headline-wrap{flex:1;display:flex;flex-direction:column;justify-content:center;padding:2rem 0}
+.auth-status-row{font-family:'Space Mono',monospace;font-size:.6rem;font-weight:700;color:rgba(0,229,255,.65);letter-spacing:.2em;text-transform:uppercase;margin-bottom:1.25rem;display:flex;align-items:center;gap:.6rem}
+.auth-status-dot{display:inline-block;width:6px;height:6px;border-radius:50%;background:#4ade80;box-shadow:0 0 8px #4ade80,0 0 14px rgba(74,222,128,.35)}
+.auth-status-online{color:rgba(74,222,128,.8)}
+.auth-status-label{margin-left:.5rem;color:rgba(0,229,255,.45)}
+.auth-hero-title{font-family:Montserrat,sans-serif;font-weight:900;font-size:clamp(1.75rem,3vw,2.8rem);color:white;line-height:1.1;letter-spacing:-.03em;margin-bottom:1rem}
+.auth-hero-title-accent{background:linear-gradient(90deg,#00e5ff,#818cf8,#4ade80);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+#auth-tagline{margin-bottom:2rem;max-width:420px;color:#b8c0d1;font-size:.88rem;line-height:1.75;font-weight:500}
+#auth-hero-img{margin-top:.5rem;display:grid;grid-template-columns:repeat(2,1fr);gap:.65rem;max-width:380px}
+.auth-hero-card{background:rgba(0,229,255,.03);border:1px solid rgba(0,229,255,.12);border-top:1px solid rgba(0,229,255,.35);border-radius:.4rem;padding:.75rem 1rem}
+.auth-hero-icon{font-size:1.1rem;margin-bottom:.25rem}
+.auth-hero-code{font-family:'Space Mono',monospace;color:rgba(0,229,255,.8);font-size:.65rem;font-weight:700;letter-spacing:.06em}
+.auth-hero-sub{color:#b8c0d1;font-size:.62rem;margin-top:.15rem}
+.auth-hero-footer{border-top:1px solid rgba(0,229,255,.12);padding-top:1.25rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.75rem}
+#auth-copyright{font-family:'Space Mono',monospace;font-size:.6rem;color:rgba(0,229,255,.35);font-weight:700;letter-spacing:.08em}
+.auth-hero-links{display:flex;gap:1rem;align-items:center}
+.auth-hero-link{font-family:'Space Mono',monospace;font-size:.6rem;color:rgba(0,229,255,.55);text-decoration:none;font-weight:700;letter-spacing:.08em}
 #auth-form-panel{
+  width:460px;
+  flex-shrink:0;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:flex-start;
+  padding:3rem 2.75rem 2.75rem;
+  overflow-y:auto;
+  position:relative;
+  row-gap:1rem;
   background:rgba(14,20,32,.82) !important;
   border-left:1px solid rgba(255,255,255,.14);
   backdrop-filter:blur(14px);
 }
+.auth-form-topbar{position:absolute;top:0;left:0;right:0;height:4px;background:linear-gradient(90deg,#0369a1,#2563eb,#7c3aed)}
+#mobile-logo-block{display:none;text-align:center;margin-bottom:2rem}
+.auth-mobile-logo{max-width:260px;margin:0 auto}
+.auth-tab-wrap{width:100%;margin-bottom:2rem}
+#auth-panel-title{font-family:Montserrat,sans-serif;font-weight:900;font-size:1.45rem;color:#0f172a;margin-bottom:.3rem}
+#auth-panel-sub{font-size:.82rem;color:#64748b;margin-bottom:1.5rem}
+#auth-tab-switch{display:flex;padding:4px;gap:4px}
+.auth-tab-btn{flex:1;padding:.65rem;border-radius:9px;border:none;font-size:.82rem;font-weight:800;cursor:pointer;transition:all .2s}
+.auth-tab-btn-start{background:white;color:#0f172a;box-shadow:0 1px 4px rgba(0,0,0,.1)}
+.auth-tab-btn-end{background:transparent;color:#64748b}
+.auth-form{width:100%}
+.auth-hidden{display:none}
+.auth-stack{display:flex;flex-direction:column;gap:.875rem}
+.auth-stack-tight{display:flex;flex-direction:column;gap:.75rem}
+.auth-grid-2{display:grid;grid-template-columns:1fr 1fr;gap:.75rem}
+.auth-label{font-size:.72rem;font-weight:800;color:#475569;text-transform:uppercase;letter-spacing:.07em;display:block;margin-bottom:.4rem}
+.auth-label-sm{font-size:.68rem;margin-bottom:.35rem}
+.auth-error{display:none;background:#fef2f2;border:1px solid #fecaca;border-radius:.75rem;padding:.75rem 1rem;font-size:.825rem;font-weight:700;color:#dc2626;text-align:center}
+.auth-btn-primary{padding:1rem;font-size:.9rem;margin-top:.25rem;border-radius:12px;background:linear-gradient(135deg,#1d4ed8,#2563eb);box-shadow:0 4px 16px rgba(37,99,235,.35)}
+.auth-btn-google{padding:.9rem;font-size:.9rem;border-radius:12px;background:white;color:#0f172a;font-weight:800;border:1px solid #e2e8f0;gap:.6rem}
+.auth-btn-guest{padding:.85rem;font-size:.85rem;border-radius:12px;background:#f8fafc;color:#0f172a;font-weight:800;border:1px dashed #cbd5e1;gap:.6rem;margin-top:.6rem}
+.auth-btn-icon{font-size:1.05rem}
+.auth-divider{display:flex;align-items:center;gap:.5rem;margin:1rem 0 .75rem}
+.auth-divider-line{flex:1;height:1px;background:#e2e8f0}
+.auth-divider-text{font-size:.75rem;color:#94a3b8;font-weight:700}
+.auth-note{font-size:.75rem;color:#94a3b8;text-align:center}
+.auth-note-top{margin-top:1.5rem}
+.auth-note-mid{margin-top:1rem}
+.auth-note-tight{margin-top:.5rem}
+.auth-inline-link{background:none;border:none;color:#2563eb;font-weight:800;cursor:pointer;font-size:.75rem}
+.auth-inline-optional{font-weight:500;text-transform:none}
+.auth-demo-wrap{border-top:1px solid #e2e8f0;padding-top:1.25rem;margin-top:1.25rem}
+.auth-demo-title{text-align:center;font-size:.72rem;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.06em;margin:0 0 .75rem}
+.auth-demo-btn{background:linear-gradient(135deg,#f59e0b,#d97706);color:white;border:none;border-radius:12px;padding:.9rem;font-size:.9rem;font-weight:800;cursor:pointer;width:100%;box-shadow:0 4px 16px rgba(245,158,11,.32);display:flex;align-items:center;justify-content:center;gap:.6rem}
+.auth-demo-btn-icon{font-size:1.1rem}
+.auth-demo-sub{text-align:center;font-size:.7rem;color:#94a3b8;margin:.5rem 0 0}
+.auth-privacy{font-size:.68rem;color:#94a3b8;text-align:center;line-height:1.5}
+.auth-btn-signup{padding:.95rem;font-size:.9rem;margin-top:.25rem;border-radius:12px;background:linear-gradient(135deg,#059669,#10b981);color:white;font-weight:800;border:none;cursor:pointer;box-shadow:0 4px 16px rgba(16,185,129,.3)}
+.auth-trust-row{width:100%;margin-top:2rem;padding-top:1.5rem;border-top:1px solid #e2e8f0;display:flex;align-items:center;justify-content:center;gap:1.5rem;flex-wrap:wrap}
+.auth-trust-item{display:flex;align-items:center;gap:.4rem}
+.auth-trust-icon{font-size:.9rem}
+.auth-trust-text{font-size:.68rem;color:#94a3b8;font-weight:700}
 #auth-form-panel #auth-panel-title{font-family:'Montserrat',sans-serif !important;color:#f8fafc !important}
 #auth-form-panel #auth-panel-sub{color:#b8c0d1 !important}
 #auth-tab-switch{background:rgba(255,255,255,.08) !important;border:1px solid rgba(255,255,255,.14);border-radius:14px !important}
@@ -783,230 +866,230 @@ h1,h2,.font-display{font-family:'Fraunces',serif}
 <body>
 
 <!-- ----------------------------------------------- AUTH SCREEN -- -->
-<div id="auth-screen" style="display:flex;position:fixed;inset:0;z-index:200;overflow:hidden">
+<div id="auth-screen">
 
   <!-- -- LEFT HERO PANEL -- -->
-  <div style="flex:1.1;display:flex;flex-direction:column;position:relative;overflow:hidden;min-width:0">
+  <div class="auth-hero-panel">
 
     <!-- Lab background -->
-    <div style="position:absolute;inset:0;background:radial-gradient(ellipse at 10% 30%,rgba(0,229,255,.07) 0%,transparent 50%),radial-gradient(ellipse at 90% 80%,rgba(74,222,128,.04) 0%,transparent 45%),#030810;z-index:0"></div>
+    <div class="auth-hero-bg"></div>
 
     <!-- Cyan glow orbs -->
-    <div style="position:absolute;width:480px;height:480px;border-radius:50%;background:radial-gradient(circle,rgba(0,229,255,.1) 0%,transparent 70%);top:-140px;left:-100px;animation:orbFloat 12s ease-in-out infinite;z-index:1"></div>
-    <div style="position:absolute;width:320px;height:320px;border-radius:50%;background:radial-gradient(circle,rgba(124,58,237,.12) 0%,transparent 70%);bottom:-60px;right:-50px;animation:orbFloat 16s ease-in-out infinite reverse;z-index:1"></div>
+    <div class="auth-orb auth-orb-cyan"></div>
+    <div class="auth-orb auth-orb-purple"></div>
 
     <!-- Dot grid overlay -->
-    <div style="position:absolute;inset:0;background-image:radial-gradient(rgba(0,229,255,.12) 1px,transparent 1px);background-size:28px 28px;z-index:1"></div>
+    <div class="auth-dot-grid"></div>
 
     <!-- Content -->
-    <div style="position:relative;z-index:2;display:flex;flex-direction:column;height:100%;padding:3rem 3.5rem">
+    <div class="auth-hero-content">
 
       <!-- Logo -->
-      <div style="margin-bottom:auto">
-        <div class="logo-inline" style="max-height:160px;max-width:380px;width:100%"></div>
+      <div class="auth-logo-wrap">
+        <div class="logo-inline auth-logo-lg"></div>
       </div>
 
       <!-- Hero headline -->
-      <div style="flex:1;display:flex;flex-direction:column;justify-content:center;padding:2rem 0">
-        <div style="font-family:'Space Mono',monospace;font-size:.6rem;font-weight:700;color:rgba(0,229,255,.65);letter-spacing:.2em;text-transform:uppercase;margin-bottom:1.25rem;display:flex;align-items:center;gap:.6rem">
-          <span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:#4ade80;box-shadow:0 0 8px #4ade80,0 0 14px rgba(74,222,128,.35)"></span>
-          <span style="color:rgba(74,222,128,.8)">SYSTEM_ONLINE</span>
-          <span style="margin-left:.5rem;color:rgba(0,229,255,.45)">&nbsp;//&nbsp; STAFF PORTAL</span>
+      <div class="auth-headline-wrap">
+        <div class="auth-status-row">
+          <span class="auth-status-dot"></span>
+          <span class="auth-status-online">SYSTEM_ONLINE</span>
+          <span class="auth-status-label">&nbsp;//&nbsp; STAFF PORTAL</span>
         </div>
-        <h1 style="font-family:Montserrat,sans-serif;font-weight:900;font-size:clamp(1.75rem,3vw,2.8rem);color:white;line-height:1.1;letter-spacing:-.03em;margin-bottom:1rem">
+        <h1 class="auth-hero-title">
           De-escalation Training<br>
-          <span style="background:linear-gradient(90deg,#00e5ff,#818cf8,#4ade80);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">Reimagined.</span>
+          <span class="auth-hero-title-accent">Reimagined.</span>
         </h1>
-        <div id="auth-tagline" style="margin-bottom:2rem;max-width:420px;color:#2d4a5a;font-size:.88rem;line-height:1.75;font-weight:500">
+        <div id="auth-tagline">
           AI-powered clinical simulation training for psychiatric professionals.
         </div>
-        <div id="auth-hero-img" style="margin-top:.5rem;display:grid;grid-template-columns:repeat(2,1fr);gap:.65rem;max-width:380px">
-          <div style="background:rgba(0,229,255,.03);border:1px solid rgba(0,229,255,.12);border-top:1px solid rgba(0,229,255,.35);border-radius:.4rem;padding:.75rem 1rem">
-            <div style="font-size:1.1rem;margin-bottom:.25rem">&#129504;</div>
-            <div style="font-family:'Space Mono',monospace;color:rgba(0,229,255,.8);font-size:.65rem;font-weight:700;letter-spacing:.06em">AI_SCENARIOS</div>
-            <div style="color:#2d4a5a;font-size:.62rem;margin-top:.15rem">Real-time coaching</div>
+        <div id="auth-hero-img">
+          <div class="auth-hero-card">
+            <div class="auth-hero-icon">&#129504;</div>
+            <div class="auth-hero-code">AI_SCENARIOS</div>
+            <div class="auth-hero-sub">Real-time coaching</div>
           </div>
-          <div style="background:rgba(0,229,255,.03);border:1px solid rgba(0,229,255,.12);border-top:1px solid rgba(0,229,255,.35);border-radius:.4rem;padding:.75rem 1rem">
-            <div style="font-size:1.1rem;margin-bottom:.25rem">&#128200;</div>
-            <div style="font-family:'Space Mono',monospace;color:rgba(0,229,255,.8);font-size:.65rem;font-weight:700;letter-spacing:.06em">XP_TRACKING</div>
-            <div style="color:#2d4a5a;font-size:.62rem;margin-top:.15rem">XP &amp; leaderboards</div>
+          <div class="auth-hero-card">
+            <div class="auth-hero-icon">&#128200;</div>
+            <div class="auth-hero-code">XP_TRACKING</div>
+            <div class="auth-hero-sub">XP &amp; leaderboards</div>
           </div>
-          <div style="background:rgba(0,229,255,.03);border:1px solid rgba(0,229,255,.12);border-top:1px solid rgba(0,229,255,.35);border-radius:.4rem;padding:.75rem 1rem">
-            <div style="font-size:1.1rem;margin-bottom:.25rem">&#128218;</div>
-            <div style="font-family:'Space Mono',monospace;color:rgba(0,229,255,.8);font-size:.65rem;font-weight:700;letter-spacing:.06em">CURRICULUM</div>
-            <div style="color:#2d4a5a;font-size:.62rem;margin-top:.15rem">30+ training slides</div>
+          <div class="auth-hero-card">
+            <div class="auth-hero-icon">&#128218;</div>
+            <div class="auth-hero-code">CURRICULUM</div>
+            <div class="auth-hero-sub">30+ training slides</div>
           </div>
-          <div style="background:rgba(0,229,255,.03);border:1px solid rgba(0,229,255,.12);border-top:1px solid rgba(0,229,255,.35);border-radius:.4rem;padding:.75rem 1rem">
-            <div style="font-size:1.1rem;margin-bottom:.25rem">&#9889;</div>
-            <div style="font-family:'Space Mono',monospace;color:rgba(0,229,255,.8);font-size:.65rem;font-weight:700;letter-spacing:.06em">DAILY_DRILLS</div>
-            <div style="color:#2d4a5a;font-size:.62rem;margin-top:.15rem">Build mastery</div>
+          <div class="auth-hero-card">
+            <div class="auth-hero-icon">&#9889;</div>
+            <div class="auth-hero-code">DAILY_DRILLS</div>
+            <div class="auth-hero-sub">Build mastery</div>
           </div>
         </div>
       </div>
 
       <!-- Footer strip -->
-      <div style="border-top:1px solid rgba(0,229,255,.12);padding-top:1.25rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.75rem">
-        <span id="auth-copyright" style="font-family:'Space Mono',monospace;font-size:.6rem;color:rgba(0,229,255,.35);font-weight:700;letter-spacing:.08em">&#169; 2026 NYXCODEX&#8482; &#9679; NYX COLLECTIVE LLC</span>
-        <div style="display:flex;gap:1rem;align-items:center">
-          <a href="https://nyxcollectivellc.com" target="_blank" rel="noopener" style="font-family:'Space Mono',monospace;font-size:.6rem;color:rgba(0,229,255,.55);text-decoration:none;font-weight:700;letter-spacing:.08em">nyxcollectivellc.com</a>
-          <a href="https://nyxcodex.com" target="_blank" rel="noopener" style="font-family:'Space Mono',monospace;font-size:.6rem;color:rgba(0,229,255,.55);text-decoration:none;font-weight:700;letter-spacing:.08em">nyxcodex.com</a>
+      <div class="auth-hero-footer">
+        <span id="auth-copyright">&#169; 2026 NYXCODEX&#8482; &#9679; NYX COLLECTIVE LLC</span>
+        <div class="auth-hero-links">
+          <a href="https://nyxcollectivellc.com" target="_blank" rel="noopener" class="auth-hero-link">nyxcollectivellc.com</a>
+          <a href="https://nyxcodex.com" target="_blank" rel="noopener" class="auth-hero-link">nyxcodex.com</a>
         </div>
       </div>
     </div>
   </div>
 
   <!-- -- RIGHT FORM PANEL -- -->
-  <div id="auth-form-panel" style="width:460px;flex-shrink:0;background:#f8fafc;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding:3rem 2.75rem 2.75rem;overflow-y:auto;position:relative;row-gap:1rem">
+  <div id="auth-form-panel">
 
     <!-- Top decoration bar -->
-    <div style="position:absolute;top:0;left:0;right:0;height:4px;background:linear-gradient(90deg,#0369a1,#2563eb,#7c3aed)"></div>
+    <div class="auth-form-topbar"></div>
 
     <!-- Mobile logo (shows only when left panel hidden) -->
-    <div style="display:none;text-align:center;margin-bottom:2rem" id="mobile-logo-block">
-      <div class="logo-inline" style="max-width:260px;margin:0 auto"></div>
+    <div id="mobile-logo-block">
+      <div class="logo-inline auth-mobile-logo"></div>
     </div>
 
     <!-- Tab switcher -->
-    <div style="width:100%;margin-bottom:2rem">
-      <div style="font-family:Montserrat,sans-serif;font-weight:900;font-size:1.45rem;color:#0f172a;margin-bottom:.3rem" id="auth-panel-title">Welcome back</div>
-      <p style="font-size:.82rem;color:#64748b;margin-bottom:1.5rem" id="auth-panel-sub">Sign in to continue your training.</p>
-      <div id="auth-tab-switch" style="display:flex;background:#e2e8f0;border-radius:12px;padding:4px;gap:4px">
+    <div class="auth-tab-wrap">
+      <div id="auth-panel-title">Welcome back</div>
+      <p id="auth-panel-sub">Sign in to continue your training.</p>
+      <div id="auth-tab-switch">
         <button onclick="showAuthTab('login')" id="tab-login"
-          class="auth-tab-btn" style="flex:1;padding:.65rem;border-radius:9px;border:none;font-size:.82rem;font-weight:800;cursor:pointer;transition:all .2s;background:white;color:#0f172a;box-shadow:0 1px 4px rgba(0,0,0,.1)">
+          class="auth-tab-btn auth-tab-btn-start">
           Sign In
         </button>
         <button onclick="showAuthTab('signup')" id="tab-signup"
-          class="auth-tab-btn" style="flex:1;padding:.65rem;border-radius:9px;border:none;font-size:.82rem;font-weight:800;cursor:pointer;transition:all .2s;background:transparent;color:#64748b">
+          class="auth-tab-btn auth-tab-btn-end">
           Sign Up
         </button>
       </div>
     </div>
 
     <!-- Sign In Form -->
-    <div id="login-form" style="width:100%">
-      <div style="display:flex;flex-direction:column;gap:.875rem">
+    <div id="login-form" class="auth-form">
+      <div class="auth-stack">
         <div>
-          <label style="font-size:.72rem;font-weight:800;color:#475569;text-transform:uppercase;letter-spacing:.07em;display:block;margin-bottom:.4rem">Work Email</label>
-          <input id="li-email" class="input-field" type="email" placeholder="your.email@facility.org" style="width:100%">
+          <label class="auth-label">Work Email</label>
+          <input id="li-email" class="input-field" type="email" placeholder="your.email@facility.org">
         </div>
         <div>
-          <label style="font-size:.72rem;font-weight:800;color:#475569;text-transform:uppercase;letter-spacing:.07em;display:block;margin-bottom:.4rem">Password</label>
-          <input id="li-pass" class="input-field" type="password" placeholder="••••••••" style="width:100%" onkeydown="if(event.key==='Enter')doSignIn()">
+          <label class="auth-label">Password</label>
+          <input id="li-pass" class="input-field" type="password" placeholder="••••••••" onkeydown="if(event.key==='Enter')doSignIn()">
         </div>
         <!-- Auth error shown here so it's always visible on mobile -->
-        <div id="auth-error" style="display:none;background:#fef2f2;border:1px solid #fecaca;border-radius:.75rem;padding:.75rem 1rem;font-size:.825rem;font-weight:700;color:#dc2626;text-align:center"></div>
-        <button class="btn btn-primary w-full" style="padding:1rem;font-size:.9rem;margin-top:.25rem;border-radius:12px;background:linear-gradient(135deg,#1d4ed8,#2563eb);box-shadow:0 4px 16px rgba(37,99,235,.35)" onclick="doSignIn()">
+        <div id="auth-error" class="auth-error"></div>
+        <button class="btn btn-primary w-full auth-btn-primary" onclick="doSignIn()">
           Sign In 🔐
         </button>
-        <div style="display:flex;align-items:center;gap:.5rem;margin:1rem 0 .75rem">
-          <div style="flex:1;height:1px;background:#e2e8f0"></div>
-          <span style="font-size:.75rem;color:#94a3b8;font-weight:700">or</span>
-          <div style="flex:1;height:1px;background:#e2e8f0"></div>
+        <div class="auth-divider">
+          <div class="auth-divider-line"></div>
+          <span class="auth-divider-text">or</span>
+          <div class="auth-divider-line"></div>
         </div>
-        <button class="btn w-full" style="padding:.9rem;font-size:.9rem;border-radius:12px;background:white;color:#0f172a;font-weight:800;border:1px solid #e2e8f0;gap:.6rem" onclick="doGoogleSignIn()">
-          <span style="font-size:1.05rem">🔍</span> Continue with Google
+        <button class="btn w-full auth-btn-google" onclick="doGoogleSignIn()">
+          <span class="auth-btn-icon">🔍</span> Continue with Google
         </button>
-        <button class="btn w-full" style="padding:.85rem;font-size:.85rem;border-radius:12px;background:#f8fafc;color:#0f172a;font-weight:800;border:1px dashed #cbd5e1;gap:.6rem;margin-top:.6rem" onclick="doAnonSignIn()">
-          <span style="font-size:1.05rem">👤</span> Continue as guest (anonymous)
+        <button class="btn w-full auth-btn-guest" onclick="doAnonSignIn()">
+          <span class="auth-btn-icon">👤</span> Continue as guest (anonymous)
         </button>
       </div>
-      <p style="text-align:center;font-size:.75rem;color:#94a3b8;margin-top:1.5rem">
+      <p class="auth-note auth-note-top">
         Don't have an account?
-        <button onclick="showAuthTab('signup')" style="background:none;border:none;color:#2563eb;font-weight:800;cursor:pointer;font-size:.75rem">Create one</button>
+        <button onclick="showAuthTab('signup')" class="auth-inline-link">Create one</button>
       </p>
-      <p style="text-align:center;font-size:.75rem;color:#94a3b8;margin-top:.5rem">
+      <p class="auth-note auth-note-tight">
         Forgot your password?
-        <button onclick="doForgotPassword()" style="background:none;border:none;color:#2563eb;font-weight:800;cursor:pointer;font-size:.75rem">Reset it</button>
+        <button onclick="doForgotPassword()" class="auth-inline-link">Reset it</button>
       </p>
-      <div style="border-top:1px solid #e2e8f0;padding-top:1.25rem;margin-top:1.25rem">
-        <p style="text-align:center;font-size:.72rem;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.06em;margin:0 0 .75rem">Exploring for your organization?</p>
-        <button onclick="startDemoMode()" style="background:linear-gradient(135deg,#f59e0b,#d97706);color:white;border:none;border-radius:12px;padding:.9rem;font-size:.9rem;font-weight:800;cursor:pointer;width:100%;box-shadow:0 4px 16px rgba(245,158,11,.32);display:flex;align-items:center;justify-content:center;gap:.6rem">
-          <span style="font-size:1.1rem">🎨</span> See the Platform in Action
+      <div class="auth-demo-wrap">
+        <p class="auth-demo-title">Exploring for your organization?</p>
+        <button onclick="startDemoMode()" class="auth-demo-btn">
+          <span class="auth-demo-btn-icon">🎨</span> See the Platform in Action
         </button>
-        <p style="text-align:center;font-size:.7rem;color:#94a3b8;margin:.5rem 0 0">Sales demo &mdash; full platform, no account needed</p>
+        <p class="auth-demo-sub">Sales demo &mdash; full platform, no account needed</p>
       </div>
     </div>
 
     <!-- Create Account Form -->
-    <div id="signup-form" style="display:none;width:100%">
-      <div style="display:flex;flex-direction:column;gap:.75rem">
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem">
+    <div id="signup-form" class="auth-form auth-hidden">
+      <div class="auth-stack-tight">
+        <div class="auth-grid-2">
           <div>
-            <label style="font-size:.68rem;font-weight:800;color:#475569;text-transform:uppercase;letter-spacing:.07em;display:block;margin-bottom:.35rem">First Name *</label>
+            <label class="auth-label auth-label-sm">First Name *</label>
             <input id="su-fname" class="input-field" type="text" placeholder="Jane">
           </div>
           <div>
-            <label style="font-size:.68rem;font-weight:800;color:#475569;text-transform:uppercase;letter-spacing:.07em;display:block;margin-bottom:.35rem">Last Name *</label>
+            <label class="auth-label auth-label-sm">Last Name *</label>
             <input id="su-lname" class="input-field" type="text" placeholder="Doe">
           </div>
         </div>
         <div>
-          <label style="font-size:.68rem;font-weight:800;color:#475569;text-transform:uppercase;letter-spacing:.07em;display:block;margin-bottom:.35rem">Work Email *</label>
+          <label class="auth-label auth-label-sm">Work Email *</label>
           <input id="su-email" class="input-field" type="email" placeholder="jane.doe@destinysprings.com" onblur="checkInviteForEmail(this.value)">
         </div>
         <div>
-          <label style="font-size:.68rem;font-weight:800;color:#475569;text-transform:uppercase;letter-spacing:.07em;display:block;margin-bottom:.35rem">Mobile Phone *</label>
+          <label class="auth-label auth-label-sm">Mobile Phone *</label>
           <input id="su-phone" class="input-field" type="tel" placeholder="(623) 555-0100">
         </div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem">
+        <div class="auth-grid-2">
           <div>
-            <label style="font-size:.68rem;font-weight:800;color:#475569;text-transform:uppercase;letter-spacing:.07em;display:block;margin-bottom:.35rem">Job Title *</label>
+            <label class="auth-label auth-label-sm">Job Title *</label>
             <input id="su-title" class="input-field" type="text" placeholder="RN, MHT, etc.">
           </div>
           <div>
-            <label style="font-size:.68rem;font-weight:800;color:#475569;text-transform:uppercase;letter-spacing:.07em;display:block;margin-bottom:.35rem">Department *</label>
+            <label class="auth-label auth-label-sm">Department *</label>
             <input id="su-dept" class="input-field" type="text" placeholder="Inpatient, Admin—">
           </div>
         </div>
         <div>
-          <label style="font-size:.68rem;font-weight:800;color:#475569;text-transform:uppercase;letter-spacing:.07em;display:block;margin-bottom:.35rem">Employee ID <span style="font-weight:500;text-transform:none">(optional)</span></label>
+          <label class="auth-label auth-label-sm">Employee ID <span class="auth-inline-optional">(optional)</span></label>
           <input id="su-empid" class="input-field" type="text" placeholder="DSH-00000">
         </div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem">
+        <div class="auth-grid-2">
           <div>
-            <label style="font-size:.68rem;font-weight:800;color:#475569;text-transform:uppercase;letter-spacing:.07em;display:block;margin-bottom:.35rem">Password *</label>
+            <label class="auth-label auth-label-sm">Password *</label>
             <input id="su-pass" class="input-field" type="password" placeholder="min 6 chars">
           </div>
           <div>
-            <label style="font-size:.68rem;font-weight:800;color:#475569;text-transform:uppercase;letter-spacing:.07em;display:block;margin-bottom:.35rem">Confirm *</label>
+            <label class="auth-label auth-label-sm">Confirm *</label>
             <input id="su-conf" class="input-field" type="password" placeholder="repeat password">
           </div>
         </div>
-        <button id="signup-btn" class="btn w-full" style="padding:.95rem;font-size:.9rem;margin-top:.25rem;border-radius:12px;background:linear-gradient(135deg,#059669,#10b981);color:white;font-weight:800;border:none;cursor:pointer;box-shadow:0 4px 16px rgba(16,185,129,.3)" onclick="doSignUp()">
+        <button id="signup-btn" class="btn w-full auth-btn-signup" onclick="doSignUp()">
           Create Account ?
         </button>
-        <p style="font-size:.68rem;color:#94a3b8;text-align:center;line-height:1.5">
+        <p class="auth-privacy">
           <span id="auth-privacy">Your information is stored securely and used only for training purposes.</span>
         </p>
-        <div style="display:flex;align-items:center;gap:.5rem;margin:1rem 0 .75rem">
-          <div style="flex:1;height:1px;background:#e2e8f0"></div>
-          <span style="font-size:.75rem;color:#94a3b8;font-weight:700">or</span>
-          <div style="flex:1;height:1px;background:#e2e8f0"></div>
+        <div class="auth-divider">
+          <div class="auth-divider-line"></div>
+          <span class="auth-divider-text">or</span>
+          <div class="auth-divider-line"></div>
         </div>
-        <button class="btn w-full" style="padding:.9rem;font-size:.9rem;border-radius:12px;background:white;color:#0f172a;font-weight:800;border:1px solid #e2e8f0;gap:.6rem" onclick="doGoogleSignIn()">
-          <span style="font-size:1.05rem">🔍</span> Continue with Google
+        <button class="btn w-full auth-btn-google" onclick="doGoogleSignIn()">
+          <span class="auth-btn-icon">🔍</span> Continue with Google
         </button>
-        <button class="btn w-full" style="padding:.85rem;font-size:.85rem;border-radius:12px;background:#f8fafc;color:#0f172a;font-weight:800;border:1px dashed #cbd5e1;gap:.6rem;margin-top:.6rem" onclick="doAnonSignIn()">
-          <span style="font-size:1.05rem">👤</span> Continue as guest (anonymous)
+        <button class="btn w-full auth-btn-guest" onclick="doAnonSignIn()">
+          <span class="auth-btn-icon">👤</span> Continue as guest (anonymous)
         </button>
       </div>
-      <p style="text-align:center;font-size:.75rem;color:#94a3b8;margin-top:1rem">
+      <p class="auth-note auth-note-mid">
         Already have an account?
-        <button onclick="showAuthTab('login')" style="background:none;border:none;color:#2563eb;font-weight:800;cursor:pointer;font-size:.75rem">Sign in</button>
+        <button onclick="showAuthTab('login')" class="auth-inline-link">Sign in</button>
       </p>
     </div>
 
-    <div id="auth-error-old" style="display:none;width:100%"></div>
+    <div id="auth-error-old" class="auth-form auth-hidden"></div>
 
     <!-- Trust badges -->
-    <div style="width:100%;margin-top:2rem;padding-top:1.5rem;border-top:1px solid #e2e8f0;display:flex;align-items:center;justify-content:center;gap:1.5rem;flex-wrap:wrap">
-      <div style="display:flex;align-items:center;gap:.4rem">
-        <span style="font-size:.9rem">??</span>
-        <span style="font-size:.68rem;color:#94a3b8;font-weight:700">Secure Login</span>
+    <div class="auth-trust-row">
+      <div class="auth-trust-item">
+        <span class="auth-trust-icon">??</span>
+        <span class="auth-trust-text">Secure Login</span>
       </div>
-      <div style="display:flex;align-items:center;gap:.4rem">
-        <span style="font-size:.9rem">??</span>
-        <span style="font-size:.68rem;color:#94a3b8;font-weight:700">Surprise, AZ</span>
+      <div class="auth-trust-item">
+        <span class="auth-trust-icon">??</span>
+        <span class="auth-trust-text">Surprise, AZ</span>
       </div>
     </div>
   </div>
