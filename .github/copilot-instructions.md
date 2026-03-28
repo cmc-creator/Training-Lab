@@ -7,7 +7,7 @@ This is Destiny Springs Healthcare's De-escalation Training Lab - an interactive
 ## Core Architecture
 
 - **Platform Type**: Static HTML/CSS/JavaScript web application
-- **Deployment**: GitHub Pages (https://cmc-creator.github.io/Training-Lab/)
+- **Deployment**: GitHub Pages (https://cmc-creator.github.io/NyxCodex/)
 - **Backend**: Firebase (Authentication + Realtime Database)
 - **AI Integration**: Google Gemini API for training scenarios
 - **Entry Point**: `index.html` (landing page that redirects to `trainer_pro.html`)

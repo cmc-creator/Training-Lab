@@ -34,14 +34,14 @@ The Training Lab platform has been set up with GitHub Actions for continuous dep
 ## How to Access Production
 
 ### Production URL
-**https://cmc-creator.github.io/Training-Lab/**
+**https://cmc-creator.github.io/NyxCodex/**
 
 This URL will be live once the changes are merged to the `main` branch and GitHub Pages is enabled.
 
 ## Next Steps to Go Live
 
 ### Step 1: Enable GitHub Pages
-1. Go to repository Settings: https://github.com/cmc-creator/Training-Lab/settings/pages
+1. Go to repository Settings: https://github.com/cmc-creator/NyxCodex/settings/pages
 2. Under "Build and deployment":
    - Source: Select **"GitHub Actions"**
 3. Save the settings
@@ -52,9 +52,9 @@ This URL will be live once the changes are merged to the `main` branch and GitHu
 3. The deployment workflow will automatically trigger
 
 ### Step 3: Verify Deployment
-1. Go to the Actions tab: https://github.com/cmc-creator/Training-Lab/actions
+1. Go to the Actions tab: https://github.com/cmc-creator/NyxCodex/actions
 2. Watch the "Deploy to GitHub Pages" workflow run
-3. Once complete (1-2 minutes), visit: https://cmc-creator.github.io/Training-Lab/
+3. Once complete (1-2 minutes), visit: https://cmc-creator.github.io/NyxCodex/
 4. You should see the landing page and be redirected to the training platform
 
 ## How Deployment Works
@@ -107,7 +107,7 @@ All Firebase credentials are already in `trainer_pro.html` and secure.
 Once deployed, verify:
 
 1. **Landing Page**
-   - [ ] https://cmc-creator.github.io/Training-Lab/ loads
+   - [ ] https://cmc-creator.github.io/NyxCodex/ loads
    - [ ] Shows branded landing page
    - [ ] Redirects to trainer_pro.html
 

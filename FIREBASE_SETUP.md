@@ -147,14 +147,14 @@ const firebaseConfig = {
 If you want a live URL instead of file:// path:
 
 ### Setup GitHub Pages
-1. Your repo: https://github.com/cmc-creator/Training-Lab
+1. Your repo: https://github.com/cmc-creator/NyxCodex
 2. Go to **Settings** → **Pages**
 3. Source: **Deploy from a branch**
 4. Branch: **main**
 5. Folder: **/ (root)**
 6. Click **Save**
 
-Your app is now at: `https://cmc-creator.github.io/Training-Lab/trainer_pro.html`
+Your app is now at: `https://cmc-creator.github.io/NyxCodex/`
 
 ---
 

@@ -4,25 +4,25 @@ An interactive, AI-powered clinical training platform for psychiatric healthcare
 
 ## Features
 
-✨ **AI Clinical Mentor** - Dr. Rivera guides you through real-world scenarios
+✨ **AI Clinical Mentor** - Professor Vance guides staff through real-world scenarios
 🧩 **Diagnosis-Specific Training** - Autism, ADHD, Schizophrenia, Bipolar, PTSD, Depression, Anxiety, BPD
 🎮 **Interactive Crisis Scenarios** - Practice responses with AI scoring (A-F)
 📊 **Team Leaderboard** - Track progress across your entire staff
 🏆 **Achievement System** - XP, certificates, performance tracking
 🤖 **Roleplay Script Generator** - Create huddle training materials instantly
 📝 **Clinical Debrief Assistant** - AI supervisor feedback on real incidents
-💻 **Desktop Application with Mobile Support** - Optimized for desktop/laptop use, also accessible on tablets and phones
+💻 **Mobile-First Design** - Built to work cleanly on phones, tablets, and desktops
 🎓 **PDF Certificates** - Print professional training completion documents
 
 ## 🚀 Production Platform
 
-**Live Training Platform:** [https://cmc-creator.github.io/Training-Lab/](https://cmc-creator.github.io/Training-Lab/)
+**Live Training Platform:** [https://cmc-creator.github.io/NyxCodex/](https://cmc-creator.github.io/NyxCodex/)
 
 Staff can access the platform directly from any device with internet connection. The platform features:
 - Secure user authentication (email/password)
 - Cloud-based data persistence via Firebase
 - Real-time admin dashboard with team analytics
-- Desktop-first design with mobile adaptation for phones, tablets, and portable devices
+- Mobile-first design that adapts across phones, tablets, laptops, and desktops
 
 ### For Staff
 1. Visit the live platform URL above
@@ -110,7 +110,7 @@ This platform is automatically deployed to GitHub Pages whenever changes are pus
 ### Deployment Process
 1. The GitHub Actions workflow (`.github/workflows/deploy.yml`) is triggered on push to `main`
 2. The workflow builds and deploys the static site to GitHub Pages
-3. The site becomes available at: https://cmc-creator.github.io/Training-Lab/
+3. The site becomes available at: https://cmc-creator.github.io/NyxCodex/
 4. Deployment typically takes 1-2 minutes
 
 ### Manual Deployment

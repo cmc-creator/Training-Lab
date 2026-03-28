@@ -13,7 +13,7 @@
 
 ## Step 2: Open the Training
 1. Open **trainer.html** in your browser
-2. Or visit: https://github.com/cmc-creator/Training-Lab → Clone/Download
+2. Or visit: https://github.com/cmc-creator/NyxCodex → Clone/Download
 3. Works offline after opening (but needs API key for AI features)
 
 ## Step 3: Enter Your API Key

@@ -35,7 +35,7 @@ Collect the following before you begin:
 
 ## Step 1 — Fork the Repository
 
-1. Go to: **https://github.com/cmc-creator/Training-Lab**
+1. Go to: **https://github.com/cmc-creator/NyxCodex**
 2. Click **Fork** (top right)
 3. On the fork screen:
    - Repository name: use the client's org ID, e.g. `valley-hope-training-lab`

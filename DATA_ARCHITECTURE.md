@@ -249,7 +249,7 @@ If you want to upgrade to a true multi-user system:
 ## Support & Questions
 
 For issues or enhancement requests:
-- Check GitHub issues: https://github.com/cmc-creator/Training-Lab/
+- Check GitHub issues: https://github.com/cmc-creator/NyxCodex/
 - Create a new issue with details
 - Include exported data sample (with sensitive names removed)
 

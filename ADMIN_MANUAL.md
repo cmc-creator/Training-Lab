@@ -14,7 +14,7 @@ Your Destiny Springs Healthcare De-escalation Training Lab is now fully operatio
 ---
 
 ## 📍 Repository Location
-**GitHub**: https://github.com/cmc-creator/Training-Lab  
+**GitHub**: https://github.com/cmc-creator/NyxCodex  
 **Local Path**: `\\192.168.168.182\Folder Redirection\Ccooper\Documents\Training Lab\`
 
 ---
@@ -277,13 +277,13 @@ git pull origin main
 ```
 
 **To view commit history:**
-Visit: https://github.com/cmc-creator/Training-Lab/commits/main
+Visit: https://github.com/cmc-creator/NyxCodex/commits/main
 
 ---
 
 ## 📞 Contact & Support
 
-- **GitHub Issues**: https://github.com/cmc-creator/Training-Lab/issues
+- **GitHub Issues**: https://github.com/cmc-creator/NyxCodex/issues
 - **Email Support**: (add your facility contact here)
 - **Training**: See QUICK_START.md for staff
 

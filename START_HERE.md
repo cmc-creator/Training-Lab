@@ -9,7 +9,7 @@ You now have a **complete, enterprise-grade AI-powered training platform** ready
 ✅ **Cloud Data Persistence** - All training data stored securely on Google Firebase  
 ✅ **Real-Time Admin Dashboard** - Facility directors see leaderboard, user metrics, and compliance reports  
 ✅ **Gamification System** - XP, levels, scores, certificates to motivate staff  
-✅ **Desktop-First Design with Mobile Support** - Optimized for desktop/laptop use, accessible on tablets and mobile devices  
+✅ **Mobile-First Responsive Design** - Built for phones first and scales cleanly to tablets and desktops  
 ✅ **Zero Server Infrastructure** - Fully hosted on free GitHub Pages + Firebase
 
 ---
@@ -83,11 +83,11 @@ You now have a **complete, enterprise-grade AI-powered training platform** ready
 **Why**: Verify it works before making it public to staff.
 
 ### ✅ Step 7: Deploy to GitHub Pages (15 minutes)
-1. Visit https://github.com/cmc-creator/Training-Lab
+1. Visit https://github.com/cmc-creator/NyxCodex
 2. Go to **Settings** → **Pages**
 3. Set deployment to: Branch **main**, folder **/root**, click **Save**
 4. Wait 1-2 minutes for deployment
-5. Your platform will be live at: **https://cmc-creator.github.io/Training-Lab/**
+5. Your platform will be live at: **https://cmc-creator.github.io/NyxCodex/**
 
 **Why**: This makes your platform accessible to staff from anywhere (phone, computer, offsite).
 
@@ -107,7 +107,7 @@ After completing the 7 steps above, your training platform will be:
 ## How Staff Will Use It
 
 **Day 1 - First Login**
-1. Staff visit: https://cmc-creator.github.io/Training-Lab/
+1. Staff visit: https://cmc-creator.github.io/NyxCodex/
 2. Click **"Sign Up"**
 3. Enter work email and create password
 4. Immediately see training program (22 slides)
@@ -166,7 +166,7 @@ All of these are in your GitHub repo:
 **A:** Create second Firebase project and second GitHub Pages branch. Full multi-facility support ready if needed.
 
 ### Q: Can staff access from their phones?
-**A:** Yes! The platform uses a desktop-first design optimized for computers/laptops, but is accessible on mobile devices. Mobile users can zoom and scroll to navigate the full desktop interface. For best experience, recommend using tablets (10"+ screens) or desktop computers.
+**A:** Yes. The platform is mobile-friendly and responsive, with layouts designed to work on phones, tablets, and desktops. Tablets and larger screens still provide the best overall training experience for longer sessions.
 
 ### Q: What if Firebase goes down?
 **A:** Extremely rare (99.99% uptime). But you have automatic backups. Export JSON weekly as shown in `OPERATIONS_CHECKLIST.md`.
@@ -198,8 +198,8 @@ git push origin main
 **To check deployment status:**
 ```bash
 # GitHub Pages builds happen automatically
-# Check: https://github.com/cmc-creator/Training-Lab/deployments
-# Live URL: https://cmc-creator.github.io/Training-Lab/
+# Check: https://github.com/cmc-creator/NyxCodex/deployments
+# Live URL: https://cmc-creator.github.io/NyxCodex/
 ```
 
 ---

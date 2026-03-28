@@ -10,7 +10,7 @@ You now have a **complete, enterprise-grade training platform** ready to deploy 
 - Real-time data persistence (cloud-based, survives browser refreshes and device changes)
 - Admin dashboard with leaderboard, user management, analytics, and reporting
 - PDF certificate generation for completed training
-- Desktop-first design optimized for computers/laptops, accessible on tablets and mobile devices
+- Mobile-first responsive design for phones, tablets, and desktops
 - Gamification (XP, levels, scores) to motivate staff engagement
 
 **Architecture:**
@@ -24,7 +24,7 @@ You now have a **complete, enterprise-grade training platform** ready to deploy 
 
 Before starting, ensure you have:
 - [ ] Google account (free at https://accounts.google.com)
-- [ ] GitHub account (already have this - https://github.com/cmc-creator/Training-Lab.git)
+- [ ] GitHub account (already have this - https://github.com/cmc-creator/NyxCodex.git)
 - [ ] Text editor (VS Code recommended)
 - [ ] CLI access or Git GUI (already configured on your machine)
 
@@ -239,7 +239,7 @@ const ADMIN_UID = "YOUR_ADMIN_UID_HERE";
 ## Step 6: Deploy to GitHub Pages (15 minutes)
 
 ### 6.1 Enable GitHub Pages
-1. Visit https://github.com/cmc-creator/Training-Lab (your repo)
+1. Visit https://github.com/cmc-creator/NyxCodex (your repo)
 2. Click **"Settings"** tab (top-right)
 3. In left sidebar, click **"Pages"**
 4. Under "Source," select **"Deploy from a branch"**
@@ -249,7 +249,7 @@ const ADMIN_UID = "YOUR_ADMIN_UID_HERE";
 
 ### 6.2 Wait for Deployment
 1. GitHub Pages will build (takes 1-2 minutes)
-2. You'll see a banner: "Your site is live at https://cmc-creator.github.io/Training-Lab/"
+2. You'll see a banner: "Your site is live at https://cmc-creator.github.io/NyxCodex/"
 3. **COPY THIS URL** - this is your public training platform
 
 ### 6.3 Verify Live Deployment
@@ -269,7 +269,7 @@ const ADMIN_UID = "YOUR_ADMIN_UID_HERE";
 ## 🚀 Live Platform
 
 Staff can access the training platform here:
-**[Destiny Springs Training Lab](https://cmc-creator.github.io/Training-Lab/)**
+**[NyxCodex Training Platform](https://cmc-creator.github.io/NyxCodex/)**
 
 - Email: Use your facility email
 - Password: Create secure password on first login
@@ -288,7 +288,7 @@ git push origin main
 ## Step 7: Set Up Additional Admin Users (5 minutes per user)
 
 ### Option A: Add Individual Admin
-1. Ask them to go to https://cmc-creator.github.io/Training-Lab/
+1. Ask them to go to https://cmc-creator.github.io/NyxCodex/
 2. Sign up with their facility email
 3. Get their UID from Firebase Console → Authentication → Users
 4. Update `ADMIN_UID` in trainer_pro.html to include them:
@@ -389,7 +389,7 @@ const ADMIN_UIDS = ["abc123xyz...", "def456uvw..."];
 4. GitHub deploys happen within 1-2 minutes
 
 ### Staff Accessing from Mobile Devices
-**Note**: The platform uses a desktop-first design optimized for desktop/laptop computers.
+**Note**: The platform is responsive and usable on phones, tablets, laptops, and desktops.
 
 **Mobile Access**:
 1. Platform is accessible on mobile devices but displays the desktop layout

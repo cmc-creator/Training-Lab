@@ -18,7 +18,7 @@
 
 ### GitHub Pages Deployment Verified
 - [ ] GitHub Pages enabled (Settings → Pages)
-- [ ] Live URL accessible: https://cmc-creator.github.io/Training-Lab/
+- [ ] Live URL accessible: https://cmc-creator.github.io/NyxCodex/
 - [ ] Tested login on live URL from different device
 - [ ] Database connectivity working on live deployment
 
@@ -303,8 +303,8 @@
 
 ### Key Resources
 - Firebase Console: https://console.firebase.google.com
-- GitHub Repository: https://github.com/cmc-creator/Training-Lab
-- Training Platform: https://cmc-creator.github.io/Training-Lab/
+- GitHub Repository: https://github.com/cmc-creator/NyxCodex
+- Training Platform: https://cmc-creator.github.io/NyxCodex/
 
 ---
 

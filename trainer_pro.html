@@ -1273,7 +1273,7 @@ h1,h2,.font-display{font-family:'Montserrat',sans-serif}
 
       <!-- TAB: Debrief -->
       <div id="lab-tab-debrief" style="display:none">
-        <p style="margin:0 0 1rem;color:#64748b;font-size:.88rem;font-weight:700">Describe a real or practice incident. Dr. Rivera will review it and provide structured clinical feedback.</p>
+        <p style="margin:0 0 1rem;color:#64748b;font-size:.88rem;font-weight:700">Describe a real or practice incident. Professor Vance will review it and provide structured clinical feedback.</p>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
           <div style="display:flex;flex-direction:column;gap:.5rem">
             <label style="font-size:.75rem;font-weight:800;color:#475569;text-transform:uppercase;letter-spacing:.06em">📝 What happened?</label>
@@ -2131,7 +2131,7 @@ h1,h2,.font-display{font-family:'Montserrat',sans-serif}
   </div>
   <div style="padding:0 2rem 2rem;display:grid;grid-template-columns:repeat(3,1fr);gap:1.25rem">
     <div class="card p-6" style="border-top:5px solid #06b6d4;text-align:center">
-      <div style="font-size:3rem;margin-bottom:.75rem" class="anim-bounce" style="display:inline-block">??</div>
+      <div style="font-size:3rem;margin-bottom:.75rem;display:inline-block" class="anim-bounce">??</div>
       <h3 style="font-weight:900;color:#0e7490;margin-bottom:.5rem;font-size:1rem">Cold Compress / Ice Water</h3>
       <p style="font-size:.7rem;font-weight:800;color:#94a3b8;text-transform:uppercase;letter-spacing:.08em;margin-bottom:.75rem">Vagus Nerve Activation</p>
       <p style="font-size:.8rem;color:#475569;line-height:1.6">Cold on face/wrists triggers the dive reflex — instantly slows heart rate and activates parasympathetic response. Fastest biological de-escalator available.</p>
@@ -6874,8 +6874,8 @@ async function runDebrief() {
   const text = (input?.value||'').trim();
   if(!text) { alert('Describe an incident first.'); return; }
   if(btn) { btn.disabled=true; btn.textContent='Analyzing…'; }
-  if(output) output.innerHTML = '<span style="opacity:.6">Dr. Rivera is reviewing your incident·</span>';
-  const sys = `You are Dr. Rivera, clinical supervisor at your healthcare organization. Review this real incident and provide structured clinical feedback. Format your response using these four sections: WHAT WENT WELL | MISSED OPPORTUNITIES | NEXT TIME TRY | COMPETENCY LEVEL. Be supportive and growth-focused. This is about learning, not judgment. Keep response under 250 words.`;
+  if(output) output.innerHTML = '<span style="opacity:.6">Professor Vance is reviewing your incident·</span>';
+  const sys = `You are Professor Vance, a calm and experienced clinical supervisor for psychiatric healthcare staff. Review this real incident and provide structured clinical feedback. Format your response using these four sections: WHAT WENT WELL | MISSED OPPORTUNITIES | NEXT TIME TRY | COMPETENCY LEVEL. Be supportive and growth-focused. This is about learning, not judgment. Keep response under 250 words.`;
   try {
     const res = await fetch(CHAT_ENDPOINT, {
       method:'POST', headers:{'Content-Type':'application/json'},
