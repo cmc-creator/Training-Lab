@@ -552,11 +552,10 @@ h1,h2,.font-display{font-family:'Montserrat',sans-serif}
   .score-badge{font-size:1.8rem;padding:.75rem;min-width:60px}
   
   /* Navigation bar - more compact on mobile */
-  nav[style*="position:fixed;bottom:0"]{padding:.5rem .75rem!important;gap:.35rem!important}
+  #main-nav{padding:.5rem .75rem!important;gap:.35rem!important}
   #main-nav>div:last-child{overflow-x:auto;scrollbar-width:none}
   #main-nav>div:last-child::-webkit-scrollbar{display:none}
-  nav[style*="position:fixed;bottom:0"] button{padding:.4rem .5rem!important;font-size:.7rem!important}
-  nav[style*="position:fixed;bottom:0"] button[style*="width:48px"]{width:38px!important;height:38px!important}
+  #main-nav button{padding:.4rem .5rem!important;font-size:.7rem!important}
   #main-nav button[onclick="openChat()"],
   #main-nav button[onclick="openLabRoom()"],
   #main-nav button[onclick="openVideoModal()"]{width:36px!important;height:36px!important;padding:0!important;justify-content:center!important}
@@ -564,8 +563,7 @@ h1,h2,.font-display{font-family:'Montserrat',sans-serif}
   #main-nav button[onclick="openLabRoom()"] span,
   #main-nav button[onclick="openVideoModal()"] span{display:none!important}
   /* hide side-edge arrows on small screens to avoid obscuring content */
-  button[style*="border-radius:0 .75rem"]{display:none!important}
-  button[style*="border-radius:.75rem 0"]{display:none!important}
+  #side-arrow-prev,#side-arrow-next{display:none!important}
   
   /* Hide "Sign Out" text on mobile, keep button - using visibility for accessibility */
   nav button[onclick="doSignOut()"]{
@@ -1851,14 +1849,14 @@ h1,h2,.font-display{font-family:'Montserrat',sans-serif}
     <div style="margin-bottom:1.2rem;max-width:320px;width:70vw;filter:drop-shadow(0 6px 14px rgba(0,0,0,.25))">
       <div class="logo-inline" style="max-height:160px;max-width:400px;width:100%;margin:0 auto"></div>
     </div>
-    <div class="badge" style="background:rgba(37,99,235,.2);color:#93c5fd;border:1px solid rgba(37,99,235,.3);margin-bottom:2rem;font-size:.7rem">
+    <div id="slide1-badge" class="badge" style="background:rgba(37,99,235,.2);color:#93c5fd;border:1px solid rgba(37,99,235,.3);margin-bottom:2rem;font-size:.7rem">
       NyxCodex® · Est. 2026 · Nyx Collective LLC
     </div>
     <h1 style="font-size:clamp(2.5rem,8vw,5.5rem);color:white;line-height:.95;margin-bottom:1.5rem;font-family:Montserrat,sans-serif;font-weight:900">
       NyxCodex®<br><span style="background:linear-gradient(90deg,#60a5fa,#a78bfa);-webkit-background-clip:text;-webkit-text-fill-color:transparent">De-escalation</span>
     </h1>
-    <p style="color:#94a3b8;font-size:1rem;margin-bottom:.25rem;font-weight:600">Mastery Lab — NyxCodex™</p>
-    <p style="color:#475569;font-size:.8rem;margin-bottom:3rem">© 2026 NyxCodex® · <a href="https://nyxcollectivellc.com" target="_blank" rel="noopener" style="color:#475569">Nyx Collective LLC</a> — All Rights Reserved — Clinical Training Platform</p>
+    <p id="slide1-subtitle" style="color:#94a3b8;font-size:1rem;margin-bottom:.25rem;font-weight:600">Mastery Lab — NyxCodex™</p>
+    <p id="slide1-footer" style="color:#475569;font-size:.8rem;margin-bottom:3rem">© 2026 NyxCodex® · <a href="https://nyxcollectivellc.com" target="_blank" rel="noopener" style="color:#475569">Nyx Collective LLC</a> — All Rights Reserved — Clinical Training Platform</p>
     <div id="welcome-card" style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:1.5rem;padding:2rem;max-width:520px;width:100%;margin-bottom:2.5rem;backdrop-filter:blur(12px)">
       <p id="welcome-greeting" style="color:#94a3b8;font-size:.85rem;margin-bottom:.5rem">Welcome,</p>
       <p id="welcome-name" style="color:white;font-size:1.75rem;font-weight:900;font-family:Montserrat,sans-serif;margin-bottom:1rem">&nbsp;</p>
@@ -3358,6 +3356,9 @@ function applyTenantContent() {
   if(el('auth-privacy'))   el('auth-privacy').textContent   = `Your information is stored securely and used only for ${T.orgName} training purposes.`;
   if(el('auth-copyright')) el('auth-copyright').textContent = `\u00A9 ${T.copyrightYear} NyxCodex\u2122 \u00b7 ${T.copyrightHolder||'Nyx Collective LLC'}`;
   if(el('hub-heading'))    el('hub-heading').textContent    = `Welcome back to NyxCodex\u2122`;
+  if(el('slide1-badge'))   el('slide1-badge').textContent   = `${T.brandName} \u00b7 Est. ${T.copyrightYear} \u00b7 ${T.copyrightHolder}`;
+  if(el('slide1-subtitle'))el('slide1-subtitle').textContent= `Mastery Lab \u2014 ${T.brandName}`;
+  if(el('slide1-footer'))  el('slide1-footer').innerHTML    = `\u00A9 ${T.copyrightYear} ${T.brandName} \u00b7 <a href="https://nyxcollectivellc.com" target="_blank" rel="noopener" style="color:#475569">${T.copyrightHolder}</a> \u2014 All Rights Reserved \u2014 Clinical Training Platform`;
   if(el('hub-org-pill'))   el('hub-org-pill').textContent   = T.orgName;
   if(el('admin-role-badge')) el('admin-role-badge').textContent = `${T.orgName} \u2014 Training Management`;
   if(el('lab-patient-name')) el('lab-patient-name').innerHTML = `${T.patientName} <span style="font-size:.75rem;font-weight:600;color:#94a3b8">\u2014 ${T.patientDx}</span>`;

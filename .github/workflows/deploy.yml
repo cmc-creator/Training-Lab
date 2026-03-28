@@ -21,6 +21,8 @@ jobs:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
+    outputs:
+      page_url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -28,17 +30,36 @@ jobs:
       - name: Setup Pages
         uses: actions/configure-pages@v4
       
-      - name: Create deployment directory
-        run: |
-          mkdir -p deploy
-          cp index.html deploy/
-          cp trainer_pro.html deploy/
-      
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: 'deploy'
+          path: '.'
       
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+
+  smoke-test:
+    needs: deploy
+    runs-on: ubuntu-latest
+    steps:
+      - name: Wait for Pages to propagate
+        run: sleep 20
+
+      - name: Check landing page
+        run: |
+          url="${{ needs.deploy.outputs.page_url }}"
+          curl -f --retry 4 --retry-delay 8 --retry-connrefused -s -o /dev/null -w "%{http_code}" "${url}" \
+            && echo "landing page OK" || (echo "landing page FAILED" && exit 1)
+
+      - name: Check trainer page
+        run: |
+          url="${{ needs.deploy.outputs.page_url }}"
+          curl -f --retry 4 --retry-delay 8 --retry-connrefused -s -o /dev/null -w "%{http_code}" "${url}trainer_pro.html" \
+            && echo "trainer page OK" || (echo "trainer page FAILED" && exit 1)
+
+      - name: Check tenant config
+        run: |
+          url="${{ needs.deploy.outputs.page_url }}"
+          curl -f --retry 4 --retry-delay 8 --retry-connrefused -s -o /dev/null -w "%{http_code}" "${url}tenant.config.js" \
+            && echo "tenant config OK" || (echo "tenant config FAILED" && exit 1)
