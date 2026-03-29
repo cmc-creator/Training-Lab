@@ -32,7 +32,7 @@
             newSW && newSW.addEventListener('statechange', () => {
               if (newSW.state === 'installed' && navigator.serviceWorker.controller) {
                 // New version available — notify user softly
-                console.info('[SW] New version available — reload to update.');
+                console.info('[SW] New version available — reload to update.'); 
               }
             });
           });
@@ -84,7 +84,7 @@ const isReloadNav = (() => {
   return false;
 })();
 let firstAuthEvent = true;
-window._reauthAndChangePassword = async function(currentPass, newPass) {
+window._reauthAndChangePassword = async function(currentPass, newPass) {        
   const user = auth.currentUser;
   const cred = EmailAuthProvider.credential(user.email, currentPass);
   await reauthenticateWithCredential(user, cred);
@@ -833,6 +833,11 @@ h1,h2,.font-display{font-family:'Fraunces',serif}
   
   /* Hide auth hero image on mobile */
   #auth-hero-img{display:none!important}
+  .hub-grid{grid-template-columns:1fr!important;gap:1rem!important}
+  .hub-copy{gap:.9rem!important}
+  .hub-logo{max-width:360px!important}
+  .hub-pill-row{gap:.65rem!important}
+  .hub-pill{width:100%;justify-content:center}
 }
 
 /* Tablet: 641px - 1024px */
@@ -853,6 +858,7 @@ h1,h2,.font-display{font-family:'Fraunces',serif}
   
   /* Admin modal */
   #admin-modal>div{max-width:90%;margin:1rem}
+  .hub-grid{grid-template-columns:1fr!important;gap:1.25rem!important}
 }
 
 /* Desktop: > 1024px uses original inline styles */
@@ -872,6 +878,56 @@ h1,h2,.font-display{font-family:'Fraunces',serif}
 #avatar-mouth{animation:none}
 #avatar-mouth.talking{animation:talking .15s ease infinite}
 #home-gateway{display:none;position:fixed;inset:0;z-index:70;background:radial-gradient(circle at 20% 20%,rgba(59,130,246,.12),transparent 35%),radial-gradient(circle at 80% 10%,rgba(14,165,233,.12),transparent 32%),radial-gradient(circle at 30% 80%,rgba(124,58,237,.12),transparent 38%),#0b1224;backdrop-filter:blur(10px);align-items:center;justify-content:center;padding:2rem}
+.hub-banner{display:none;width:100%;max-width:1100px;margin-bottom:1rem}
+.hub-grid{width:100%;max-width:1100px;display:grid;grid-template-columns:1.1fr 1fr;gap:1.75rem;align-items:center;color:#e2e8f0}
+.hub-copy{display:flex;flex-direction:column;gap:1.1rem}
+.hub-logo{max-width:460px;width:100%}
+#hub-heading{font-family:Montserrat,sans-serif;font-weight:900;font-size:clamp(2rem,4vw,2.7rem);line-height:1.05;color:white}
+.hub-lead{color:#cbd5e1;font-size:1rem;line-height:1.7;max-width:640px;font-weight:600}
+.hub-pill-row{display:flex;flex-wrap:wrap;gap:1rem;color:#94a3b8;font-weight:700;font-size:.9rem}
+.hub-pill{display:flex;align-items:center;gap:.5rem;padding:.65rem 1rem;border-radius:.9rem;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08)}
+#hub-progress-wrap{display:none;flex-direction:column;gap:.4rem}
+.hub-progress-head{display:flex;justify-content:space-between;align-items:baseline}
+.hub-progress-label{font-size:.78rem;font-weight:800;color:#94a3b8;text-transform:uppercase;letter-spacing:.07em}
+#hub-progress-pct{font-size:.78rem;font-weight:900;color:#22c55e}
+.hub-progress-track{background:rgba(255,255,255,.1);border-radius:.4rem;height:.45rem;overflow:hidden}
+#hub-progress-fill{height:100%;background:linear-gradient(90deg,#22c55e,#16a34a);border-radius:.4rem;width:0%;transition:width .6s cubic-bezier(.4,0,.2,1)}
+#hub-progress-sub{font-size:.75rem;font-weight:700;color:#64748b}
+.hub-privacy{color:#94a3b8;font-size:.76rem;font-weight:600;margin:0}
+#hub-cert-status,#hub-badges-wrap{display:none}
+.hub-role-label{font-size:.7rem;font-weight:900;color:#64748b;text-transform:uppercase;letter-spacing:.07em;margin-bottom:.45rem}
+#hub-role-pills{display:flex;flex-wrap:wrap;gap:.35rem}
+#hub-push-wrap{margin-top:.35rem}
+.hub-push-btn{width:100%;background:rgba(124,58,237,.07);border:1px solid rgba(124,58,237,.18);color:#7c3aed;border-radius:.875rem;padding:.5rem 1rem;font-size:.75rem;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:.45rem}
+.hub-actions{display:grid;grid-template-columns:1fr;gap:1rem}
+.hub-action-card{border:none;cursor:pointer;padding:0;border-radius:1.1rem;text-align:left;overflow:hidden;position:relative;transition:transform .2s,box-shadow .2s;min-height:110px}
+.hub-action-card:hover{transform:translateY(-2px)}
+.hub-action-resume{box-shadow:0 20px 50px rgba(34,197,94,.28)}
+.hub-action-redo{box-shadow:0 20px 50px rgba(79,70,229,.35)}
+.hub-action-lab{box-shadow:0 20px 50px rgba(16,185,129,.28)}
+.hub-action-drill{box-shadow:0 16px 40px rgba(245,158,11,.3);min-height:90px}
+.hub-action-bg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.hub-bg-resume{filter:brightness(.45)}
+.hub-bg-redo{filter:brightness(.35)}
+.hub-bg-lab{filter:brightness(.55)}
+.hub-overlay{position:absolute;inset:0}
+.hub-overlay-resume{background:linear-gradient(135deg,rgba(22,163,74,.7),rgba(34,197,94,.5))}
+.hub-overlay-redo{background:linear-gradient(135deg,rgba(37,99,235,.72),rgba(124,58,237,.6))}
+.hub-overlay-lab{background:linear-gradient(135deg,rgba(14,165,233,.55),rgba(34,197,94,.45))}
+.hub-overlay-drill{background:linear-gradient(135deg,#f59e0b,#d97706)}
+.hub-card-copy{position:relative;z-index:1;padding:1.4rem 1.2rem;color:white}
+.hub-card-stack{display:flex;flex-direction:column;gap:.45rem}
+.hub-card-title{font-size:1.2rem;font-weight:900;font-family:Montserrat,sans-serif}
+.hub-card-body{font-size:.95rem;font-weight:600;opacity:.9}
+.hub-card-meta{font-size:.8rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;opacity:.8}
+.hub-drill-copy{position:relative;z-index:1;padding:1.1rem 1.2rem;color:white;display:flex;align-items:center;gap:1rem}
+.hub-drill-icon{font-size:1.7rem;flex-shrink:0}
+.hub-drill-main{flex:1}
+.hub-drill-title{font-size:1.05rem;font-weight:900;font-family:Montserrat,sans-serif}
+.hub-drill-body{font-size:.82rem;font-weight:600;opacity:.9}
+#hub-streak-badge{display:none;background:rgba(0,0,0,.25);border:2px solid rgba(255,255,255,.3);border-radius:1rem;padding:.35rem .75rem;font-size:.82rem;font-weight:900;white-space:nowrap;flex-shrink:0}
+.hub-tutorial-btn{border:none;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);cursor:pointer;padding:.7rem 1.2rem;border-radius:.9rem;text-align:center;color:#94a3b8;font-weight:800;font-size:.82rem;letter-spacing:.04em;transition:color .2s ease,background .2s ease}
+.hub-tutorial-btn:hover{color:white;background:rgba(255,255,255,.1)}
 @keyframes shimmer{0%{background-position:-400px 0}100%{background-position:400px 0}}
 .skel{background:linear-gradient(90deg,#e2e8f0 25%,#f1f5f9 50%,#e2e8f0 75%);background-size:400px 100%;animation:shimmer 1.4s infinite linear;border-radius:.55rem;height:1rem}
 @keyframes badge-pop{0%{transform:translateX(-50%) scale(.5);opacity:0}70%{transform:translateX(-50%) scale(1.07)}100%{transform:translateX(-50%) scale(1);opacity:1}}
@@ -1162,92 +1218,92 @@ h1,h2,.font-display{font-family:'Fraunces',serif}
 <!-- Home gateway overlay -->
 <div id="home-gateway">
   <!-- Due-date notification banner (populated by JS) -->
-  <div id="due-date-banner" style="display:none;width:100%;max-width:1100px;margin-bottom:1rem"></div>
-  <div style="width:100%;max-width:1100px;display:grid;grid-template-columns:1.1fr 1fr;gap:1.75rem;align-items:center;color:#e2e8f0">
-    <div style="display:flex;flex-direction:column;gap:1.1rem">
-      <div class="logo-inline" aria-label="NyxCodex logo" style="max-width:460px;width:100%"></div>
-      <div id="hub-heading" style="font-family:Montserrat,sans-serif;font-weight:900;font-size:clamp(2rem,4vw,2.7rem);line-height:1.05;color:white">Welcome back to NyxCodex®</div>
-      <p style="color:#cbd5e1;font-size:1rem;line-height:1.7;max-width:640px;font-weight:600">Pick where you want to go. Restart the full training from slide one, or jump straight into the live Lab to practice scenarios. Your XP, level, and lab credits stay with you.</p>
-      <div style="display:flex;flex-wrap:wrap;gap:1rem;color:#94a3b8;font-weight:700;font-size:.9rem">
-        <div id="hub-org-pill" style="display:flex;align-items:center;gap:.5rem;padding:.65rem 1rem;border-radius:.9rem;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08)"></div>
-        <div style="display:flex;align-items:center;gap:.5rem;padding:.65rem 1rem;border-radius:.9rem;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08)">Interactive Module Training</div>
-        <div style="display:flex;align-items:center;gap:.5rem;padding:.65rem 1rem;border-radius:.9rem;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08)">Lab simulations</div>
+  <div id="due-date-banner" class="hub-banner"></div>
+  <div class="hub-grid">
+    <div class="hub-copy">
+      <div class="logo-inline hub-logo" aria-label="NyxCodex logo"></div>
+      <div id="hub-heading">Welcome back to NyxCodex®</div>
+      <p class="hub-lead">Pick where you want to go. Restart the full training from slide one, or jump straight into the live Lab to practice scenarios. Your XP, level, and lab credits stay with you.</p>
+      <div class="hub-pill-row">
+        <div id="hub-org-pill" class="hub-pill"></div>
+        <div class="hub-pill">Interactive Module Training</div>
+        <div class="hub-pill">Lab simulations</div>
       </div>
       <!-- Hub progress strip -->
-      <div id="hub-progress-wrap" style="display:none;flex-direction:column;gap:.4rem">
-        <div style="display:flex;justify-content:space-between;align-items:baseline">
-          <span style="font-size:.78rem;font-weight:800;color:#94a3b8;text-transform:uppercase;letter-spacing:.07em">Your Progress</span>
-          <span id="hub-progress-pct" style="font-size:.78rem;font-weight:900;color:#22c55e">0%</span>
+      <div id="hub-progress-wrap">
+        <div class="hub-progress-head">
+          <span class="hub-progress-label">Your Progress</span>
+          <span id="hub-progress-pct">0%</span>
         </div>
-        <div style="background:rgba(255,255,255,.1);border-radius:.4rem;height:.45rem;overflow:hidden">
-          <div id="hub-progress-fill" style="height:100%;background:linear-gradient(90deg,#22c55e,#16a34a);border-radius:.4rem;width:0%;transition:width .6s cubic-bezier(.4,0,.2,1)"></div>
+        <div class="hub-progress-track">
+          <div id="hub-progress-fill"></div>
         </div>
-        <span id="hub-progress-sub" style="font-size:.75rem;font-weight:700;color:#64748b"></span>
+        <span id="hub-progress-sub"></span>
       </div>
-      <p style="color:#475569;font-size:.76rem;font-weight:600;margin:0">🔒 Automatically signed out when this tab closes — your data stays private.</p>
+      <p class="hub-privacy">🔒 Automatically signed out when this tab closes — your data stays private.</p>
       <!-- Cert renewal status (populated by JS) -->
-      <div id="hub-cert-status" style="display:none"></div>
+      <div id="hub-cert-status"></div>
       <!-- Achievement badge wall (populated by JS) -->
-      <div id="hub-badges-wrap" style="display:none"></div>
+      <div id="hub-badges-wrap"></div>
       <!-- Role-based track selector -->
       <div id="hub-role-wrap">
-        <div style="font-size:.7rem;font-weight:900;color:#64748b;text-transform:uppercase;letter-spacing:.07em;margin-bottom:.45rem">Your Role Track</div>
-        <div id="hub-role-pills" style="display:flex;flex-wrap:wrap;gap:.35rem"></div>
+        <div class="hub-role-label">Your Role Track</div>
+        <div id="hub-role-pills"></div>
       </div>
       <!-- Push notification opt-in -->
-      <div id="hub-push-wrap" style="margin-top:.35rem">
-        <button onclick="subscribeToPush()" style="width:100%;background:rgba(124,58,237,.07);border:1px solid rgba(124,58,237,.18);color:#7c3aed;border-radius:.875rem;padding:.5rem 1rem;font-size:.75rem;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:.45rem">
+      <div id="hub-push-wrap">
+        <button onclick="subscribeToPush()" class="hub-push-btn">
           🔔 Enable Training Deadline Reminders
         </button>
       </div>
     </div>
-    <div style="display:grid;grid-template-columns:1fr;gap:1rem">
-      <button onclick="resumeTrainingFromHub()" style="border:none;cursor:pointer;padding:0;border-radius:1.1rem;text-align:left;overflow:hidden;position:relative;box-shadow:0 20px 50px rgba(34,197,94,.28);transition:transform .2s,box-shadow .2s;min-height:110px">
-        <img src="lab.png" class="tenant-lab-bg" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:brightness(.45)">
-        <div style="position:absolute;inset:0;background:linear-gradient(135deg,rgba(22,163,74,.7),rgba(34,197,94,.5))"></div>
-        <div style="position:relative;z-index:1;padding:1.4rem 1.2rem;color:white">
-          <div style="display:flex;flex-direction:column;gap:.45rem">
-            <div style="font-size:1.2rem;font-weight:900;font-family:Montserrat,sans-serif">Resume where I left off</div>
-            <div style="font-size:.95rem;font-weight:600;opacity:.9">Jump back to your last slide and keep your progress.</div>
-            <div style="font-size:.8rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;opacity:.8">Progress auto-saved</div>
+    <div class="hub-actions">
+      <button onclick="resumeTrainingFromHub()" class="hub-action-card hub-action-resume">
+        <img src="lab.png" class="tenant-lab-bg hub-action-bg hub-bg-resume" alt="">
+        <div class="hub-overlay hub-overlay-resume"></div>
+        <div class="hub-card-copy">
+          <div class="hub-card-stack">
+            <div class="hub-card-title">Resume where I left off</div>
+            <div class="hub-card-body">Jump back to your last slide and keep your progress.</div>
+            <div class="hub-card-meta">Progress auto-saved</div>
           </div>
         </div>
       </button>
-      <button onclick="confirmRedoTraining()" style="border:none;cursor:pointer;padding:0;border-radius:1.1rem;text-align:left;overflow:hidden;position:relative;box-shadow:0 20px 50px rgba(79,70,229,.35);transition:transform .2s,box-shadow .2s;min-height:110px">
-        <img src="lab.png" class="tenant-lab-bg" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:brightness(.35)">
-        <div style="position:absolute;inset:0;background:linear-gradient(135deg,rgba(37,99,235,.72),rgba(124,58,237,.6))"></div>
-        <div style="position:relative;z-index:1;padding:1.4rem 1.2rem;color:white">
-          <div style="display:flex;flex-direction:column;gap:.45rem">
-            <div style="font-size:1.2rem;font-weight:900;font-family:Montserrat,sans-serif">Redo Training from Slide 1</div>
-            <div style="font-size:.95rem;font-weight:600;opacity:.9">Reset to the welcome slide and walk the full program again.</div>
-            <div style="font-size:.8rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;opacity:.8">Includes quizzes, XP, and certificate</div>
+      <button onclick="confirmRedoTraining()" class="hub-action-card hub-action-redo">
+        <img src="lab.png" class="tenant-lab-bg hub-action-bg hub-bg-redo" alt="">
+        <div class="hub-overlay hub-overlay-redo"></div>
+        <div class="hub-card-copy">
+          <div class="hub-card-stack">
+            <div class="hub-card-title">Redo Training from Slide 1</div>
+            <div class="hub-card-body">Reset to the welcome slide and walk the full program again.</div>
+            <div class="hub-card-meta">Includes quizzes, XP, and certificate</div>
           </div>
         </div>
       </button>
-      <button onclick="enterLabFromHub()" style="border:none;cursor:pointer;padding:0;border-radius:1.1rem;text-align:left;overflow:hidden;position:relative;box-shadow:0 20px 50px rgba(16,185,129,.28);transition:transform .2s,box-shadow .2s;min-height:110px">
-        <img src="lab.png" class="tenant-lab-bg" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:brightness(.55)">
-        <div style="position:absolute;inset:0;background:linear-gradient(135deg,rgba(14,165,233,.55),rgba(34,197,94,.45))"></div>
-        <div style="position:relative;z-index:1;padding:1.4rem 1.2rem;color:white">
-          <div style="display:flex;flex-direction:column;gap:.45rem">
-            <div style="font-size:1.2rem;font-weight:900;font-family:Montserrat,sans-serif">Enter the Lab</div>
-            <div style="font-size:.95rem;font-weight:600;opacity:.9">Skip straight to live scenarios and earn Lab Credits.</div>
-            <div style="font-size:.8rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;opacity:.8">Practice mode — Immediate feedback</div>
+      <button onclick="enterLabFromHub()" class="hub-action-card hub-action-lab">
+        <img src="lab.png" class="tenant-lab-bg hub-action-bg hub-bg-lab" alt="">
+        <div class="hub-overlay hub-overlay-lab"></div>
+        <div class="hub-card-copy">
+          <div class="hub-card-stack">
+            <div class="hub-card-title">Enter the Lab</div>
+            <div class="hub-card-body">Skip straight to live scenarios and earn Lab Credits.</div>
+            <div class="hub-card-meta">Practice mode — Immediate feedback</div>
           </div>
         </div>
       </button>
       <!-- Daily Drill Button -->
-      <button onclick="openDrillModal()" style="border:none;cursor:pointer;padding:0;border-radius:1.1rem;text-align:left;overflow:hidden;position:relative;box-shadow:0 16px 40px rgba(245,158,11,.3);transition:transform .2s,box-shadow .2s;min-height:90px" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform=''">
-        <div style="position:absolute;inset:0;background:linear-gradient(135deg,#f59e0b,#d97706)"></div>
-        <div style="position:relative;z-index:1;padding:1.1rem 1.2rem;color:white;display:flex;align-items:center;gap:1rem">
-          <div style="font-size:1.7rem;flex-shrink:0">⚡</div>
-          <div style="flex:1">
-            <div style="font-size:1.05rem;font-weight:900;font-family:Montserrat,sans-serif">5-Min Daily Drill</div>
-            <div style="font-size:.82rem;font-weight:600;opacity:.9">One skill card — one live scenario — build your streak.</div>
+      <button onclick="openDrillModal()" class="hub-action-card hub-action-drill">
+        <div class="hub-overlay hub-overlay-drill"></div>
+        <div class="hub-drill-copy">
+          <div class="hub-drill-icon">⚡</div>
+          <div class="hub-drill-main">
+            <div class="hub-drill-title">5-Min Daily Drill</div>
+            <div class="hub-drill-body">One skill card — one live scenario — build your streak.</div>
           </div>
-          <div id="hub-streak-badge" style="display:none;background:rgba(0,0,0,.25);border:2px solid rgba(255,255,255,.3);border-radius:1rem;padding:.35rem .75rem;font-size:.82rem;font-weight:900;white-space:nowrap;flex-shrink:0">🔥 0</div>
+          <div id="hub-streak-badge">🔥 0</div>
         </div>
       </button>
-      <button onclick="openTutorial()" style="border:none;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);cursor:pointer;padding:.7rem 1.2rem;border-radius:.9rem;text-align:center;color:#94a3b8;font-weight:800;font-size:.82rem;letter-spacing:.04em" onmouseover="this.style.color='white'" onmouseout="this.style.color='#94a3b8'">
+      <button onclick="openTutorial()" class="hub-tutorial-btn">
         Replay Tutorial
       </button>
     </div>
