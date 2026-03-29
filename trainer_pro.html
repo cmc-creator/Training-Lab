@@ -941,6 +941,81 @@ h1,h2,.font-display{font-family:'Fraunces',serif}
 /* Hub badge unlock pop */
 @keyframes hub-badge-in{from{transform:scale(0) rotate(-15deg);opacity:0}to{transform:scale(1) rotate(0);opacity:1}}
 .hub-badge-unlock{animation:hub-badge-in .35s cubic-bezier(.34,1.56,.64,1)}
+/* Modal overlay base classes */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:150;align-items:center;justify-content:center;padding:1rem}
+.modal-overlay.admin{z-index:150}
+.modal-overlay.lab{background:rgba(0,0,0,.78);z-index:145}
+.modal-overlay.drill{background:rgba(0,0,0,.82);z-index:148}
+.modal-overlay.pincode{background:rgba(0,0,0,.75);z-index:160}
+.modal-overlay.account{z-index:155}
+.modal-overlay.manage-user{z-index:200}
+.modal-overlay.org-wizard{z-index:200}
+.modal-card{width:100%;max-width:520px;max-height:90vh;overflow-y:auto;box-shadow:0 24px 60px rgba(0,0,0,.3);background:white;border-radius:1.5rem}
+.modal-card.large{max-width:980px}
+.modal-card.admin{max-width:1100px}
+.modal-card-header{display:flex;align-items:center;justify-content:space-between;padding:1.5rem;border-bottom:1px solid #e2e8f0}
+.modal-card-header.admin{padding:1rem 1.25rem}
+.modal-card-header.large{padding:1rem 1.25rem;border-bottom:1px solid #e2e8f0}
+.modal-header-title{font-weight:900;font-size:1.1rem;color:#0f172a;margin:0}
+.modal-header-sub{font-size:.78rem;color:#64748b;margin:0;font-weight:600}
+.modal-close-btn{width:36px;height:36px;border-radius:50%;background:#f1f5f9;border:none;font-weight:900;color:#64748b;cursor:pointer}
+.modal-close-btn.admin{width:36px;height:36px}
+.modal-content{padding:1.5rem;display:flex;flex-direction:column;gap:1.25rem}
+.modal-content.admin{flex:1;overflow-y:auto;padding:1.25rem}
+.modal-section-title{font-size:.75rem;font-weight:900;color:#64748b;text-transform:uppercase;letter-spacing:.07em;margin:0 0 .65rem;display:block}
+.modal-form-grid{display:grid;gap:.6rem}
+.modal-form-grid.two-col{grid-template-columns:1fr 1fr}
+.modal-form-grid.four-col{grid-template-columns:repeat(4,1fr)}
+.modal-label{font-size:.7rem;font-weight:800;color:#475569;display:block;margin-bottom:.25rem}
+.modal-label.section{font-size:.75rem;font-weight:900;color:#0f172a;text-transform:uppercase;letter-spacing:.06em}
+.modal-action-buttons{display:flex;gap:.75rem;justify-content:flex-end;padding-top:.75rem;border-top:1px solid #e2e8f0}
+.modal-action-buttons.full-width{flex-wrap:wrap;gap:.5rem}
+.modal-bg-gradient{background:linear-gradient(135deg,#1e3a8a,#4c1d95);border-radius:1.5rem 1.5rem 0 0;padding:1.75rem;color:white}
+.modal-badge-info{background:#eff6ff;border:1px solid #bfdbfe;border-radius:.875rem;padding:1rem;margin-bottom:1rem}
+.modal-badge-error{background:#fef2f2;border:1px solid #fecaca;border-radius:.875rem;padding:1rem;margin-bottom:1rem}
+.modal-badge-success{background:#ecfdf5;border:2px solid #86efac;border-radius:1.25rem;padding:1.75rem;text-align:center}
+/* Admin modal tab system */
+.admin-tab-bar{display:flex;gap:0;border-bottom:2px solid #e2e8f0;padding:0 1.25rem;overflow-x:auto;background:#f8fafc;flex-shrink:0}
+.admin-tab-content-wrap{flex:1;overflow-y:auto;padding:1.25rem}
+.admin-tab-panels{display:flex;flex-direction:column}
+.admin-tab-panel{display:none}
+.admin-tab-panel.active{display:block}
+/* Lab modal structure */
+.lab-header-info{display:flex;align-items:center;gap:.75rem;margin-bottom:.85rem;background:#0f172a;border-radius:.875rem;padding:.6rem 1rem}
+.lab-patient-avatar-wrap{width:36px;height:36px;border-radius:50%;border:2px solid #2563eb;flex-shrink:0;overflow:hidden;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:.75rem;color:white;background:#2563eb}
+.lab-patient-avatar-img{width:100%;height:100%;object-fit:cover;object-position:top;display:block}
+.lab-scenario-grid{display:grid;grid-template-columns:1.1fr 0.9fr;gap:1rem;align-items:start}
+.lab-scenario-box{background:#f8fafc;border:1px solid #e2e8f0;border-radius:1rem;padding:1rem;min-height:140px;color:#0f172a;font-weight:600;line-height:1.6}
+.lab-rules-box{background:#fffaf5;border:1px solid #fed7aa;border-radius:1rem;padding:1rem}
+.lab-response-wrap{margin-top:1rem;display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+.lab-response-textarea{height:180px;resize:vertical}
+.lab-score-panel{display:none;background:white;border:1px solid #e2e8f0;border-radius:.875rem;padding:.75rem}
+/* Drill modal structure */
+.drill-header-gradient{display:flex;align-items:center;justify-content:space-between;padding:1rem 1.25rem;border-bottom:1px solid #e2e8f0;background:linear-gradient(135deg,#fffbeb,#fff7ed)}
+.drill-step-label{font-size:.68rem;font-weight:900;text-transform:uppercase;letter-spacing:.1em;color:#a16207;background:#fef3c7;border:1px solid #fcd34d;border-radius:999px;padding:.2rem .65rem}
+.drill-flip-card{perspective:1000px;cursor:pointer;margin-bottom:1rem}
+.drill-flip-inner{position:relative;width:100%;min-height:210px;transition:transform .55s;transform-style:preserve-3d}
+.drill-flip-face{backface-visibility:hidden;-webkit-backface-visibility:hidden;position:absolute;inset:0;border-radius:1.25rem;padding:1.5rem;display:flex;flex-direction:column;justify-content:space-between}
+.drill-flip-front{background:linear-gradient(135deg,#1e3a8a,#1d4ed8)}
+.drill-flip-back{background:linear-gradient(135deg,#0f172a,#1e293b);transform:rotateY(180deg)}
+/* Account modal */
+.acct-view-grid{display:grid;grid-template-columns:1fr 1fr;gap:.75rem;margin-bottom:1rem}
+.acct-card-field{background:#f8fafc;border-radius:.875rem;padding:.875rem}
+.acct-stats-grid{background:linear-gradient(135deg,#0f172a,#1e3a5f);border-radius:1rem;padding:1rem;display:grid;grid-template-columns:repeat(3,1fr);gap:.75rem;text-align:center;margin-bottom:1rem}
+.acct-stats-item{display:flex;flex-direction:column;align-items:center}
+.acct-stats-value{font-size:1.4rem;font-weight:900;color:#60a5fa}
+.acct-stats-label{font-size:.65rem;color:#64748b;font-weight:700;text-transform:uppercase}
+/* Utility button classes for modal actions */
+.btn-tiny-auto{font-size:.78rem;font-weight:800;cursor:pointer;border-radius:.5rem;border:1px solid;padding:.45rem .875rem;white-space:nowrap}
+.btn-tiny-reset{background:#fef3c7;color:#92400e;border-color:#fde68a}
+.btn-tiny-extend-30{background:#dbeafe;color:#1d4ed8;border-color:#bfdbfe}
+.btn-tiny-nudge{background:#ede9fe;color:#5b21b6;border-color:#ddd6fe}
+.btn-color-danger{background:#fee2e2;color:#dc2626;border-color:#fecaca;font-size:.78rem;font-weight:800;cursor:pointer;border-radius:.5rem;border:1px solid;padding:.55rem .875rem;white-space:nowrap}
+.btn-color-info{width:100%;padding:.75rem;background:linear-gradient(135deg,#2563eb,#7c3aed);color:white;border:none;border-radius:.875rem;font-weight:900;cursor:pointer;font-size:.875rem}
+.btn-color-cancel{width:100%;padding:.75rem;background:#f1f5f9;color:#475569;border:none;border-radius:.875rem;font-weight:800;cursor:pointer;font-size:.82rem}
+.btn-color-cancel-light{width:100%;padding:.7rem;background:#f1f5f9;color:#475569;border:none;border-radius:.875rem;font-weight:800;cursor:pointer;font-size:.82rem}
+.modal-form-group{display:flex;flex-direction:column;gap:.6rem}
+.modal-form-section-header{font-size:.75rem;font-weight:900;color:#0f172a;text-transform:uppercase;letter-spacing:.06em;border-bottom:2px solid #e2e8f0;padding-bottom:.4rem;margin:0 0 .875rem}
 </style>
 </head>
 <body>
@@ -1311,13 +1386,13 @@ h1,h2,.font-display{font-family:'Fraunces',serif}
 </div>
 
 <!-- ----------------------------------------------- ADMIN MODAL -- -->
-<div id="admin-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:150;align-items:center;justify-content:center;padding:1rem">
-  <div class="card w-full max-w-5xl" style="max-height:90vh;overflow:hidden;display:flex;flex-direction:column">
-    <div class="p-6 border-b border-slate-200 flex items-center justify-between flex-shrink-0">
-      <div><h2 class="text-xl font-black text-slate-900">NyxCodex® Command Center</h2><p id="admin-role-badge" class="text-xs text-slate-400 font-semibold">NyxCodex™ — Training Management</p></div>
-      <button onclick="closeAdmin()" class="w-9 h-9 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center font-black text-slate-600">✕</button>
+<div id="admin-modal" class="modal-overlay admin">
+  <div class="modal-card admin">
+    <div class="modal-card-header admin">
+      <div><h2 class="modal-header-title">NyxCodex® Command Center</h2><p id="admin-role-badge" class="modal-header-sub">NyxCodex™ — Training Management</p></div>
+      <button onclick="closeAdmin()" class="modal-close-btn admin">✕</button>
     </div>
-    <div class="flex gap-0 border-b border-slate-200 px-6 flex-shrink-0" style="overflow-x:auto">
+    <div class="admin-tab-bar">
       <button class="admin-tab-btn py-3 px-4 text-xs font-black uppercase tracking-widest border-b-2 border-blue-600 text-blue-600 whitespace-nowrap" onclick="adminTab('leaderboard',this)">🏆 Leaderboard</button>
       <button class="admin-tab-btn py-3 px-4 text-xs font-black uppercase tracking-widest border-b-2 border-transparent text-slate-400 whitespace-nowrap" onclick="adminTab('users',this)">👥 Users</button>
       <button class="admin-tab-btn py-3 px-4 text-xs font-black uppercase tracking-widest border-b-2 border-transparent text-slate-400 whitespace-nowrap" onclick="adminTab('analytics',this)">📊 Analytics</button>
@@ -1327,44 +1402,44 @@ h1,h2,.font-display{font-family:'Fraunces',serif}
       <button id="audit-tab-btn" class="admin-tab-btn py-3 px-4 text-xs font-black uppercase tracking-widest border-b-2 border-transparent text-slate-400 whitespace-nowrap" onclick="adminTab('audit',this)" style="display:none">📜 Audit Log</button>
       <button id="scenarios-tab-btn" class="admin-tab-btn py-3 px-4 text-xs font-black uppercase tracking-widest border-b-2 border-transparent text-slate-400 whitespace-nowrap" onclick="adminTab('scenarios',this)" style="display:none">📚 Scenarios</button>
     </div>
-    <div class="flex-1 overflow-y-auto p-6">
+    <div class="admin-tab-content-wrap">
       <div id="at-leaderboard"></div>
-      <div id="at-users" style="display:none"></div>
-      <div id="at-analytics" style="display:none"></div>
-      <div id="at-reports" style="display:none"></div>
-      <div id="at-completion" style="display:none"></div>
-      <div id="at-settings" style="display:none"></div>
-      <div id="at-audit" style="display:none"></div>
-      <div id="at-scenarios" style="display:none"></div>
+      <div id="at-users" class="admin-tab-panel"></div>
+      <div id="at-analytics" class="admin-tab-panel"></div>
+      <div id="at-reports" class="admin-tab-panel"></div>
+      <div id="at-completion" class="admin-tab-panel"></div>
+      <div id="at-settings" class="admin-tab-panel"></div>
+      <div id="at-audit" class="admin-tab-panel"></div>
+      <div id="at-scenarios" class="admin-tab-panel"></div>
     </div>
   </div>
 </div>
 
 <!-- --------------------------------- USER MANAGE MODAL -- -->
-<div id="user-manage-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:200;align-items:center;justify-content:center;padding:1rem">
-  <div style="background:white;border-radius:1.5rem;width:100%;max-width:520px;max-height:90vh;overflow-y:auto;box-shadow:0 24px 60px rgba(0,0,0,.3)">
-    <div style="display:flex;align-items:center;justify-content:space-between;padding:1.5rem;border-bottom:1px solid #e2e8f0">
-      <div><h2 id="umm-name" style="font-weight:900;font-size:1.1rem;color:#0f172a;margin:0">Manage User</h2><p id="umm-email" style="font-size:.78rem;color:#64748b;margin:0;font-weight:600"></p></div>
-      <button onclick="closeUserManageModal()" style="width:2.25rem;height:2.25rem;border-radius:50%;background:#f1f5f9;border:none;font-size:1rem;cursor:pointer;font-weight:900;color:#64748b">&times;</button>
+<div id="user-manage-modal" class="modal-overlay manage-user">
+  <div class="modal-card">
+    <div class="modal-card-header">
+      <div><h2 class="modal-header-title" id="umm-name">Manage User</h2><p id="umm-email" class="modal-header-sub"></p></div>
+      <button onclick="closeUserManageModal()" class="modal-close-btn">&times;</button>
     </div>
-    <div style="padding:1.5rem;display:flex;flex-direction:column;gap:1.25rem">
+    <div class="modal-content">
       <div id="umm-stats" style="display:grid;grid-template-columns:repeat(3,1fr);gap:.6rem"></div>
       <div style="display:flex;flex-direction:column;gap:.6rem">
-        <h3 style="font-size:.75rem;font-weight:900;color:#64748b;text-transform:uppercase;letter-spacing:.07em;margin:0">✏️ Edit Profile</h3>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:.6rem">
-          <div><label style="font-size:.7rem;font-weight:800;color:#475569;display:block;margin-bottom:.25rem">First Name</label><input id="umm-fname" class="input-field" style="font-weight:700"></div>
-          <div><label style="font-size:.7rem;font-weight:800;color:#475569;display:block;margin-bottom:.25rem">Last Name</label><input id="umm-lname" class="input-field" style="font-weight:700"></div>
-          <div><label style="font-size:.7rem;font-weight:800;color:#475569;display:block;margin-bottom:.25rem">Department</label><input id="umm-dept" class="input-field" style="font-weight:700"></div>
-          <div><label style="font-size:.7rem;font-weight:800;color:#475569;display:block;margin-bottom:.25rem">Job Title</label><input id="umm-title" class="input-field" style="font-weight:700"></div>
+        <h3 class="modal-section-title">✏️ Edit Profile</h3>
+        <div class="modal-form-grid two-col">
+          <div><label class="modal-label">First Name</label><input id="umm-fname" class="input-field"></div>
+          <div><label class="modal-label">Last Name</label><input id="umm-lname" class="input-field"></div>
+          <div><label class="modal-label">Department</label><input id="umm-dept" class="input-field"></div>
+          <div><label class="modal-label">Job Title</label><input id="umm-title" class="input-field"></div>
         </div>
         <div style="display:grid;grid-template-columns:1fr auto;gap:.6rem;align-items:end">
-          <div><label style="font-size:.7rem;font-weight:800;color:#475569;display:block;margin-bottom:.25rem">Due Date</label><input id="umm-due" type="date" class="input-field" style="font-weight:700"></div>
+          <div><label class="modal-label">Due Date</label><input id="umm-due" type="date" class="input-field"></div>
           <button onclick="document.getElementById('umm-due').value=''" style="background:#fee2e2;color:#dc2626;border:1px solid #fecaca;border-radius:.5rem;padding:.55rem .875rem;font-size:.78rem;font-weight:800;cursor:pointer;white-space:nowrap">Clear</button>
         </div>
-        <button onclick="saveUserManage()" class="btn btn-primary" style="font-size:.85rem;padding:.75rem;font-weight:800">💾 Save Changes</button>
+        <button onclick="saveUserManage()" class="btn btn-primary">💾 Save Changes</button>
       </div>
       <div style="border-top:1px solid #f1f5f9;padding-top:1rem">
-        <h3 style="font-size:.75rem;font-weight:900;color:#64748b;text-transform:uppercase;letter-spacing:.07em;margin:0 0 .65rem">⚠️ Training Actions</h3>
+        <h3 class="modal-section-title">⚠️ Training Actions</h3>
         <div style="display:flex;flex-wrap:wrap;gap:.5rem">
           <button onclick="adminResetTraining()" style="background:#fef3c7;color:#92400e;border:1px solid #fde68a;border-radius:.5rem;padding:.45rem .875rem;font-size:.78rem;font-weight:800;cursor:pointer">🔄 Reset Training Year</button>
           <button onclick="adminExtendDeadline(30)" style="background:#dbeafe;color:#1d4ed8;border:1px solid #bfdbfe;border-radius:.5rem;padding:.45rem .875rem;font-size:.78rem;font-weight:800;cursor:pointer">📅 +30 Days</button>
@@ -1377,72 +1452,72 @@ h1,h2,.font-display{font-family:'Fraunces',serif}
 </div>
 
 <!-- -------------------------------- ORG SETUP WIZARD -- -->
-<div id="org-wizard-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:200;align-items:center;justify-content:center;padding:1rem">
-  <div style="background:white;border-radius:1.5rem;width:100%;max-width:620px;max-height:90vh;overflow-y:auto;box-shadow:0 24px 60px rgba(0,0,0,.3)">
-    <div style="background:linear-gradient(135deg,#1e3a8a,#4c1d95);border-radius:1.5rem 1.5rem 0 0;padding:1.75rem;color:white">
+<div id="org-wizard-modal" class="modal-overlay org-wizard">
+  <div class="modal-card">
+    <div class="modal-bg-gradient">
       <h2 style="font-weight:900;font-size:1.2rem;margin:0 0 .3rem">🏥 White-Label Org Setup Wizard</h2>
       <p style="font-size:.8rem;opacity:.8;margin:0">Configure branding, certification, and reminders for this organization.</p>
     </div>
-    <div style="padding:1.75rem;display:flex;flex-direction:column;gap:1.5rem">
+    <div class="modal-content">
       <div>
-        <h3 style="font-size:.75rem;font-weight:900;color:#0f172a;text-transform:uppercase;letter-spacing:.06em;border-bottom:2px solid #e2e8f0;padding-bottom:.4rem;margin:0 0 .875rem">1 &middot; Organization Identity</h3>
-        <div style="display:grid;gap:.6rem">
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:.6rem">
-            <div><label style="font-size:.7rem;font-weight:800;color:#475569;display:block;margin-bottom:.3rem">Org Name</label><input id="wiz-orgname" class="input-field"></div>
-            <div><label style="font-size:.7rem;font-weight:800;color:#475569;display:block;margin-bottom:.3rem">Brand Name</label><input id="wiz-brand" class="input-field"></div>
+        <h3 class="modal-form-section-header">1 &middot; Organization Identity</h3>
+        <div class="modal-form-grid">
+          <div class="modal-form-grid two-col">
+            <div><label class="modal-label">Org Name</label><input id="wiz-orgname" class="input-field"></div>
+            <div><label class="modal-label">Brand Name</label><input id="wiz-brand" class="input-field"></div>
           </div>
-          <div><label style="font-size:.7rem;font-weight:800;color:#475569;display:block;margin-bottom:.3rem">Address</label><input id="wiz-address" class="input-field"></div>
-          <div><label style="font-size:.7rem;font-weight:800;color:#475569;display:block;margin-bottom:.3rem">Logo URL (path or https://)</label><input id="wiz-logo" class="input-field" placeholder="dsh.png or https://cdn.yourorg.com/logo.png"></div>
+          <div><label class="modal-label">Address</label><input id="wiz-address" class="input-field"></div>
+          <div><label class="modal-label">Logo URL (path or https://)</label><input id="wiz-logo" class="input-field" placeholder="dsh.png or https://cdn.yourorg.com/logo.png"></div>
         </div>
       </div>
       <div>
-        <h3 style="font-size:.75rem;font-weight:900;color:#0f172a;text-transform:uppercase;letter-spacing:.06em;border-bottom:2px solid #e2e8f0;padding-bottom:.4rem;margin:0 0 .875rem">2 &middot; Brand Colors</h3>
-        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:.6rem">
-          <div><label style="font-size:.68rem;font-weight:800;color:#475569;display:block;margin-bottom:.25rem">Primary</label><input id="wiz-cprimary" type="color" style="height:2.75rem;width:100%;border-radius:.5rem;border:1px solid #e2e8f0;cursor:pointer;padding:.2rem"></div>
-          <div><label style="font-size:.68rem;font-weight:800;color:#475569;display:block;margin-bottom:.25rem">Accent</label><input id="wiz-caccent" type="color" style="height:2.75rem;width:100%;border-radius:.5rem;border:1px solid #e2e8f0;cursor:pointer;padding:.2rem"></div>
-          <div><label style="font-size:.68rem;font-weight:800;color:#475569;display:block;margin-bottom:.25rem">Button</label><input id="wiz-cbutton" type="color" style="height:2.75rem;width:100%;border-radius:.5rem;border:1px solid #e2e8f0;cursor:pointer;padding:.2rem"></div>
-          <div><label style="font-size:.68rem;font-weight:800;color:#475569;display:block;margin-bottom:.25rem">Background</label><input id="wiz-cbg" type="color" style="height:2.75rem;width:100%;border-radius:.5rem;border:1px solid #e2e8f0;cursor:pointer;padding:.2rem"></div>
+        <h3 class="modal-form-section-header">2 &middot; Brand Colors</h3>
+        <div class="modal-form-grid four-col">
+          <div><label class="modal-label">Primary</label><input id="wiz-cprimary" type="color" style="height:2.75rem;width:100%;border-radius:.5rem;border:1px solid #e2e8f0;cursor:pointer;padding:.2rem"></div>
+          <div><label class="modal-label">Accent</label><input id="wiz-caccent" type="color" style="height:2.75rem;width:100%;border-radius:.5rem;border:1px solid #e2e8f0;cursor:pointer;padding:.2rem"></div>
+          <div><label class="modal-label">Button</label><input id="wiz-cbutton" type="color" style="height:2.75rem;width:100%;border-radius:.5rem;border:1px solid #e2e8f0;cursor:pointer;padding:.2rem"></div>
+          <div><label class="modal-label">Background</label><input id="wiz-cbg" type="color" style="height:2.75rem;width:100%;border-radius:.5rem;border:1px solid #e2e8f0;cursor:pointer;padding:.2rem"></div>
         </div>
       </div>
       <div>
-        <h3 style="font-size:.75rem;font-weight:900;color:#0f172a;text-transform:uppercase;letter-spacing:.06em;border-bottom:2px solid #e2e8f0;padding-bottom:.4rem;margin:0 0 .875rem">3 &middot; Certification Config</h3>
-        <div style="display:grid;gap:.6rem">
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:.6rem">
-            <div><label style="font-size:.7rem;font-weight:800;color:#475569;display:block;margin-bottom:.3rem">Cert Type</label><input id="wiz-certtype" class="input-field" placeholder="Internal Competency Verification"></div>
-            <div><label style="font-size:.7rem;font-weight:800;color:#475569;display:block;margin-bottom:.3rem">Contact Hours</label><input id="wiz-certhours" type="number" step=".5" class="input-field"></div>
+        <h3 class="modal-form-section-header">3 &middot; Certification Config</h3>
+        <div class="modal-form-grid">
+          <div class="modal-form-grid two-col">
+            <div><label class="modal-label">Cert Type</label><input id="wiz-certtype" class="input-field" placeholder="Internal Competency Verification"></div>
+            <div><label class="modal-label">Contact Hours</label><input id="wiz-certhours" type="number" step=".5" class="input-field"></div>
           </div>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:.6rem">
-            <div><label style="font-size:.7rem;font-weight:800;color:#475569;display:block;margin-bottom:.3rem">Provider Name</label><input id="wiz-certprovider" class="input-field"></div>
-            <div><label style="font-size:.7rem;font-weight:800;color:#475569;display:block;margin-bottom:.3rem">Renewal (months)</label><input id="wiz-certrenewal" type="number" class="input-field"></div>
+          <div class="modal-form-grid two-col">
+            <div><label class="modal-label">Provider Name</label><input id="wiz-certprovider" class="input-field"></div>
+            <div><label class="modal-label">Renewal (months)</label><input id="wiz-certrenewal" type="number" class="input-field"></div>
           </div>
         </div>
       </div>
       <div>
-        <h3 style="font-size:.75rem;font-weight:900;color:#0f172a;text-transform:uppercase;letter-spacing:.06em;border-bottom:2px solid #e2e8f0;padding-bottom:.4rem;margin:0 0 .875rem">4 &middot; Email Reminder Automation</h3>
-        <div style="display:grid;gap:.6rem">
-          <div><label style="font-size:.7rem;font-weight:800;color:#475569;display:block;margin-bottom:.3rem">Reminder Webhook URL (Zapier / Make.com)</label><input id="wiz-remwh" class="input-field" placeholder="https://hooks.zapier.com/hooks/catch/&hellip;"></div>
-          <div><label style="font-size:.7rem;font-weight:800;color:#475569;display:block;margin-bottom:.3rem">Send reminder this many days before due date</label><input id="wiz-remdays" type="number" value="3" min="1" max="30" class="input-field"></div>
+        <h3 class="modal-form-section-header">4 &middot; Email Reminder Automation</h3>
+        <div class="modal-form-grid">
+          <div><label class="modal-label">Reminder Webhook URL (Zapier / Make.com)</label><input id="wiz-remwh" class="input-field" placeholder="https://hooks.zapier.com/hooks/catch/&hellip;"></div>
+          <div><label class="modal-label">Send reminder this many days before due date</label><input id="wiz-remdays" type="number" value="3" min="1" max="30" class="input-field"></div>
         </div>
       </div>
-      <div style="display:flex;gap:.75rem;justify-content:flex-end;padding-top:.75rem;border-top:1px solid #e2e8f0">
-        <button onclick="closeOrgWizard()" style="background:#f1f5f9;color:#0f172a;border:none;border-radius:.75rem;padding:.75rem 1.5rem;font-size:.85rem;font-weight:800;cursor:pointer">Cancel</button>
-        <button onclick="saveOrgWizard()" class="btn btn-primary" style="font-size:.85rem;padding:.75rem 1.75rem;font-weight:800">✅ Apply &amp; Save</button>
+      <div class="modal-action-buttons">
+        <button onclick="closeOrgWizard()" class="btn">Cancel</button>
+        <button onclick="saveOrgWizard()" class="btn btn-primary">✅ Apply &amp; Save</button>
       </div>
     </div>
   </div>
 </div>
 
 <!-- ------------------------------------- LAB ROOM MODAL -- -->
-<div id="lab-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.78);z-index:145;align-items:center;justify-content:center;padding:1rem">
-  <div class="card" style="width:100%;max-width:980px;max-height:92vh;overflow:hidden;display:flex;flex-direction:column">
-    <div style="display:flex;align-items:center;justify-content:space-between;padding:1rem 1.25rem;border-bottom:1px solid #e2e8f0">
+<div id="lab-modal" class="modal-overlay lab">
+  <div class="modal-card large">
+    <div class="modal-card-header large">
       <div>
         <h3 style="margin:0;font-size:1.2rem;font-weight:900;color:#0f172a">Laboratory Room</h3>
         <p style="margin:0;color:#64748b;font-weight:600;font-size:.85rem">Earn Lab Credits by running live de-escalation scenarios.</p>
       </div>
       <div style="display:flex;align-items:center;gap:.75rem">
         <div style="background:#ecfdf3;border:1px solid #bbf7d0;padding:.4rem .75rem;border-radius:.75rem;font-weight:800;color:#15803d;font-size:.85rem">Credits: <span id="lab-modal-credits">0</span></div>
-        <button onclick="closeLabRoom()" style="width:36px;height:36px;border-radius:50%;background:#f1f5f9;border:none;font-weight:900;color:#475569;cursor:pointer">✕</button>
+        <button onclick="closeLabRoom()" class="modal-close-btn">✕</button>
       </div>
     </div>
     <!-- Tab bar -->
@@ -1608,9 +1683,9 @@ h1,h2,.font-display{font-family:'Fraunces',serif}
 </div>
 
 <!-- ----------------------------------------------- DAILY DRILL MODAL -- -->
-<div id="drill-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.82);z-index:148;align-items:center;justify-content:center;padding:1rem">
-  <div class="card" style="width:100%;max-width:720px;max-height:92vh;overflow:hidden;display:flex;flex-direction:column">
-    <div style="display:flex;align-items:center;justify-content:space-between;padding:1rem 1.25rem;border-bottom:1px solid #e2e8f0;background:linear-gradient(135deg,#fffbeb,#fff7ed)">
+<div id="drill-modal" class="modal-overlay drill">
+  <div class="modal-card large">
+    <div class="drill-header-gradient">
       <div style="display:flex;align-items:center;gap:.85rem">
         <div style="font-size:1.6rem">⚡</div>
         <div>
@@ -1620,7 +1695,7 @@ h1,h2,.font-display{font-family:'Fraunces',serif}
       </div>
       <div style="display:flex;align-items:center;gap:.75rem">
         <div id="drill-streak-display" style="background:#fef3c7;border:2px solid #fcd34d;border-radius:1rem;padding:.4rem .9rem;font-weight:900;color:#92400e;font-size:.88rem">Start your streak!</div>
-        <button onclick="closeDrillModal()" style="width:36px;height:36px;border-radius:50%;background:#f1f5f9;border:none;font-weight:900;color:#475569;cursor:pointer">✕</button>
+        <button onclick="closeDrillModal()" class="modal-close-btn" style="background:#f1f5f9;border:none;font-weight:900;color:#475569">✕</button>
       </div>
     </div>
     <div style="flex:1;overflow-y:auto;padding:1.25rem">
@@ -1706,52 +1781,54 @@ h1,h2,.font-display{font-family:'Fraunces',serif}
 </div>
 
 <!-- ----------------------------------------------- ADMIN ACCESS MODAL -- -->
-<div id="admin-pin-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:160;align-items:center;justify-content:center;padding:1rem">
-  <div class="card" style="width:100%;max-width:420px;padding:2rem;text-align:center">
-    <div style="width:56px;height:56px;background:linear-gradient(135deg,#7c3aed,#2563eb);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 1.25rem;font-size:1.5rem">🔐</div>
-    <h2 style="font-size:1.15rem;font-weight:900;color:#0f172a;margin-bottom:.35rem">Admin Access</h2>
-    <p id="admin-access-msg" style="font-size:.82rem;color:#64748b;margin-bottom:1.25rem">Checking your access level—</p>
-    <!-- Checking state -->
-    <div id="admin-access-checking" style="display:block">
-      <div style="display:flex;align-items:center;justify-content:center;gap:.625rem;color:#7c3aed;font-weight:700;font-size:.875rem">
-        <div style="width:18px;height:18px;border:2px solid #7c3aed;border-top-color:transparent;border-radius:50%;animation:spin 1s linear infinite"></div>
-        Verifying…
+<div id="admin-pin-modal" class="modal-overlay pincode">
+  <div class="modal-card" style="max-width:420px">
+    <div style="padding:2rem;text-align:center">
+      <div style="width:56px;height:56px;background:linear-gradient(135deg,#7c3aed,#2563eb);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 1.25rem;font-size:1.5rem">🔐</div>
+      <h2 style="font-size:1.15rem;font-weight:900;color:#0f172a;margin-bottom:.35rem">Admin Access</h2>
+      <p id="admin-access-msg" style="font-size:.82rem;color:#64748b;margin-bottom:1.25rem">Checking your access level—</p>
+      <!-- Checking state -->
+      <div id="admin-access-checking" style="display:block">
+        <div style="display:flex;align-items:center;justify-content:center;gap:.625rem;color:#7c3aed;font-weight:700;font-size:.875rem">
+          <div style="width:18px;height:18px;border:2px solid #7c3aed;border-top-color:transparent;border-radius:50%;animation:spin 1s linear infinite"></div>
+          Verifying…
+        </div>
       </div>
-    </div>
-    <!-- Denied state -->
-    <div id="admin-access-denied" style="display:none">
-      <div style="background:#fef2f2;border:1px solid #fecaca;border-radius:.875rem;padding:1rem;margin-bottom:1rem">
-        <p style="color:#dc2626;font-weight:800;font-size:.875rem">🚫 Access Denied</p>
-        <p style="color:#ef4444;font-size:.78rem;margin-top:.35rem">Your account does not have admin privileges. Contact your Owner administrator.</p>
+      <!-- Denied state -->
+      <div id="admin-access-denied" style="display:none">
+        <div class="modal-badge-error">
+          <p style="color:#dc2626;font-weight:800;font-size:.875rem">🚫 Access Denied</p>
+          <p style="color:#ef4444;font-size:.78rem;margin-top:.35rem">Your account does not have admin privileges. Contact your Owner administrator.</p>
+        </div>
+        <button onclick="closePinModal()" style="width:100%;padding:.75rem;background:#f1f5f9;color:#475569;border:none;border-radius:.875rem;font-weight:800;cursor:pointer;font-size:.875rem">Close</button>
       </div>
-      <button onclick="closePinModal()" style="width:100%;padding:.75rem;background:#f1f5f9;color:#475569;border:none;border-radius:.875rem;font-weight:800;cursor:pointer;font-size:.875rem">Close</button>
-    </div>
-    <!-- First-time setup -->
-    <div id="admin-first-setup" style="display:none">
-      <div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:.875rem;padding:1rem;margin-bottom:1rem">
-        <p style="color:#1d4ed8;font-weight:800;font-size:.875rem">⚙️ First-Time Setup</p>
-        <p style="color:#3b82f6;font-size:.78rem;margin-top:.35rem">No admin accounts exist yet. Claim the Owner role for your account now.</p>
+      <!-- First-time setup -->
+      <div id="admin-first-setup" style="display:none">
+        <div class="modal-badge-info">
+          <p style="color:#1d4ed8;font-weight:800;font-size:.875rem">⚙️ First-Time Setup</p>
+          <p style="color:#3b82f6;font-size:.78rem;margin-top:.35rem">No admin accounts exist yet. Claim the Owner role for your account now.</p>
+        </div>
+        <input id="owner-code-new" type="password" placeholder="Create access code" class="input-field" style="width:100%;margin-bottom:.5rem;text-align:center;font-weight:800" autocomplete="off">
+        <input id="owner-code-conf" type="password" placeholder="Confirm access code" class="input-field" style="width:100%;margin-bottom:.85rem;text-align:center;font-weight:800" autocomplete="off">
+        <div id="owner-code-error" style="display:none;color:#dc2626;font-size:.8rem;font-weight:800;margin-bottom:.6rem"></div>
+        <button onclick="claimOwnerAccount()" style="width:100%;padding:.75rem;background:linear-gradient(135deg,#2563eb,#7c3aed);color:white;border:none;border-radius:.875rem;font-weight:900;cursor:pointer;font-size:.875rem;margin-bottom:.625rem">👑 Claim Owner + Set Code</button>
+        <button onclick="closePinModal()" style="width:100%;padding:.75rem;background:#f1f5f9;color:#475569;border:none;border-radius:.875rem;font-weight:800;cursor:pointer;font-size:.82rem">Cancel</button>
       </div>
-      <input id="owner-code-new" type="password" placeholder="Create access code" class="input-field" style="width:100%;margin-bottom:.5rem;text-align:center;font-weight:800" autocomplete="off">
-      <input id="owner-code-conf" type="password" placeholder="Confirm access code" class="input-field" style="width:100%;margin-bottom:.85rem;text-align:center;font-weight:800" autocomplete="off">
-      <div id="owner-code-error" style="display:none;color:#dc2626;font-size:.8rem;font-weight:800;margin-bottom:.6rem"></div>
-      <button onclick="claimOwnerAccount()" style="width:100%;padding:.75rem;background:linear-gradient(135deg,#2563eb,#7c3aed);color:white;border:none;border-radius:.875rem;font-weight:900;cursor:pointer;font-size:.875rem;margin-bottom:.625rem">👑 Claim Owner + Set Code</button>
-      <button onclick="closePinModal()" style="width:100%;padding:.75rem;background:#f1f5f9;color:#475569;border:none;border-radius:.875rem;font-weight:800;cursor:pointer;font-size:.82rem">Cancel</button>
-    </div>
-    <!-- Code entry -->
-    <div id="admin-code-entry" style="display:none">
-      <input id="admin-access-code" type="password" placeholder="Enter access code" class="input-field" style="width:100%;margin-bottom:.65rem;text-align:center;font-weight:800" autocomplete="off">
-      <div id="admin-code-error" style="display:none;color:#dc2626;font-size:.8rem;font-weight:800;margin-bottom:.6rem"></div>
-      <button onclick="verifyAdminCode()" style="width:100%;padding:.75rem;background:linear-gradient(135deg,#2563eb,#7c3aed);color:white;border:none;border-radius:.875rem;font-weight:900;cursor:pointer;font-size:.875rem;margin-bottom:.625rem">Unlock Command Center</button>
-      <button onclick="closePinModal()" style="width:100%;padding:.7rem;background:#f1f5f9;color:#475569;border:none;border-radius:.875rem;font-weight:800;cursor:pointer;font-size:.82rem">Cancel</button>
+      <!-- Code entry -->
+      <div id="admin-code-entry" style="display:none">
+        <input id="admin-access-code" type="password" placeholder="Enter access code" class="input-field" style="width:100%;margin-bottom:.65rem;text-align:center;font-weight:800" autocomplete="off">
+        <div id="admin-code-error" style="display:none;color:#dc2626;font-size:.8rem;font-weight:800;margin-bottom:.6rem"></div>
+        <button onclick="verifyAdminCode()" style="width:100%;padding:.75rem;background:linear-gradient(135deg,#2563eb,#7c3aed);color:white;border:none;border-radius:.875rem;font-weight:900;cursor:pointer;font-size:.875rem;margin-bottom:.625rem">Unlock Command Center</button>
+        <button onclick="closePinModal()" style="width:100%;padding:.7rem;background:#f1f5f9;color:#475569;border:none;border-radius:.875rem;font-weight:800;cursor:pointer;font-size:.82rem">Cancel</button>
+      </div>
     </div>
   </div>
 </div>
 
 <!-- ----------------------------------- MY ACCOUNT MODAL -- -->
-<div id="account-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:155;align-items:center;justify-content:center;padding:1rem">
-  <div class="card w-full max-w-lg" style="max-height:92vh;overflow-y:auto">
-    <div style="padding:1.5rem 1.5rem 0;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #f1f5f9;padding-bottom:1rem">
+<div id="account-modal" class="modal-overlay account">
+  <div class="modal-card">
+    <div class="modal-card-header">
       <div style="display:flex;align-items:center;gap:.875rem">
         <div id="acct-avatar-circle" style="width:52px;height:52px;background:linear-gradient(135deg,#2563eb,#7c3aed);border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:900;color:white;font-size:1.1rem"></div>
         <div>
@@ -1759,52 +1836,52 @@ h1,h2,.font-display{font-family:'Fraunces',serif}
           <p style="font-size:.7rem;color:#94a3b8;font-weight:600" id="acct-header-sub"></p>
         </div>
       </div>
-      <button onclick="closeAccountModal()" style="width:36px;height:36px;border-radius:50%;background:#f1f5f9;border:none;cursor:pointer;font-size:1rem;font-weight:900;color:#64748b">✕</button>
+      <button onclick="closeAccountModal()" class="modal-close-btn">✕</button>
     </div>
 
     <!-- View Mode -->
     <div id="acct-view" style="padding:1.5rem">
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem;margin-bottom:1rem">
-        <div style="background:#f8fafc;border-radius:.875rem;padding:.875rem">
+      <div class="acct-view-grid">
+        <div class="acct-card-field">
           <p style="font-size:.65rem;font-weight:800;color:#94a3b8;text-transform:uppercase;letter-spacing:.08em;margin-bottom:.25rem">First Name</p>
           <p style="font-size:.95rem;font-weight:700;color:#0f172a" id="acct-fname">—</p>
         </div>
-        <div style="background:#f8fafc;border-radius:.875rem;padding:.875rem">
+        <div class="acct-card-field">
           <p style="font-size:.65rem;font-weight:800;color:#94a3b8;text-transform:uppercase;letter-spacing:.08em;margin-bottom:.25rem">Last Name</p>
           <p style="font-size:.95rem;font-weight:700;color:#0f172a" id="acct-lname">—</p>
         </div>
-        <div style="background:#f8fafc;border-radius:.875rem;padding:.875rem">
+        <div class="acct-card-field">
           <p style="font-size:.65rem;font-weight:800;color:#94a3b8;text-transform:uppercase;letter-spacing:.08em;margin-bottom:.25rem">Work Email</p>
           <p style="font-size:.85rem;font-weight:700;color:#0f172a;word-break:break-all" id="acct-email">—</p>
         </div>
-        <div style="background:#f8fafc;border-radius:.875rem;padding:.875rem">
+        <div class="acct-card-field">
           <p style="font-size:.65rem;font-weight:800;color:#94a3b8;text-transform:uppercase;letter-spacing:.08em;margin-bottom:.25rem">Mobile Phone</p>
           <p style="font-size:.95rem;font-weight:700;color:#0f172a" id="acct-phone">—</p>
         </div>
-        <div style="background:#f8fafc;border-radius:.875rem;padding:.875rem">
+        <div class="acct-card-field">
           <p style="font-size:.65rem;font-weight:800;color:#94a3b8;text-transform:uppercase;letter-spacing:.08em;margin-bottom:.25rem">Job Title</p>
           <p style="font-size:.95rem;font-weight:700;color:#0f172a" id="acct-title">—</p>
         </div>
-        <div style="background:#f8fafc;border-radius:.875rem;padding:.875rem">
+        <div class="acct-card-field">
           <p style="font-size:.65rem;font-weight:800;color:#94a3b8;text-transform:uppercase;letter-spacing:.08em;margin-bottom:.25rem">Department</p>
           <p style="font-size:.95rem;font-weight:700;color:#0f172a" id="acct-dept">—</p>
         </div>
-        <div style="background:#f8fafc;border-radius:.875rem;padding:.875rem">
+        <div class="acct-card-field">
           <p style="font-size:.65rem;font-weight:800;color:#94a3b8;text-transform:uppercase;letter-spacing:.08em;margin-bottom:.25rem">Employee ID</p>
           <p style="font-size:.95rem;font-weight:700;color:#0f172a" id="acct-empid">—</p>
         </div>
-        <div style="background:#f8fafc;border-radius:.875rem;padding:.875rem">
+        <div class="acct-card-field">
           <p style="font-size:.65rem;font-weight:800;color:#94a3b8;text-transform:uppercase;letter-spacing:.08em;margin-bottom:.25rem">Training Year</p>
           <p style="font-size:.95rem;font-weight:700;color:#0f172a" id="acct-year">—</p>
         </div>
       </div>
       <!-- Training Stats -->
-      <div style="background:linear-gradient(135deg,#0f172a,#1e3a5f);border-radius:1rem;padding:1rem;margin-bottom:1rem;display:grid;grid-template-columns:repeat(3,1fr);gap:.75rem;text-align:center">
-        <div><p style="font-size:1.4rem;font-weight:900;color:#60a5fa" id="acct-xp-stat">0</p><p style="font-size:.65rem;color:#64748b;font-weight:700;text-transform:uppercase">XP Earned</p></div>
-        <div><p style="font-size:1.4rem;font-weight:900;color:#a78bfa" id="acct-level-stat">1</p><p style="font-size:.65rem;color:#64748b;font-weight:700;text-transform:uppercase">Level</p></div>
-        <div><p style="font-size:1.4rem;font-weight:900;color:#34d399" id="acct-scenarios-stat">0</p><p style="font-size:.65rem;color:#64748b;font-weight:700;text-transform:uppercase">Scenarios</p></div>
-        <div><p style="font-size:1.4rem;font-weight:900;color:#22c55e" id="acct-lc-stat">0</p><p style="font-size:.65rem;color:#64748b;font-weight:700;text-transform:uppercase">Lab Credits</p></div>
-        <div><p style="font-size:1.4rem;font-weight:900;color:#fbbf24" id="acct-tier-stat">—</p><p style="font-size:.65rem;color:#64748b;font-weight:700;text-transform:uppercase">Redeem Tier</p></div>
+      <div class="acct-stats-grid">
+        <div class="acct-stats-item"><p class="acct-stats-value" id="acct-xp-stat">0</p><p class="acct-stats-label">XP Earned</p></div>
+        <div class="acct-stats-item"><p class="acct-stats-value" id="acct-level-stat">1</p><p class="acct-stats-label">Level</p></div>
+        <div class="acct-stats-item"><p class="acct-stats-value" id="acct-scenarios-stat">0</p><p class="acct-stats-label">Scenarios</p></div>
+        <div class="acct-stats-item"><p style="font-size:1.4rem;font-weight:900;color:#22c55e" id="acct-lc-stat">0</p><p class="acct-stats-label">Lab Credits</p></div>
+        <div class="acct-stats-item"><p style="font-size:1.4rem;font-weight:900;color:#fbbf24" id="acct-tier-stat">—</p><p class="acct-stats-label">Redeem Tier</p></div>
       </div>
       <div style="display:flex;gap:.75rem">
         <button class="btn btn-primary" style="flex:1" onclick="openAccountEdit()">✏️ Edit Profile</button>
