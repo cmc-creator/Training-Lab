@@ -106,6 +106,21 @@
     .kpi b{display:block;font:800 1.2rem/1 "Fraunces",serif;color:var(--accent)}
     .kpi small{display:block;margin-top:.2rem;font:700 .62rem/1 "IBM Plex Mono",monospace;color:#aeb7c8;letter-spacing:.08em;text-transform:uppercase}
 
+    .showcase{
+      margin-top:1rem;border:1px solid var(--line);border-radius:24px;background:var(--panel);padding:1rem;
+      backdrop-filter:blur(12px);animation:rise .85s ease .16s both;
+    }
+    .showcase-head{display:flex;flex-direction:column;gap:.4rem;margin-bottom:.9rem}
+    .showcase-kicker{font:700 .62rem/1 "IBM Plex Mono",monospace;color:var(--accent-2);letter-spacing:.12em;text-transform:uppercase}
+    .showcase h2{margin:0;font:800 clamp(1.35rem,5vw,2.15rem)/1 "Fraunces",serif;color:var(--ink)}
+    .showcase p{margin:0;color:var(--muted);font-size:.95rem;line-height:1.6;max-width:62ch}
+    .showcase-grid{margin-top:1rem;display:grid;grid-template-columns:1fr;gap:.8rem}
+    .shot{border:1px solid rgba(255,255,255,.12);border-radius:18px;overflow:hidden;background:rgba(7,10,17,.52)}
+    .shot-media{aspect-ratio:1.24;overflow:hidden;background:rgba(255,255,255,.03)}
+    .shot-media img{width:100%;height:100%;object-fit:cover;display:block}
+    .shot-copy{padding:.9rem}
+    .shot-copy b{display:block;font:700 1rem/1.2 "Syne",sans-serif;color:var(--ink)}
+    .shot-copy small{display:block;margin-top:.25rem;font:700 .62rem/1.4 "IBM Plex Mono",monospace;color:#aeb7c8;letter-spacing:.08em;text-transform:uppercase}
     .modules{margin-top:1rem;display:grid;grid-template-columns:1fr;gap:.65rem}
     .module{
       border:1px solid var(--line);border-radius:16px;background:var(--panel);padding:.95rem;
@@ -126,6 +141,8 @@
       .hero{grid-template-columns:1.25fr .95fr;min-height:520px}
       .hero-copy{padding:1.5rem 1.5rem 1.8rem}
       .hero-panel{border-top:none;border-left:1px solid var(--line);padding:1.2rem}
+      .showcase{padding:1.2rem}
+      .showcase-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
       .modules{grid-template-columns:repeat(3,minmax(0,1fr));gap:.8rem}
     }
     @media (max-width:430px){
@@ -176,6 +193,43 @@
           <small>Choose Sign In or Sign Up to enter the training app.</small>
         </div>
       </aside>
+    </section>
+
+    <section class="showcase" aria-label="Platform image examples">
+      <div class="showcase-head">
+        <div class="showcase-kicker">Inside The App</div>
+        <h2>What staff actually see in the platform.</h2>
+        <p>These are real examples from the training experience, not placeholder art. They show the dashboard, room-safety practice, and patient observation workflow.</p>
+      </div>
+      <div class="showcase-grid">
+        <article class="shot">
+          <div class="shot-media">
+            <img src="lab.png" alt="NyxCodex dashboard and training lab interface example">
+          </div>
+          <div class="shot-copy">
+            <b>Training Dashboard</b>
+            <small>Progress, modules, and launch points</small>
+          </div>
+        </article>
+        <article class="shot">
+          <div class="shot-media">
+            <img src="hazards.png" alt="Room hazard identification training example">
+          </div>
+          <div class="shot-copy">
+            <b>Environment Hazard Scans</b>
+            <small>Interactive safety observation drills</small>
+          </div>
+        </article>
+        <article class="shot">
+          <div class="shot-media">
+            <img src="microexpressions.png" alt="Microexpression recognition training example">
+          </div>
+          <div class="shot-copy">
+            <b>Microexpression Coaching</b>
+            <small>Patient cues and escalation awareness</small>
+          </div>
+        </article>
+      </div>
     </section>
 
     <section class="modules" aria-label="Platform highlights">

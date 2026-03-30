@@ -6,24 +6,27 @@
 //    • API / Firebase DB calls → network-only (never cache)
 // ─────────────────────────────────────────────────────────
 
-const CACHE_VERSION = 'nyxcodex-v12';
+const CACHE_VERSION = 'nyxcodex-v13';
 const SHELL_CACHE   = `${CACHE_VERSION}-shell`;
 const CDN_CACHE     = `${CACHE_VERSION}-cdn`;
+const APP_BASE      = self.location.pathname.replace(/\/[^/]*$/, '');
+const scopedAsset   = path => `${APP_BASE}${path}`;
 
 // App shell: files we own — always try to keep fresh
 const SHELL_ASSETS = [
-  '/',
-  '/trainer_pro.html',
-  '/tenant.config.js',
-  '/manifest.json',
-  '/dsh.png',
-  '/destiny-springs-logo.png',
-  '/lab.png',
-  '/hazards.png',
-  '/microexpressions.png',
-  '/success.png',
-  '/failure.png',
-  '/prof.png',
+  scopedAsset('/'),
+  scopedAsset('/index.html'),
+  scopedAsset('/trainer_pro.html'),
+  scopedAsset('/tenant.config.js'),
+  scopedAsset('/manifest.json'),
+  scopedAsset('/dsh.png'),
+  scopedAsset('/destiny-springs-logo.png'),
+  scopedAsset('/lab.png'),
+  scopedAsset('/hazards.png'),
+  scopedAsset('/microexpressions.png'),
+  scopedAsset('/success.png'),
+  scopedAsset('/failure.png'),
+  scopedAsset('/prof.png'),
 ];
 
 // CDN origins we'll allow to be served stale
@@ -84,12 +87,33 @@ self.addEventListener('fetch', event => {
     return;
   }
 
-  // App shell — cache-first, fall back to network, then offline page
+  // Documents should prefer the network so users don't get stuck on stale HTML.
+  if (url.origin === self.location.origin && (request.mode === 'navigate' || request.destination === 'document')) {
+    event.respondWith(networkFirstWithCacheFallback(request));
+    return;
+  }
+
+  // App shell assets — cache-first, fall back to network, then offline page
   if (url.origin === self.location.origin) {
     event.respondWith(cacheFirstWithNetworkRefresh(request));
     return;
   }
 });
+
+// ── Strategy: network-first for documents ────────────────
+async function networkFirstWithCacheFallback(request) {
+  const cache = await caches.open(SHELL_CACHE);
+  try {
+    const response = await fetch(request);
+    if (response && response.status === 200) {
+      cache.put(request, response.clone());
+    }
+    return response;
+  } catch (_) {
+    const cached = await cache.match(request);
+    return cached || offlineFallback();
+  }
+}
 
 // ── Strategy: cache-first, background network refresh ─────
 async function cacheFirstWithNetworkRefresh(request) {
