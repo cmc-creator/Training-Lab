@@ -5210,6 +5210,7 @@ function saveProgress() {
   }).catch(()=>{}); // suppress permission errors — slide navigation always succeeds
 }
 
+async function sendChatMessage() {
   // First-time users get the tutorial automatically
   if(chatLoading) return;
   const input = document.getElementById('chat-input');
