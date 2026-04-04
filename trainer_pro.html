@@ -8,6 +8,8 @@
 <!-- PWA -->
 <link rel="manifest" href="/manifest.json">
 <meta name="theme-color" content="#2563eb">
+<!-- Theme restore: apply before CSS paints to prevent flash of wrong theme -->
+<script>(function(){var t=localStorage.getItem('nyxTheme');if(t==='light')document.documentElement.setAttribute('data-theme','light');})()</script>
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -103,6 +105,7 @@ onAuthStateChanged(auth, user => {
     document.getElementById('auth-screen').style.display = 'none';
     document.getElementById('app').style.display = 'block';
     loadUserData(user);
+    applyTheme(); // sync theme toggle button & nav inline styles
   } else {
     document.getElementById('auth-screen').style.display = 'flex';
     document.getElementById('app').style.display = 'none';
@@ -1400,6 +1403,231 @@ button:focus-visible,a:focus-visible,[tabindex]:focus-visible{
   transition:border-color .28s ease
 }
 .hub-action-card:hover::after{border-color:rgba(255,255,255,.18)}
+
+/* ═══════════════════════════════════════════════════════════════════
+   GOLD & SILVER — LUXURY LIGHT THEME
+   NyxCollective LLC · Warm Ivory + Deep Gold · editorial, elegant
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* ── CSS variable overrides ──────────────────────────────────────── */
+[data-theme="light"]{
+  --ui-bg:#faf7f0;
+  --ui-ink:#1a1825;
+  --ui-muted:#6b6880;
+  --ui-line:rgba(184,137,42,.16);
+  --ui-panel:rgba(254,250,243,.95);
+  --ui-accent:#b8892a;
+  --ui-accent-soft:#d4a848;
+  --ui-cyan:#1e6fa8;
+}
+
+/* ── Body & background ───────────────────────────────────────────── */
+[data-theme="light"] body{background:#faf7f0}
+[data-theme="light"] body::before{background:
+  radial-gradient(42rem 22rem at 14% 0%,rgba(184,137,42,.16),transparent 60%),
+  radial-gradient(38rem 20rem at 86% 0%,rgba(100,158,210,.12),transparent 62%),
+  linear-gradient(165deg,#fef9f2 0%,#f2e8d6 50%,#faf7f0 100%)}
+[data-theme="light"] body::after{
+  background-image:linear-gradient(rgba(0,0,0,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(0,0,0,.04) 1px,transparent 1px);
+  opacity:.04}
+
+/* ── Scrollbar ───────────────────────────────────────────────────── */
+[data-theme="light"] ::-webkit-scrollbar-track{background:rgba(0,0,0,.03)}
+[data-theme="light"] ::-webkit-scrollbar-thumb{background:rgba(0,0,0,.12)}
+[data-theme="light"] ::-webkit-scrollbar-thumb:hover{background:rgba(184,137,42,.5)}
+[data-theme="light"] *{scrollbar-color:rgba(0,0,0,.12) rgba(0,0,0,.03)}
+
+/* ── Selection ───────────────────────────────────────────────────── */
+[data-theme="light"] ::selection{background:rgba(184,137,42,.26);color:#1a1825}
+
+/* ── Global slide text ───────────────────────────────────────────── */
+[data-theme="light"] .slide{color:#1a1825}
+
+/* ── Cards ───────────────────────────────────────────────────────── */
+[data-theme="light"] .card{background:#fff!important;border-color:rgba(0,0,0,.08)!important;box-shadow:0 12px 40px rgba(0,0,0,.09)!important}
+
+/* ── Buttons ─────────────────────────────────────────────────────── */
+[data-theme="light"] .btn-secondary{background:#f4efe8!important;border-color:rgba(0,0,0,.13)!important;color:#4a4560!important}
+[data-theme="light"] .btn-secondary:hover{background:#ede6db!important;box-shadow:0 4px 12px rgba(0,0,0,.1)!important}
+[data-theme="light"] .btn-primary{background:linear-gradient(130deg,#b8892a,#d4a848)!important;color:#fff!important;border-color:rgba(212,168,72,.55)!important}
+[data-theme="light"] .btn-primary:hover{box-shadow:0 10px 26px rgba(184,137,42,.38)!important}
+
+/* ── Input fields (global + app) ─────────────────────────────────── */
+[data-theme="light"] .input-field{background:#f4efe8!important;border-color:rgba(0,0,0,.13)!important;color:#1a1825!important}
+[data-theme="light"] .input-field:focus{border-color:#b8892a!important;background:#fff!important;box-shadow:0 0 0 3px rgba(184,137,42,.12)!important}
+[data-theme="light"] .input-field::placeholder{color:rgba(107,104,128,.5)!important}
+[data-theme="light"] #app .input-field:not([type=range]){background:#f4efe8!important;border-color:rgba(0,0,0,.13)!important;color:#1a1825!important}
+[data-theme="light"] #app .input-field:focus:not([type=range]){border-color:#b8892a!important;background:#fff!important;box-shadow:0 0 0 3px rgba(184,137,42,.12)!important}
+[data-theme="light"] #app .input-field::placeholder{color:rgba(107,104,128,.5)!important}
+
+/* ── Focus rings ─────────────────────────────────────────────────── */
+[data-theme="light"] button:focus-visible,[data-theme="light"] a:focus-visible,[data-theme="light"] [tabindex]:focus-visible{outline-color:rgba(184,137,42,.65)!important}
+
+/* ── Nav bar (main row via CSS vars; stat border override) ───────── */
+[data-theme="light"] #nav-stats-group{border-right-color:rgba(0,0,0,.1)!important}
+[data-theme="light"] #nav-slide-counter{color:#6b6880!important}
+[data-theme="light"] #nav-divider{background:rgba(0,0,0,.08)!important}
+[data-theme="light"] #main-nav-main-row{border-top-color:rgba(184,137,42,.14)!important}
+[data-theme="light"] #nav-next-btn{background:linear-gradient(135deg,#b8892a,#d4a848)!important;box-shadow:0 3px 10px rgba(184,137,42,.4)!important}
+[data-theme="light"] #nav-name{color:#1a1825!important}
+[data-theme="light"] #nav-signout-btn{background:rgba(220,38,38,.07)!important;border-color:rgba(220,38,38,.2)!important;color:#dc2626!important}
+
+/* ── Mobile nav sheet ────────────────────────────────────────────── */
+[data-theme="light"] #mobile-nav-sheet{background:rgba(254,250,243,.98)!important;border-color:rgba(184,137,42,.18)!important;box-shadow:0 16px 36px rgba(0,0,0,.14)!important}
+[data-theme="light"] #mobile-nav-sheet button{border-color:rgba(0,0,0,.1)!important;background:rgba(0,0,0,.04)!important;color:#1a1825!important}
+
+/* ── Auth screen ─────────────────────────────────────────────────── */
+[data-theme="light"] #auth-screen{background:
+  radial-gradient(42rem 22rem at 16% 0%,rgba(184,137,42,.2),transparent 58%),
+  radial-gradient(36rem 20rem at 82% 0%,rgba(100,158,210,.14),transparent 60%),
+  linear-gradient(165deg,#fef9f2 0%,#f2e8d6 50%,#faf7f0 100%)!important}
+[data-theme="light"] .auth-hero-bg{background:
+  radial-gradient(60rem 36rem at 12% 10%,rgba(184,137,42,.14),transparent 56%),
+  radial-gradient(48rem 26rem at 88% 4%,rgba(100,158,210,.1),transparent 58%),
+  linear-gradient(160deg,#fef9f2 0%,#f2e8d6 50%,#faf7f0 100%)!important}
+[data-theme="light"] .auth-dot-grid{background-image:radial-gradient(rgba(0,0,0,.07) 1px,transparent 1px)!important}
+[data-theme="light"] .auth-brandbar{background:rgba(255,252,246,.94)!important;border-color:rgba(184,137,42,.18)!important}
+[data-theme="light"] .auth-brandname{color:#1a1825!important}
+[data-theme="light"] .auth-brandkicker{color:#b8892a!important}
+[data-theme="light"] .auth-brandstatus{color:#16a34a!important}
+[data-theme="light"] .auth-hero-title{color:#1a1825!important}
+[data-theme="light"] .auth-hero-title-accent{color:#1e6fa8!important}
+[data-theme="light"] #auth-tagline{color:#4a4560!important}
+[data-theme="light"] .auth-hero-card{background:rgba(255,255,255,.82)!important;border-color:rgba(184,137,42,.16)!important}
+[data-theme="light"] .auth-hero-code{color:#1e6fa8!important}
+[data-theme="light"] .auth-hero-sub{color:#4a4560!important}
+[data-theme="light"] .auth-status-row{color:#b8892a!important}
+[data-theme="light"] .auth-status-label{color:#6b6880!important}
+[data-theme="light"] .auth-preview-card{background:rgba(255,252,246,.92)!important;border-color:rgba(184,137,42,.16)!important}
+
+/* ── Auth card / form panel ──────────────────────────────────────── */
+[data-theme="light"] .auth-panel{background:linear-gradient(165deg,#fef9f2,#faf7f0)!important}
+[data-theme="light"] .auth-card{background:rgba(255,252,246,.98)!important;border-color:rgba(184,137,42,.16)!important;box-shadow:0 32px 80px rgba(0,0,0,.12)!important}
+[data-theme="light"] .auth-title{color:#1a1825!important}
+[data-theme="light"] .auth-subtitle{color:#6b6880!important}
+[data-theme="light"] .auth-label{color:#4a4560!important}
+[data-theme="light"] .auth-label-sm{color:#4a4560!important}
+[data-theme="light"] .auth-tab-btn{color:#6b6880!important}
+[data-theme="light"] .auth-tab-btn.active{color:#b8892a!important;border-bottom-color:#b8892a!important}
+[data-theme="light"] .auth-tab-bar{border-bottom-color:rgba(0,0,0,.1)!important}
+[data-theme="light"] .auth-divider-line{background:rgba(0,0,0,.1)!important}
+[data-theme="light"] .auth-divider-text{color:#9a94a8!important}
+[data-theme="light"] .auth-note{color:#6b6880!important}
+[data-theme="light"] .auth-inline-link{color:#b8892a!important}
+[data-theme="light"] .auth-inline-optional{color:#9a94a8!important}
+[data-theme="light"] .auth-privacy{color:#9a94a8!important}
+[data-theme="light"] #auth-privacy{color:#9a94a8!important}
+[data-theme="light"] #auth-copyright{color:#9a94a8!important}
+[data-theme="light"] .auth-btn-signup{background:linear-gradient(130deg,#b8892a,#d4a848)!important;color:#fff!important;border-color:rgba(212,168,72,.55)!important;box-shadow:0 8px 26px rgba(184,137,42,.3)!important}
+[data-theme="light"] .auth-btn-google{background:#fff!important;border-color:rgba(0,0,0,.14)!important;color:#1a1825!important}
+[data-theme="light"] .auth-btn-guest{background:rgba(0,0,0,.04)!important;border-color:rgba(0,0,0,.12)!important;color:#4a4560!important}
+[data-theme="light"] .auth-btn-login{background:linear-gradient(130deg,#b8892a,#d4a848)!important;color:#fff!important;border-color:rgba(212,168,72,.55)!important;box-shadow:0 8px 26px rgba(184,137,42,.3)!important}
+[data-theme="light"] .auth-msg-error{background:rgba(220,38,38,.08)!important;border-color:rgba(220,38,38,.22)!important;color:#991b1b!important}
+[data-theme="light"] .auth-msg-success{background:rgba(22,163,74,.08)!important;border-color:rgba(22,163,74,.22)!important;color:#166534!important}
+[data-theme="light"] .auth-demo-btn{background:#f4efe8!important;border-color:rgba(184,137,42,.24)!important;color:#1a1825!important}
+[data-theme="light"] .auth-demo-title{color:#4a4560!important}
+[data-theme="light"] .auth-demo-sub{color:#9a94a8!important}
+[data-theme="light"] .auth-invite-notice{background:rgba(22,163,74,.08)!important;border-color:rgba(22,163,74,.18)!important;color:#166534!important}
+
+/* ── Tutorial card ───────────────────────────────────────────────── */
+[data-theme="light"] .tutorial-card{background:rgba(255,252,246,.98)!important;border-color:rgba(184,137,42,.16)!important;box-shadow:0 36px 90px rgba(0,0,0,.14)!important;backdrop-filter:blur(28px)!important}
+[data-theme="light"] .tutorial-header{background:linear-gradient(135deg,rgba(254,246,220,.98),rgba(248,234,194,.97))!important;border-bottom-color:rgba(184,137,42,.16)!important}
+[data-theme="light"] .tutorial-dots{background:rgba(0,0,0,.04)!important;border-bottom-color:rgba(0,0,0,.07)!important}
+[data-theme="light"] .tutorial-dot{background:rgba(0,0,0,.12)!important}
+[data-theme="light"] #tut-dot-0{background:#b8892a!important}
+[data-theme="light"] #tut-body{color:#1a1825!important}
+[data-theme="light"] .tutorial-tip{background:rgba(184,137,42,.1)!important;border-left-color:#b8892a!important}
+[data-theme="light"] .tutorial-tip-head{color:#b8892a!important}
+[data-theme="light"] #tut-tip{color:#4a4560!important}
+[data-theme="light"] .tutorial-nav{background:rgba(0,0,0,.03)!important;border-top-color:rgba(0,0,0,.07)!important}
+[data-theme="light"] #tut-back-btn{border-color:rgba(0,0,0,.12)!important;background:rgba(0,0,0,.04)!important;color:#6b6880!important}
+[data-theme="light"] #tut-next-btn{background:linear-gradient(130deg,#b8892a,#d4a848)!important;color:#fff!important;box-shadow:0 8px 28px rgba(184,137,42,.3)!important}
+[data-theme="light"] .tutorial-skip{background:rgba(0,0,0,.05)!important;border-color:rgba(0,0,0,.12)!important;color:#6b6880!important}
+
+/* ── Modal cards ─────────────────────────────────────────────────── */
+[data-theme="light"] .modal-card{background:rgba(255,252,246,.98)!important;border-color:rgba(184,137,42,.14)!important;box-shadow:0 32px 80px rgba(0,0,0,.16),0 0 0 1px rgba(184,137,42,.06)!important;backdrop-filter:blur(28px)!important}
+[data-theme="light"] .modal-card-header{background:rgba(250,244,232,.65)!important;border-bottom-color:rgba(184,137,42,.12)!important}
+[data-theme="light"] .modal-header-title{color:#1a1825!important}
+[data-theme="light"] .modal-header-sub{color:#6b6880!important}
+[data-theme="light"] .modal-close-btn{background:rgba(0,0,0,.05)!important;border-color:rgba(0,0,0,.11)!important;color:#6b6880!important}
+[data-theme="light"] .modal-close-btn:hover{background:rgba(0,0,0,.12)!important;color:#1a1825!important}
+[data-theme="light"] .modal-section-title{color:#1e6fa8!important}
+[data-theme="light"] .modal-bg-gradient{background:linear-gradient(135deg,rgba(254,250,243,.98),rgba(246,236,216,.98))!important}
+[data-theme="light"] .modal-badge-info{background:rgba(30,111,168,.08)!important;border-color:rgba(30,111,168,.22)!important}
+[data-theme="light"] .modal-badge-error{background:rgba(220,38,38,.08)!important;border-color:rgba(220,38,38,.22)!important}
+[data-theme="light"] .modal-badge-success{background:rgba(22,163,74,.08)!important;border-color:rgba(22,163,74,.22)!important}
+[data-theme="light"] .modal-action-buttons{border-top-color:rgba(0,0,0,.07)!important}
+
+/* ── Account modal ───────────────────────────────────────────────── */
+[data-theme="light"] .acct-card-field{background:rgba(0,0,0,.03)!important;border-color:rgba(0,0,0,.09)!important}
+[data-theme="light"] .acct-card-field p:first-child{color:#1e6fa8!important}
+[data-theme="light"] .acct-card-field p:last-child{color:#1a1825!important}
+[data-theme="light"] .acct-stats-grid{background:linear-gradient(135deg,rgba(254,250,243,.99),rgba(246,236,212,.97))!important;border-color:rgba(184,137,42,.12)!important}
+[data-theme="light"] .acct-stats-value{color:#1e6fa8!important}
+[data-theme="light"] .acct-stats-label{color:#9a94a8!important}
+[data-theme="light"] #acct-lc-stat{color:#16a34a!important}
+[data-theme="light"] #acct-tier-stat{color:#b8892a!important}
+[data-theme="light"] #acct-edit .input-field,[data-theme="light"] #acct-pw .input-field{background:#f4efe8!important;border-color:rgba(0,0,0,.13)!important;color:#1a1825!important}
+[data-theme="light"] #acct-edit h3,[data-theme="light"] #acct-pw h3{color:#1a1825!important}
+
+/* ── Drill / Lab modal ───────────────────────────────────────────── */
+[data-theme="light"] .drill-header-gradient{background:linear-gradient(135deg,rgba(254,250,243,.98),rgba(248,238,214,.97))!important;border-bottom-color:rgba(184,137,42,.12)!important}
+[data-theme="light"] .drill-step-label{background:rgba(184,137,42,.12)!important;border-color:rgba(184,137,42,.28)!important;color:#b8892a!important}
+[data-theme="light"] #drill-scenario-box,[data-theme="light"] .lab-scenario-box,[data-theme="light"] .scenario-box{background:rgba(0,0,0,.03)!important;border-color:rgba(0,0,0,.09)!important;color:#1a1825!important}
+[data-theme="light"] #drill-score-panel{background:rgba(0,0,0,.03)!important;border-color:rgba(0,0,0,.07)!important}
+[data-theme="light"] #drill-feedback{color:#4a4560!important}
+[data-theme="light"] .lab-rules-box,[data-theme="light"] .rules-box{background:rgba(184,137,42,.08)!important;border-color:rgba(184,137,42,.2)!important}
+[data-theme="light"] .rules-title{color:#b8892a!important}
+[data-theme="light"] .rules-list{color:#4a4560!important}
+[data-theme="light"] .lab-response-textarea,[data-theme="light"] .drill-response{background:#f4efe8!important;border-color:rgba(0,0,0,.13)!important;color:#1a1825!important}
+
+/* ── Avatar & Vance ──────────────────────────────────────────────── */
+[data-theme="light"] #avatar-speech{background:rgba(255,252,246,.98)!important;border-color:rgba(184,137,42,.18)!important;color:#1a1825!important;box-shadow:0 16px 48px rgba(0,0,0,.12)!important}
+[data-theme="light"] #avatar-speech::after{border-top-color:rgba(255,252,246,.98)!important}
+[data-theme="light"] #vance-portrait:hover{border-color:#b8892a!important;box-shadow:0 6px 26px rgba(184,137,42,.44)!important}
+[data-theme="light"] #avatar-mini{background:linear-gradient(135deg,#b8892a,#d4a848)!important;color:#fff!important}
+[data-theme="light"] #vance-fab{background:linear-gradient(135deg,#b8892a,#d4a848)!important;box-shadow:0 8px 32px rgba(184,137,42,.55)!important}
+[data-theme="light"] #vance-fab:hover{box-shadow:0 12px 42px rgba(184,137,42,.72)!important}
+
+/* ── Home gateway ────────────────────────────────────────────────── */
+[data-theme="light"] #home-gateway{background:
+  radial-gradient(circle at 18% 18%,rgba(184,137,42,.16),transparent 38%),
+  radial-gradient(circle at 82% 12%,rgba(100,158,210,.12),transparent 34%),
+  radial-gradient(circle at 28% 82%,rgba(184,137,42,.1),transparent 40%),
+  radial-gradient(circle at 72% 72%,rgba(100,140,200,.07),transparent 38%),
+  #faf7f0!important}
+[data-theme="light"] .hub-card-title,[data-theme="light"] #hub-heading{color:#1a1825!important}
+[data-theme="light"] .hub-lead{color:#6b6880!important}
+[data-theme="light"] .hub-action-card::after{border-color:rgba(0,0,0,.07)!important}
+[data-theme="light"] .hub-action-card:hover::after{border-color:rgba(184,137,42,.4)!important}
+
+/* ── App loading ─────────────────────────────────────────────────── */
+[data-theme="light"] #app-loading{background:
+  radial-gradient(circle at 28% 24%,rgba(184,137,42,.14),transparent 48%),
+  radial-gradient(circle at 74% 70%,rgba(100,158,210,.1),transparent 44%),
+  #faf7f0!important}
+[data-theme="light"] #app-loading p{color:#6b6880!important}
+
+/* ── Chat panel ──────────────────────────────────────────────────── */
+[data-theme="light"] #chat-panel{background:rgba(255,252,246,.97)!important;border-color:rgba(184,137,42,.14)!important;box-shadow:0 20px 45px rgba(0,0,0,.14)!important}
+[data-theme="light"] #chat-panel #chat-messages{background:rgba(0,0,0,.04)!important}
+[data-theme="light"] #chat-panel textarea{color:#1a1825!important;background:#f4efe8!important}
+
+/* ── Admin modal ─────────────────────────────────────────────────── */
+[data-theme="light"] .admin-tab-bar{background:rgba(250,244,232,.65)!important;border-bottom-color:rgba(184,137,42,.14)!important}
+[data-theme="light"] #admin-pin-modal .modal-card{border-color:rgba(184,137,42,.22)!important}
+[data-theme="light"] #admin-pin-modal h2{color:#1a1825!important}
+[data-theme="light"] #admin-pin-modal p{color:#6b6880!important}
+[data-theme="light"] #admin-pin-modal .input-field{background:#f4efe8!important;border-color:rgba(0,0,0,.13)!important;color:#1a1825!important;text-align:center}
+
+/* ── Misc ────────────────────────────────────────────────────────── */
+[data-theme="light"] #achievement-toast{border-color:rgba(184,137,42,.25)!important;box-shadow:0 20px 56px rgba(0,0,0,.16)!important}
+[data-theme="light"] .skel{background:linear-gradient(90deg,rgba(0,0,0,.05) 25%,rgba(0,0,0,.1) 50%,rgba(0,0,0,.05) 75%)!important}
+[data-theme="light"] .lab-header-info{background:rgba(255,252,246,.95)!important;border-color:rgba(184,137,42,.14)!important}
+[data-theme="light"] .lab-tab-btn.active{color:#b8892a!important;border-bottom-color:#b8892a!important}
+[data-theme="light"] #demo-banner{box-shadow:0 3px 20px rgba(184,137,42,.32)!important}
+[data-theme="light"] .badge-credits{background:rgba(22,163,74,.08)!important;border-color:rgba(22,163,74,.22)!important;color:#15803d!important}
+[data-theme="light"] #hub-streak-badge{background:rgba(255,255,255,.7)!important;border-color:rgba(0,0,0,.15)!important;color:#1a1825!important}
 </style>
 </head>
 <body>
@@ -2510,6 +2738,8 @@ button:focus-visible,a:focus-visible,[tabindex]:focus-visible{
       <button id="nav-videos-btn" onclick="openVideoModal()" title="Training Videos" style="display:flex;align-items:center;gap:.32rem;background:rgba(251,191,36,.12);border:1px solid rgba(251,191,36,.3);color:#fde68a;padding:.38rem .7rem;border-radius:.65rem;font-size:.76rem;font-weight:800;cursor:pointer;white-space:nowrap;transition:filter .15s" onmouseover="this.style.filter='brightness(1.3)'" onmouseout="this.style.filter=''">🎬 <span>Videos</span></button>
       <button onclick="toggleAmbience()" id="ambience-btn" title="Toggle ambient sound" style="background:rgba(59,130,246,.1);border:1px solid rgba(59,130,246,.22);color:#93c5fd;padding:.38rem .6rem;border-radius:.65rem;font-size:.85rem;cursor:pointer;transition:filter .15s" onmouseover="this.style.filter='brightness(1.3)'" onmouseout="this.style.filter=''">🎵</button>
       <button id="nav-admin-btn" onclick="openAdminPrompt()" title="Admin Dashboard" style="background:rgba(124,58,237,.1);border:1px solid rgba(124,58,237,.26);color:#c4b5fd;padding:.38rem .6rem;border-radius:.65rem;font-size:.85rem;cursor:pointer;transition:filter .15s" onmouseover="this.style.filter='brightness(1.3)'" onmouseout="this.style.filter=''">⚙️</button>
+      <!-- Theme toggle -->
+      <button id="theme-toggle-btn" onclick="toggleTheme()" title="Switch to Gold & Silver Light Mode" style="background:rgba(184,137,42,.1);border:1px solid rgba(184,137,42,.3);color:#f0b86d;padding:.38rem .6rem;border-radius:.65rem;font-size:.78rem;font-weight:800;cursor:pointer;display:flex;align-items:center;gap:.28rem;white-space:nowrap;font-family:'IBM Plex Mono',monospace;letter-spacing:.04em;transition:filter .15s" onmouseover="this.style.filter='brightness(1.3)'" onmouseout="this.style.filter=''">✦ <span id="theme-toggle-label">Gold</span></button>
     </div>
 
     <!-- Divider -->
@@ -2539,6 +2769,7 @@ button:focus-visible,a:focus-visible,[tabindex]:focus-visible{
     <button onclick="openAccountModal();closeMobileNavSheet()">👤 My Account</button>
     <button onclick="toggleAmbience();closeMobileNavSheet()">🎵 Ambient</button>
     <button onclick="openAdminPrompt();closeMobileNavSheet()">⚙️ Admin</button>
+    <button onclick="toggleTheme();closeMobileNavSheet()">✦ <span id="theme-toggle-label-mobile">Gold</span></button>
     <button onclick="doSignOut();closeMobileNavSheet()" style="grid-column:1/-1;border-color:rgba(239,68,68,.35);color:#fca5a5">🚪 Sign Out</button>
   </div>
 </div>
@@ -9558,6 +9789,85 @@ function previewScenario(id) {
     </div>`;
   overlay.addEventListener('click', e => { if(e.target===overlay) overlay.remove(); });
   document.body.appendChild(overlay);
+}
+// ---------------------------------------------------------------------------
+// THEME SYSTEM — Gold & Silver Light / Luxury Dark
+// ---------------------------------------------------------------------------
+function toggleTheme() {
+  const current = document.documentElement.getAttribute('data-theme') || 'dark';
+  const next = current === 'dark' ? 'light' : 'dark';
+  document.documentElement.setAttribute('data-theme', next);
+  localStorage.setItem('nyxTheme', next);
+  _updateThemeUI(next);
+}
+
+function applyTheme() {
+  const theme = localStorage.getItem('nyxTheme') || 'dark';
+  document.documentElement.setAttribute('data-theme', theme);
+  _updateThemeUI(theme);
+}
+
+function _updateThemeUI(theme) {
+  const isLight = theme === 'light';
+
+  // ── Toggle button text/style ────────────────────────────────────
+  const btn   = document.getElementById('theme-toggle-btn');
+  const label = document.getElementById('theme-toggle-label');
+  const mobileLabel = document.getElementById('theme-toggle-label-mobile');
+  if (btn) {
+    btn.title = isLight ? 'Switch to Dark Mode' : 'Switch to Gold & Silver Light Mode';
+    btn.style.background = isLight ? 'rgba(167,139,250,.1)' : 'rgba(184,137,42,.1)';
+    btn.style.borderColor = isLight ? 'rgba(167,139,250,.3)' : 'rgba(184,137,42,.3)';
+    btn.style.color = isLight ? '#a78bfa' : '#f0b86d';
+    // update icon + label text (first text node + span)
+    btn.childNodes[0].textContent = isLight ? '🌙 ' : '✦ ';
+  }
+  if (label) label.textContent = isLight ? 'Dark' : 'Gold';
+  if (mobileLabel) mobileLabel.textContent = isLight ? 'Dark Mode' : 'Gold Mode';
+
+  // ── Nav inline-styled elements that CSS vars can't reach ────────
+  const g = id => document.getElementById(id);
+
+  const navRow = g('main-nav-main-row');
+  if (navRow) {
+    // CSS var --ui-panel handles bg via !important CSS rule; just sync border
+    navRow.style.borderTopColor = isLight ? 'rgba(184,137,42,.14)' : 'rgba(255,255,255,.06)';
+  }
+
+  const statGroup = g('nav-stats-group');
+  if (statGroup) statGroup.style.borderRightColor = isLight ? 'rgba(0,0,0,.1)' : 'rgba(255,255,255,.07)';
+
+  const divider = g('nav-divider');
+  if (divider) divider.style.background = isLight ? 'rgba(0,0,0,.08)' : 'rgba(255,255,255,.07)';
+
+  const prev = g('nav-prev-btn');
+  if (prev) {
+    prev.style.background   = isLight ? 'rgba(0,0,0,.06)' : 'rgba(255,255,255,.07)';
+    prev.style.borderColor  = isLight ? 'rgba(0,0,0,.12)' : 'rgba(255,255,255,.12)';
+    prev.style.color        = isLight ? '#1a1825' : 'white';
+  }
+
+  const home = g('nav-home-btn');
+  if (home) {
+    home.style.background  = isLight ? 'rgba(0,0,0,.04)' : 'rgba(255,255,255,.05)';
+    home.style.borderColor = isLight ? 'rgba(0,0,0,.1)' : 'rgba(255,255,255,.1)';
+  }
+
+  const acct = g('nav-account-btn');
+  if (acct) {
+    acct.style.background  = isLight ? 'rgba(0,0,0,.04)' : 'rgba(255,255,255,.05)';
+    acct.style.borderColor = isLight ? 'rgba(0,0,0,.1)' : 'rgba(255,255,255,.1)';
+  }
+
+  const name = g('nav-name');
+  if (name) name.style.color = isLight ? '#1a1825' : 'white';
+
+  const signout = g('nav-signout-btn');
+  if (signout) {
+    signout.style.background  = isLight ? 'rgba(220,38,38,.07)' : 'rgba(239,68,68,.08)';
+    signout.style.borderColor = isLight ? 'rgba(220,38,38,.2)'  : 'rgba(239,68,68,.18)';
+    signout.style.color       = isLight ? '#dc2626' : '#fca5a5';
+  }
 }
 // ---------------------------------------------------------------------------
 </script>
