@@ -5053,7 +5053,7 @@ function resetBranch() {
   reaction.style.color = '#cbd5e1';
   if(videoBox) {
     videoBox.style.padding = '.9rem';
-    videoBox.innerHTML = '<div id="branch-video-label" style="color:#e2e8f0;font-weight:800;font-size:.9rem;text-align:center;line-height:1.4">Choose a response above to see the outcome video.</div>';
+    videoBox.innerHTML = '<div id="branch-video-label-js" style="color:#e2e8f0;font-weight:800;font-size:.9rem;text-align:center;line-height:1.4">Choose a response above to see the outcome video.</div>';
   }
 }
 
@@ -5269,7 +5269,41 @@ function saveProgress() {
   }).catch(()=>{}); // suppress permission errors — slide navigation always succeeds
 }
 
-  // First-time users get the tutorial automatically
+// --- Chat panel helpers ----------------------------------
+function renderChatMessages() {
+  const box = document.getElementById('chat-messages');
+  if(!box) return;
+  box.innerHTML = chatMessages.map(m => {
+    const isUser = m.role === 'user';
+    const safe = m.content.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    return `<div style="margin-bottom:.65rem;display:flex;flex-direction:column;align-items:${isUser?'flex-end':'flex-start'}">
+      <div style="font-size:.78rem;font-weight:900;margin-bottom:.2rem;color:${isUser?'#475569':'#1d4ed8'}">${isUser?'You':'Prof. Vance'}</div>
+      <div style="background:${isUser?'#dbeafe':'#eff6ff'};border:1px solid ${isUser?'#93c5fd':'#bfdbfe'};border-radius:.75rem;padding:.65rem .8rem;font-size:.9rem;font-weight:600;color:#1e293b;max-width:90%;line-height:1.5">${safe}</div>
+    </div>`;
+  }).join('');
+  box.scrollTop = box.scrollHeight;
+}
+
+function openChat() {
+  const panel = document.getElementById('chat-panel');
+  if(!panel) return;
+  panel.style.display = 'flex';
+  const input = document.getElementById('chat-input');
+  if(input) setTimeout(() => input.focus(), 50);
+  renderChatMessages();
+}
+
+function closeChat() {
+  const panel = document.getElementById('chat-panel');
+  if(panel) panel.style.display = 'none';
+}
+
+function openChatFromPax(e) {
+  if(e && e.stopPropagation) e.stopPropagation();
+  openChat();
+}
+
+async function sendChatMessage() {
   if(chatLoading) return;
   const input = document.getElementById('chat-input');
   const q = (input?.value||'').trim();
@@ -5309,7 +5343,7 @@ function saveProgress() {
     const data = await res.json();
     reply = (data?.reply || data?.choices?.[0]?.message?.content || '').trim();
   } catch(e) {
-    reply = "⚠️ Professor Vance is temporarily unreachable. Check your internet connection and try again, or ask your supervisor for guidance.";
+    reply = '\u26a0\ufe0f Professor Vance is temporarily unreachable. Check your internet connection and try again, or ask your supervisor for guidance.';
   }
   chatMessages.push({role:'assistant', content:reply});
   chatLoading = false;
@@ -5326,14 +5360,14 @@ function saveProgress() {
 
 function updatePaxMiniLabel() {
   const mini = document.getElementById('avatar-mini');
-  if(mini) mini.textContent = paxMuted ? '?? Vance (muted)' : '?? Vance (listening)';
+  if(mini) mini.textContent = paxMuted ? '\uD83D\uDD07 Vance (muted)' : '\uD83C\uDF93 Vance (listening)';
 }
 
 function togglePaxMute(evt) {
   if(evt) evt.stopPropagation();
   paxMuted = !paxMuted;
   const btn = document.getElementById('pax-mute-btn');
-  if(btn) btn.textContent = paxMuted ? '??' : '??';
+  if(btn) btn.textContent = paxMuted ? '\uD83D\uDD07' : '\uD83D\uDD0A';
   if(paxMuted && window._vanceAudio) { window._vanceAudio.pause(); window._vanceAudio.currentTime=0; }
   updatePaxMiniLabel();
 }
