@@ -6,7 +6,7 @@
 <title>NyxCodex™ — Clinical De-Escalation Training</title>
 
 <!-- PWA -->
-<link rel="manifest" href="manifest.json">
+<link rel="manifest" href="/manifest.json">
 <meta name="theme-color" content="#2563eb">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -24,7 +24,7 @@
 (function() {
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-      navigator.serviceWorker.register('sw.js')
+      navigator.serviceWorker.register('/sw.js', { scope: '/' })
         .then(reg => {
           // Check for updates in the background
           reg.addEventListener('updatefound', () => {
@@ -53,7 +53,7 @@
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, updateProfile, reauthenticateWithCredential, EmailAuthProvider, updatePassword, sendPasswordResetEmail, setPersistence, browserSessionPersistence, browserLocalPersistence, GoogleAuthProvider, signInWithPopup, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, updateProfile, reauthenticateWithCredential, EmailAuthProvider, updatePassword, sendPasswordResetEmail, setPersistence, browserSessionPersistence, GoogleAuthProvider, signInWithPopup, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 import { getDatabase, ref, set, get, update, onValue, remove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 const firebaseConfig = (window.TENANT?.firebase) || {
   apiKey: "AIzaSyDVdGXUgxqsSZZiVoEjPL4DkDEMU29meMY",
@@ -67,16 +67,7 @@ const firebaseConfig = (window.TENANT?.firebase) || {
 };
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
-try {
-  await setPersistence(auth, browserSessionPersistence); // sign out when tab/browser is closed
-} catch (persistErr) {
-  console.warn('[Auth] Session persistence unavailable, falling back to local persistence.', persistErr);
-  try {
-    await setPersistence(auth, browserLocalPersistence);
-  } catch (fallbackErr) {
-    console.warn('[Auth] Local persistence unavailable, using default in-memory persistence.', fallbackErr);
-  }
-}
+await setPersistence(auth, browserSessionPersistence); // sign out when tab/browser is closed
 const googleProvider = new GoogleAuthProvider();
 googleProvider.setCustomParameters({ prompt: 'select_account' });
 const db = getDatabase(app);
@@ -86,28 +77,13 @@ window._auth = auth; window._db = db; window._ref = ref;
 window._set = set; window._get = get; window._update = update;
 window._onValue = onValue; window._remove = remove;
 window._updateProfile = updateProfile;
-async function ensureBootstrapOwner(user) {
-  const email = String(user?.email || '').trim().toLowerCase();
-  const allowed = Array.isArray(window.TENANT?.bootstrapOwnerEmails)
-    ? window.TENANT.bootstrapOwnerEmails.map(v => String(v || '').trim().toLowerCase()).filter(Boolean)
-    : [];
-  if (!email || !allowed.includes(email)) return;
-  try {
-    const adminSnap = await get(_ref('admins'));
-    const admins = adminSnap.exists() ? adminSnap.val() : {};
-    if (admins?.[user.uid]?.role) return;
-    if (Object.keys(admins).length && !admins[user.uid]) return;
-    await set(_ref('admins/' + user.uid), {
-      role: 'owner',
-      grantedAt: Date.now(),
-      email: user.email,
-      name: user.displayName || 'Connie Cooper',
-      bootstrap: true
-    });
-  } catch (err) {
-    console.warn('[Admin bootstrap] Unable to seed owner role:', err);
-  }
-}
+const isReloadNav = (() => {
+  const nav = (performance && performance.getEntriesByType) ? performance.getEntriesByType('navigation')[0] : null;
+  if (nav && nav.type) return nav.type === 'reload';
+  if (performance && performance.navigation) return performance.navigation.type === 1; // legacy API
+  return false;
+})();
+let firstAuthEvent = true;
 window._reauthAndChangePassword = async function(currentPass, newPass) {        
   const user = auth.currentUser;
   const cred = EmailAuthProvider.credential(user.email, currentPass);
@@ -116,27 +92,20 @@ window._reauthAndChangePassword = async function(currentPass, newPass) {
 };
 onAuthStateChanged(auth, user => {
   window._currentUser = user;
-  const authScreen = document.getElementById('auth-screen');
-  const appRoot = document.getElementById('app');
-  if (!authScreen || !appRoot) {
-    window.addEventListener('DOMContentLoaded', () => {
-      if (window._currentUser) {
-        const as = document.getElementById('auth-screen');
-        const ar = document.getElementById('app');
-        if (as) as.style.display = 'none';
-        if (ar) ar.style.display = 'block';
-      }
-    }, { once: true });
+  if (firstAuthEvent && user && isReloadNav) {
+    // Only sign out persisted sessions that survive a hard reload
+    signOut(auth);
+    firstAuthEvent = false;
     return;
   }
+  firstAuthEvent = false;
   if (user) {
-    authScreen.style.display = 'none';
-    appRoot.style.display = 'block';
-    ensureBootstrapOwner(user).catch(()=>{});
+    document.getElementById('auth-screen').style.display = 'none';
+    document.getElementById('app').style.display = 'block';
     loadUserData(user);
   } else {
-    authScreen.style.display = 'flex';
-    appRoot.style.display = 'none';
+    document.getElementById('auth-screen').style.display = 'flex';
+    document.getElementById('app').style.display = 'none';
     applyAuthTabFromUrl();
     const hub = document.getElementById('home-gateway');
     if(hub) hub.style.display = 'none';
@@ -334,7 +303,6 @@ const ACHIEVEMENTS = [
   { id:'lab_veteran',   icon:'🧪', name:'Lab Veteran',     desc:'Completed 10 or more live lab scenarios',     check: u=> (u.scenariosDone||0) >= 10 },
   { id:'elite_xp',      icon:'🌟', name:'Elite Clinician', desc:'Accumulated over 5 000 XP in total training',  check: u=> (u.xp||0) >= 5000 },
 ];
-window.ACHIEVEMENTS = ACHIEVEMENTS;
 window._showAchievementToast = function(a) {
   const old = document.getElementById('achievement-toast');
   if(old) old.remove();
@@ -497,11 +465,11 @@ window._emitXAPI = async function(verb, resultData) {
   } catch(_e) { /* silent */ }
 };
 </script>
-<link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800;900&family=Montserrat:wght@700;800;900&family=Space+Mono:wght@400;700&family=Fraunces:opsz,wght@9..144,600;9..144,800&family=Syne:wght@500;700;800&family=IBM+Plex+Mono:wght@500;700&display=swap" rel="stylesheet">
 <style>
 *{box-sizing:border-box}
 html,body{height:100%}
-body{font-family:'Source Sans 3','Segoe UI',Tahoma,sans-serif;background:#0f172a;overflow:hidden;margin:0}
+body{font-family:'Syne',sans-serif;background:#0f172a;overflow:hidden;margin:0}
 :root{
   --ui-bg:#0c1018;
   --ui-ink:#f5f7fb;
@@ -536,11 +504,11 @@ body::after{
 .slide{display:none;width:100vw;height:100vh;overflow-y:auto;flex-direction:column;padding-bottom:5rem}
 .slide.active{display:block}
 .slide>div{max-width:900px;margin-left:auto;margin-right:auto;width:100%;box-sizing:border-box}
-h1,h2,.font-display{font-family:'Source Sans 3','Segoe UI',Tahoma,sans-serif}
+h1,h2,.font-display{font-family:'Fraunces',serif}
 .progress-bar{transition:width .4s cubic-bezier(.4,0,.2,1)}
 .card{background:#fff;border-radius:1.1rem;border:1px solid rgba(15,23,42,.08);box-shadow:0 20px 45px rgba(2,6,23,.18)}
 .badge{display:inline-flex;align-items:center;gap:.4rem;padding:.25rem .75rem;border-radius:999px;font-size:.7rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase}
-.btn{display:inline-flex;align-items:center;justify-content:center;gap:.5rem;padding:.75rem 1.5rem;border-radius:.82rem;font-weight:800;font-size:.84rem;cursor:pointer;transition:all .2s;border:1px solid transparent;letter-spacing:.02em;text-transform:uppercase;font-family:'Source Sans 3','Segoe UI',Tahoma,sans-serif}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:.5rem;padding:.75rem 1.5rem;border-radius:.82rem;font-weight:800;font-size:.84rem;cursor:pointer;transition:all .2s;border:1px solid transparent;letter-spacing:.06em;text-transform:uppercase;font-family:'IBM Plex Mono',monospace}
 .btn-primary{background:linear-gradient(130deg,var(--ui-accent),var(--ui-accent-soft));color:#251402;border-color:rgba(255,235,198,.72)}
 .btn-primary:hover{transform:translateY(-1px);box-shadow:0 10px 26px rgba(240,184,109,.35)}
 .btn-success{background:linear-gradient(130deg,#70d8a1,#44b978);color:#052a14;border-color:rgba(146,245,188,.55)}
@@ -567,10 +535,7 @@ h1,h2,.font-display{font-family:'Source Sans 3','Segoe UI',Tahoma,sans-serif}
   border-top:1px solid var(--ui-line) !important;
   backdrop-filter:blur(16px);
 }
-#main-nav button{font-family:'Source Sans 3','Segoe UI',Tahoma,sans-serif}
-button,input,select,textarea,label,h1,h2,h3,h4,h5,h6,.modal-section-title,.modal-header-title,.admin-tab-btn,.badge{
-  font-family:'Source Sans 3','Segoe UI',Tahoma,sans-serif !important;
-}
+#main-nav button{font-family:'IBM Plex Mono',monospace}
 #main-nav #nav-progress-fill{background:linear-gradient(90deg,var(--ui-accent),var(--ui-cyan)) !important}
 #chat-panel{
   background:rgba(15,23,42,.92) !important;
@@ -628,90 +593,112 @@ button,input,select,textarea,label,h1,h2,h3,h4,h5,h6,.modal-section-title,.modal
   position:fixed;
   inset:0;
   z-index:200;
-  overflow:auto;
-  align-items:center;
-  justify-content:center;
-  padding:1rem;
+  overflow:hidden;
   background:
-    radial-gradient(60rem 36rem at 10% 8%, rgba(240,184,109,.16), transparent 60%),
-    radial-gradient(52rem 30rem at 90% 0%, rgba(125,211,252,.14), transparent 62%),
-    radial-gradient(44rem 28rem at 52% 100%, rgba(125,223,159,.12), transparent 64%),
+    radial-gradient(42rem 22rem at 16% 0%, rgba(240,184,109,.17), transparent 60%),
+    radial-gradient(36rem 20rem at 82% 0%, rgba(125,211,252,.14), transparent 62%),
     linear-gradient(165deg,#090d15 0%, #101827 50%, #0a0f18 100%);
 }
-.auth-hero-panel{flex:1 1 0;max-width:700px;min-width:0;height:min(820px,calc(100vh - 2rem));min-height:0;display:flex;flex-direction:column;position:relative;overflow-x:hidden;overflow-y:auto;border:1px solid rgba(255,255,255,.12);border-right:none;border-radius:24px 0 0 24px;background:rgba(14,20,32,.74);backdrop-filter:blur(12px)}
-.auth-hero-bg{position:absolute;inset:0;background:radial-gradient(40rem 22rem at 10% 0%, rgba(240,184,109,.12), transparent 60%),radial-gradient(28rem 20rem at 85% 0%, rgba(125,211,252,.08), transparent 62%),linear-gradient(150deg, rgba(255,255,255,.03), rgba(255,255,255,.01));z-index:0}
+.auth-hero-panel{flex:1.12;display:flex;flex-direction:column;position:relative;overflow:hidden;min-width:0}
+.auth-hero-bg{position:absolute;inset:0;background:radial-gradient(60rem 36rem at 12% 10%, rgba(240,184,109,.12), transparent 58%),radial-gradient(48rem 26rem at 88% 4%, rgba(125,211,252,.12), transparent 60%),linear-gradient(160deg,#090d15 0%, #101827 50%, #0a0f18 100%);z-index:0}
 .auth-orb{position:absolute;border-radius:50%;z-index:1;animation:orbFloat 14s ease-in-out infinite}
-.auth-orb-cyan{width:420px;height:420px;background:radial-gradient(circle,rgba(125,211,252,.09) 0%,transparent 70%);top:-120px;left:-80px}
-.auth-orb-purple{width:280px;height:280px;background:radial-gradient(circle,rgba(125,223,159,.09) 0%,transparent 70%);bottom:-50px;right:-30px;animation-duration:18s;animation-direction:reverse}
-.auth-dot-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,.08) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.08) 1px,transparent 1px);background-size:34px 34px;opacity:.08;z-index:1}
-.auth-hero-content{position:relative;z-index:2;display:flex;flex-direction:column;height:100%;padding:1.5rem 1.5rem 1.8rem}
-.auth-logo-wrap{margin:0 auto 1.25rem;display:flex;justify-content:center;width:100%}
-.auth-logo-lg{max-height:88px;max-width:220px;width:100%;display:flex;justify-content:center;align-items:center}
-.auth-logo-lg img{display:block;max-width:100%;max-height:88px;width:auto;height:auto;margin:0 auto;object-fit:contain}
-.auth-headline-wrap{flex:1;display:flex;flex-direction:column;justify-content:flex-start;gap:1rem;align-items:center;text-align:center}
-.auth-status-row{font-family:'IBM Plex Mono',monospace;font-size:.62rem;font-weight:700;color:#aeb7c8;letter-spacing:.11em;text-transform:uppercase;display:flex;align-items:center;justify-content:center;gap:.5rem;flex-wrap:wrap}
-.auth-status-dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:#7ddf9f;box-shadow:0 0 0 0 rgba(125,223,159,.5);animation:pulse 2.2s infinite}
+.auth-orb-cyan{width:420px;height:420px;background:radial-gradient(circle,rgba(125,211,252,.08) 0%,transparent 70%);top:-120px;right:-70px}
+.auth-orb-purple{width:360px;height:360px;background:radial-gradient(circle,rgba(240,184,109,.08) 0%,transparent 70%);bottom:-80px;left:-70px;animation-duration:18s;animation-direction:reverse}
+.auth-dot-grid{position:absolute;inset:0;background-image:radial-gradient(rgba(255,255,255,.08) 1px,transparent 1px);background-size:34px 34px;z-index:1;opacity:.45}
+.auth-hero-content{position:relative;z-index:2;display:flex;flex-direction:column;height:100%;padding:2rem 2rem 1.6rem}
+.auth-logo-wrap{margin-bottom:1rem}
+.auth-brandbar{display:flex;align-items:center;justify-content:space-between;gap:.8rem;flex-wrap:wrap;border:1px solid rgba(255,255,255,.12);border-radius:18px;background:rgba(14,20,32,.72);padding:.75rem .85rem;backdrop-filter:blur(12px)}
+.auth-brand{display:flex;align-items:center;gap:.75rem;min-width:0}
+.auth-brandmark{width:62px;height:62px;object-fit:contain;border-radius:14px;background:rgba(255,255,255,.05)}
+.auth-brandkicker{font-family:'IBM Plex Mono',monospace;font-size:.62rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#7dd3fc}
+.auth-brandname{font-family:'Fraunces',serif;font-size:1.02rem;font-weight:800;line-height:1.08;color:#f8fbff}
+.auth-brandstatus{display:flex;align-items:center;gap:.42rem;font-family:'IBM Plex Mono',monospace;font-size:.64rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#7ddf9f}
+.auth-logo-lg{max-height:220px;max-width:520px;width:100%}
+.auth-headline-wrap{flex:1;display:flex;flex-direction:column;justify-content:center;padding:1.4rem 0 1rem}
+.auth-status-row{font-family:'IBM Plex Mono',monospace;font-size:.62rem;font-weight:700;color:#f0b86d;letter-spacing:.14em;text-transform:uppercase;margin-bottom:1rem;display:flex;align-items:center;gap:.55rem;flex-wrap:wrap}
+.auth-status-dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:#7ddf9f;box-shadow:0 0 10px rgba(125,223,159,.45)}
 .auth-status-online{color:#7ddf9f}
-.auth-status-label{color:#aeb7c8}
-.auth-hero-title{margin:0;font-family:'Fraunces',serif;font-weight:800;font-size:clamp(2rem,5vw,3.45rem);line-height:.95;letter-spacing:-.01em;color:#f5f7fb}
-.auth-hero-title-accent{display:block;color:#7dd3fc}
-#auth-tagline{margin:0 auto;max-width:58ch;color:#b8c0d1;font-size:1rem;line-height:1.55;font-weight:500}
-.auth-hero-kpis{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.65rem;margin-top:.15rem}
-.auth-hero-kpi{border:1px solid rgba(255,255,255,.14);border-radius:13px;padding:.75rem;background:rgba(7,10,17,.45)}
-.auth-hero-kpi strong{display:block;font:800 1.15rem/1 'Fraunces',serif;color:#f0b86d}
-.auth-hero-kpi span{display:block;margin-top:.2rem;font:700 .62rem/1 'IBM Plex Mono',monospace;color:#aeb7c8;letter-spacing:.08em;text-transform:uppercase}
-#auth-hero-img{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.75rem;margin-top:.25rem;align-content:start}
+.auth-status-label{color:#9fb0c7}
+.auth-hero-title{font-family:'Fraunces',serif;font-weight:800;font-size:clamp(2.2rem,5vw,4.6rem);color:#f8fbff;line-height:.93;letter-spacing:-.03em;margin:0 0 .85rem;max-width:10ch}
+.auth-hero-title-accent{display:block;color:#7dd3fc;background:none;-webkit-text-fill-color:initial}
+#auth-tagline{margin:0;max-width:560px;color:#c4ccda;font-size:.98rem;line-height:1.68;font-weight:500}
+#auth-hero-img{margin-top:1.2rem;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.7rem;max-width:520px}
+.auth-hero-card{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.13);border-radius:16px;padding:.9rem;min-height:120px}
+.auth-hero-icon{font-size:1.12rem;margin-bottom:.35rem}
+.auth-hero-code{font-family:'IBM Plex Mono',monospace;color:#7dd3fc;font-size:.64rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase}
+.auth-hero-sub{color:#d6deed;font-size:.84rem;line-height:1.45;margin-top:.38rem}
 .auth-preview-card{overflow:hidden;border:1px solid rgba(255,255,255,.12);border-radius:16px;background:rgba(14,20,32,.72)}
 .auth-preview-media{aspect-ratio:1.22;overflow:hidden;background:rgba(255,255,255,.03)}
 .auth-preview-media img{width:100%;height:100%;object-fit:cover;display:block}
 .auth-preview-copy{padding:.8rem .9rem .95rem}
 .auth-preview-copy b{display:block;font:700 .93rem/1.2 'Syne',sans-serif;color:#f5f7fb}
 .auth-preview-copy small{display:block;margin-top:.25rem;font:700 .62rem/1.4 'IBM Plex Mono',monospace;color:#aeb7c8;letter-spacing:.08em;text-transform:uppercase}
-.auth-hero-footer{border-top:1px solid rgba(255,255,255,.12);padding-top:1.25rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.75rem}
-#auth-copyright{font-family:'IBM Plex Mono',monospace;font-size:.62rem;color:#99a3b8;font-weight:700;letter-spacing:.08em;text-transform:uppercase}
+.auth-proof-band{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.7rem;margin-top:1rem;max-width:760px}
+.auth-proof-stat{border:1px solid rgba(255,255,255,.12);border-radius:16px;background:rgba(14,20,32,.72);padding:.85rem}
+.auth-proof-stat strong{display:block;font-family:'Fraunces',serif;font-size:1.35rem;line-height:1;color:#f0b86d}
+.auth-proof-stat span{display:block;margin-top:.24rem;font-family:'IBM Plex Mono',monospace;font-size:.62rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#aeb7c8;line-height:1.35}
+.auth-quote{margin-top:1rem;max-width:700px;border:1px solid rgba(240,184,109,.22);border-radius:18px;background:linear-gradient(145deg,rgba(240,184,109,.1),rgba(255,255,255,.03));padding:1rem}
+.auth-quote-copy{display:block;font-family:'Fraunces',serif;font-size:1rem;line-height:1.62;color:#fff}
+.auth-quote-meta{display:block;margin-top:.55rem;font-family:'IBM Plex Mono',monospace;font-size:.62rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#dfb56c}
+.auth-hero-footer{border-top:1px solid rgba(255,255,255,.1);padding-top:1rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.75rem}
+#auth-copyright{font-family:'IBM Plex Mono',monospace;font-size:.62rem;color:#90a0ba;font-weight:700;letter-spacing:.08em;text-transform:uppercase}
 .auth-hero-links{display:flex;gap:1rem;align-items:center;flex-wrap:wrap}
-.auth-hero-link{font-family:'IBM Plex Mono',monospace;font-size:.62rem;color:#99a3b8;text-decoration:none;font-weight:700;letter-spacing:.08em;text-transform:uppercase}
-#auth-form-panel{width:min(460px,100%);flex-shrink:0;height:min(820px,calc(100vh - 2rem));min-height:0;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding:1.75rem 1.5rem 1.8rem;overflow-y:auto;position:relative;row-gap:1rem;background:rgba(14,20,32,.74) !important;border:1px solid rgba(255,255,255,.12);border-radius:0 24px 24px 0;backdrop-filter:blur(12px)}
-.auth-form-topbar{position:absolute;top:0;left:0;right:0;height:4px;background:linear-gradient(130deg,#f0b86d,#ffd79a)}
-#mobile-logo-block{display:none;text-align:center;margin-bottom:1.25rem}
-.auth-mobile-logo{max-width:300px;margin:0 auto}
-.auth-tab-wrap{width:100%;margin-bottom:1rem}
-#auth-panel-title{font-family:'Fraunces',serif;font-weight:800;font-size:2rem;line-height:1;color:#f5f7fb;margin-bottom:.35rem}
-#auth-panel-sub{font-size:.88rem;color:#b8c0d1;margin-bottom:1rem;line-height:1.5}
-#auth-tab-switch{display:flex;padding:4px;gap:4px;background:rgba(255,255,255,.06) !important;border:1px solid rgba(255,255,255,.14);border-radius:14px !important}
-.auth-tab-btn{flex:1;min-height:44px;padding:.66rem .9rem;border-radius:10px;border:none;font:.75rem/1 'IBM Plex Mono',monospace;font-weight:700;letter-spacing:.07em;text-transform:uppercase;cursor:pointer;transition:all .2s;color:#9fb0c7}
-.auth-tab-btn-start{background:rgba(240,184,109,.95);color:#1f170b;box-shadow:0 6px 18px rgba(240,184,109,.25)}
-.auth-tab-btn-end{background:transparent;color:#9fb0c7}
+.auth-hero-link{font-family:'IBM Plex Mono',monospace;font-size:.62rem;color:#b8c6db;text-decoration:none;font-weight:700;letter-spacing:.08em;text-transform:uppercase}
+#auth-form-panel{
+  width:480px;
+  flex-shrink:0;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:flex-start;
+  padding:2rem 2rem 1.8rem;
+  overflow-y:auto;
+  position:relative;
+  row-gap:1rem;
+  background:rgba(14,20,32,.84) !important;
+  border-left:1px solid rgba(255,255,255,.14);
+  backdrop-filter:blur(16px);
+}
+.auth-form-topbar{position:absolute;top:0;left:0;right:0;height:4px;background:linear-gradient(90deg,#f0b86d,#7dd3fc,#7ddf9f)}
+#mobile-logo-block{display:none;text-align:center;margin-bottom:1.3rem}
+.auth-mobile-logo{max-width:340px;margin:0 auto}
+.auth-tab-wrap{width:100%;margin-bottom:1.35rem}
+#auth-panel-title{font-family:'Fraunces',serif;font-weight:800;font-size:1.8rem;color:#f8fafc;margin-bottom:.35rem;line-height:1}
+#auth-panel-sub{font-size:.84rem;color:#b8c0d1;margin-bottom:1.2rem;line-height:1.55}
+#auth-tab-switch{display:flex;padding:4px;gap:4px;background:rgba(255,255,255,.07) !important;border:1px solid rgba(255,255,255,.12);border-radius:14px !important}
+.auth-tab-btn{flex:1;padding:.72rem;border-radius:10px;border:none;font-family:'IBM Plex Mono',monospace;font-size:.79rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;cursor:pointer;transition:all .2s;background:transparent;color:#9fb0c7}
 .auth-form{width:100%}
 .auth-hidden{display:none}
-.auth-stack{display:flex;flex-direction:column;gap:.875rem}
-.auth-stack-tight{display:flex;flex-direction:column;gap:.75rem}
+.auth-stack{display:flex;flex-direction:column;gap:.9rem}
+.auth-stack-tight{display:flex;flex-direction:column;gap:.78rem}
 .auth-grid-2{display:grid;grid-template-columns:1fr 1fr;gap:.75rem}
-.auth-label{font-size:.72rem;font-weight:800;color:#c9d3e4;text-transform:uppercase;letter-spacing:.07em;display:block;margin-bottom:.4rem}
-.auth-label-sm{font-size:.68rem;margin-bottom:.35rem}
-.auth-error{display:none;background:rgba(255,124,108,.12);border:1px solid rgba(255,124,108,.35);border-radius:.85rem;padding:.75rem 1rem;font-size:.825rem;font-weight:700;color:#ffb4ab;text-align:center}
-.auth-btn-primary,.auth-btn-google,.auth-btn-guest,.auth-btn-signup{width:100%;min-height:44px;padding:.92rem 1rem;font-size:.82rem;border-radius:13px;box-shadow:none}
-.auth-btn-primary{margin-top:.15rem;background:linear-gradient(130deg,#f0b86d,#ffd79a);color:#251402;border:1px solid rgba(255,235,198,.65)}
-.auth-btn-google{background:rgba(125,211,252,.1);color:#7dd3fc;font-weight:800;border:1px solid rgba(125,211,252,.52)}
-.auth-btn-guest{background:rgba(255,255,255,.06);color:#d8dfea;font-weight:800;border:1px solid rgba(255,255,255,.24);margin-top:.1rem}
-.auth-divider{display:flex;align-items:center;gap:.5rem;margin:1rem 0 .75rem}
-.auth-divider-line{flex:1;height:1px;background:rgba(255,255,255,.12)}
-.auth-divider-text{font-size:.72rem;color:#99a3b8;font-weight:700;text-transform:uppercase;letter-spacing:.08em}
-.auth-note{font-size:.75rem;color:#99a3b8;text-align:center;line-height:1.5}
-.auth-note-top{margin-top:1.25rem}
-.auth-note-mid{margin-top:1rem}
-.auth-note-tight{margin-top:.5rem}
+.auth-label{font-size:.68rem;font-weight:800;color:#ced8e6;text-transform:uppercase;letter-spacing:.09em;display:block;margin-bottom:.42rem;font-family:'IBM Plex Mono',monospace}
+.auth-label-sm{font-size:.66rem;margin-bottom:.35rem}
+.auth-error{display:none;background:rgba(255,124,108,.1);border:1px solid rgba(255,124,108,.25);border-radius:.85rem;padding:.8rem 1rem;font-size:.825rem;font-weight:700;color:#ff9589;text-align:center}
+.auth-btn-primary{padding:1rem;font-size:.86rem;margin-top:.25rem;border-radius:14px;background:linear-gradient(130deg,#f0b86d,#ffd79a);box-shadow:0 10px 26px rgba(240,184,109,.18);color:#261708;border:1px solid rgba(255,235,198,.65);font-family:'IBM Plex Mono',monospace;text-transform:uppercase;letter-spacing:.06em}
+.auth-btn-google{padding:.92rem;font-size:.84rem;border-radius:14px;background:rgba(255,255,255,.96);color:#0f172a;font-weight:800;border:1px solid rgba(255,255,255,.18);gap:.6rem;font-family:'IBM Plex Mono',monospace;text-transform:uppercase;letter-spacing:.04em}
+.auth-btn-guest{padding:.88rem;font-size:.8rem;border-radius:14px;background:rgba(125,211,252,.08);color:#dfe8f7;font-weight:800;border:1px dashed rgba(125,211,252,.32);gap:.6rem;margin-top:.35rem;font-family:'IBM Plex Mono',monospace;text-transform:uppercase;letter-spacing:.04em}
+.auth-btn-icon{font-size:1.05rem}
+.auth-divider{display:flex;align-items:center;gap:.5rem;margin:.9rem 0 .65rem}
+.auth-divider-line{flex:1;height:1px;background:rgba(255,255,255,.14)}
+.auth-divider-text{font-size:.72rem;color:#90a0ba;font-weight:700;font-family:'IBM Plex Mono',monospace;text-transform:uppercase}
+.auth-note{font-size:.75rem;color:#9fb0c7;text-align:center}
+.auth-note-top{margin-top:1.15rem}
+.auth-note-mid{margin-top:.9rem}
+.auth-note-tight{margin-top:.45rem}
 .auth-inline-link{background:none;border:none;color:#7dd3fc;font-weight:800;cursor:pointer;font-size:.75rem}
 .auth-inline-optional{font-weight:500;text-transform:none}
-.auth-demo-wrap{border-top:1px solid rgba(255,255,255,.12);padding-top:1.15rem;margin-top:1.15rem}
-.auth-demo-title{text-align:center;font-size:.72rem;font-weight:700;color:#99a3b8;text-transform:uppercase;letter-spacing:.06em;margin:0 0 .75rem}
-.auth-demo-btn{background:rgba(255,255,255,.06);color:#f5f7fb;border:1px solid rgba(255,255,255,.24);border-radius:13px;padding:.92rem 1rem;font-size:.82rem;font-weight:800;cursor:pointer;width:100%}
-.auth-demo-sub{text-align:center;font-size:.7rem;color:#99a3b8;margin:.5rem 0 0;line-height:1.45}
-.auth-privacy{font-size:.7rem;color:#99a3b8;text-align:center;line-height:1.5}
-.auth-btn-signup{margin-top:.15rem;background:linear-gradient(130deg,#f0b86d,#ffd79a);color:#251402;font-weight:800;border:1px solid rgba(255,235,198,.65);cursor:pointer}
-.auth-trust-row{width:100%;margin-top:1.5rem;padding-top:1.25rem;border-top:1px solid rgba(255,255,255,.12);display:flex;align-items:center;justify-content:center;gap:.65rem;flex-wrap:wrap}
-.auth-trust-item{display:flex;align-items:center;justify-content:center;min-height:44px;padding:.66rem .9rem;border:1px solid rgba(255,255,255,.14);border-radius:999px;background:rgba(255,255,255,.04)}
-.auth-trust-text{font-size:.66rem;color:#aeb7c8;font-weight:700;letter-spacing:.08em;text-transform:uppercase}
+.auth-demo-wrap{border-top:1px solid rgba(255,255,255,.12);padding-top:1.1rem;margin-top:1rem}
+.auth-demo-title{text-align:center;font-size:.7rem;font-weight:700;color:#9fb0c7;text-transform:uppercase;letter-spacing:.08em;margin:0 0 .75rem;font-family:'IBM Plex Mono',monospace}
+.auth-demo-btn{background:linear-gradient(135deg,#f0b86d,#d98c2d);color:#261708;border:1px solid rgba(255,235,198,.55);border-radius:14px;padding:.95rem;font-size:.84rem;font-weight:800;cursor:pointer;width:100%;box-shadow:0 8px 24px rgba(240,184,109,.22);display:flex;align-items:center;justify-content:center;gap:.6rem;font-family:'IBM Plex Mono',monospace;text-transform:uppercase;letter-spacing:.05em}
+.auth-demo-btn-icon{font-size:1.1rem}
+.auth-demo-sub{text-align:center;font-size:.72rem;color:#9fb0c7;margin:.55rem 0 0;line-height:1.45}
+.auth-privacy{font-size:.7rem;color:#9fb0c7;text-align:center;line-height:1.6}
+.auth-btn-signup{padding:.98rem;font-size:.84rem;margin-top:.25rem;border-radius:14px;background:linear-gradient(130deg,#7dd3fc,#a9e5ff);color:#0a1523;font-weight:800;border:1px solid rgba(198,241,255,.55);cursor:pointer;box-shadow:0 10px 24px rgba(125,211,252,.16);font-family:'IBM Plex Mono',monospace;text-transform:uppercase;letter-spacing:.05em}
+.auth-trust-row{width:100%;margin-top:1.35rem;padding-top:1rem;border-top:1px solid rgba(255,255,255,.12);display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.65rem}
+.auth-trust-item{display:flex;align-items:center;justify-content:center;gap:.45rem;border:1px solid rgba(255,255,255,.1);border-radius:14px;background:rgba(255,255,255,.04);padding:.7rem .75rem}
+.auth-trust-icon{font-size:.9rem}
+.auth-trust-text{font-size:.66rem;color:#c8d3e4;font-weight:700;font-family:'IBM Plex Mono',monospace;letter-spacing:.05em;text-transform:uppercase}
 
 /* Tutorial overlay */
 #tutorial-overlay{display:none;position:fixed;inset:0;z-index:200;background:rgba(5,10,24,.95);backdrop-filter:blur(12px);align-items:center;justify-content:center;padding:1rem}
@@ -738,8 +725,7 @@ button,input,select,textarea,label,h1,h2,h3,h4,h5,h6,.modal-section-title,.modal
 #tut-next-btn{border:none;background:#2563eb;color:white;padding:.7rem 1.5rem;border-radius:.9rem;font-weight:900;font-size:.95rem;cursor:pointer;box-shadow:0 4px 14px rgba(37,99,235,.4)}
 #auth-form-panel #auth-panel-title{font-family:'Fraunces',serif !important;color:#f8fafc !important}
 #auth-form-panel #auth-panel-sub{color:#b8c0d1 !important}
-#auth-tab-switch{background:rgba(255,255,255,.06) !important;border:1px solid rgba(255,255,255,.14);border-radius:14px !important}
-.auth-tab-btn{font-family:'IBM Plex Mono',monospace !important;letter-spacing:.07em}
+.auth-tab-btn{font-family:'IBM Plex Mono',monospace !important;letter-spacing:.04em}
 #auth-form-panel .input-field{background:rgba(255,255,255,.08) !important;border-color:rgba(255,255,255,.2) !important;color:#f8fafc}
 #auth-form-panel .input-field:focus{border-color:#7dd3fc !important;background:rgba(255,255,255,.12) !important}
 #auth-form-panel .input-field::placeholder{color:#9ca3af}
@@ -761,11 +747,15 @@ button,input,select,textarea,label,h1,h2,h3,h4,h5,h6,.modal-section-title,.modal
 /* Mobile: < 640px */
 @media(max-width:640px){
   /* Auth screen mobile layout */
-  #auth-screen{flex-direction:column!important;padding:.75rem!important;align-items:stretch!important;justify-content:flex-start!important}
-  #auth-screen>div:first-child{flex:none!important;height:auto!important;min-height:auto!important;padding:0!important;border-right:1px solid rgba(255,255,255,.12)!important;border-radius:24px 24px 0 0!important}
-  #auth-screen>div:first-child h1{font-size:1.9rem!important;line-height:1!important}
-  #auth-screen>div:last-child{width:100%!important;height:auto!important;min-height:auto!important;padding:1.25rem!important;border-top:none!important;border-radius:0 0 24px 24px!important}
+  #auth-screen{flex-direction:column!important}
+  #auth-screen>div:first-child{flex:none!important;min-height:340px;padding:1.25rem 1.1rem .9rem!important}
+  #auth-screen>div:first-child h1{font-size:1.35rem!important;line-height:1.15!important}
+  #auth-screen>div:last-child{width:100%!important;padding:1.5rem 1.25rem!important}
   #mobile-logo-block{display:block!important}
+  .auth-hero-content{padding:1.1rem!important}
+  .auth-brandbar{padding:.7rem .75rem!important}
+  #auth-hero-img,.auth-proof-band{grid-template-columns:1fr 1fr!important;max-width:none!important}
+  .auth-quote{display:none!important}
   
   /* Hide decorative orbs on mobile to improve performance */
   #auth-screen>div:first-child>div:nth-child(2),
@@ -794,9 +784,8 @@ button,input,select,textarea,label,h1,h2,h3,h4,h5,h6,.modal-section-title,.modal
   /* Stats bar - stack on mobile */
   #auth-screen div[style*="display:flex;gap:2rem"]{gap:1rem!important}
   
-  .auth-hero-content{padding:1.25rem!important}
-  .auth-hero-kpis{grid-template-columns:1fr 1fr!important}
-  .auth-hero-footer{flex-direction:column;text-align:center;gap:.5rem!important}
+  /* Footer on auth screen */
+  #auth-screen div[style*="border-top:1px solid"]{flex-direction:column;text-align:center;gap:.5rem!important}
   
   /* Certificate and print preview */
   #certificate-preview{padding:1rem!important;font-size:.85rem!important}
@@ -879,8 +868,8 @@ button,input,select,textarea,label,h1,h2,h3,h4,h5,h6,.modal-section-title,.modal
   #chat-panel>div:last-child>div{flex-direction:column!important;align-items:stretch!important}
   #chat-send-btn{width:100%}
   
-  /* Reduce auth preview density on mobile */
-  #auth-hero-img{grid-template-columns:1fr!important}
+  /* Hide auth hero image on mobile */
+  #auth-hero-img{display:none!important}
   .hub-grid{grid-template-columns:1fr!important;gap:1rem!important}
   .hub-copy{gap:.9rem!important}
   .hub-logo{max-width:360px!important}
@@ -891,8 +880,8 @@ button,input,select,textarea,label,h1,h2,h3,h4,h5,h6,.modal-section-title,.modal
 /* Tablet: 641px - 1024px */
 @media(min-width:641px) and (max-width:1024px){
   /* Auth screen - adjust proportions */
-  #auth-screen>div:first-child{height:calc(100vh - 2rem)!important;min-height:0!important}
-  #auth-screen>div:last-child{width:420px!important;height:calc(100vh - 2rem)!important;min-height:0!important;padding:1.5rem!important}
+  #auth-screen>div:first-child{padding:2rem 2.25rem!important}
+  #auth-screen>div:last-child{width:420px!important;padding:2rem 2.25rem!important}
   
   /* Slides */
   .slide{padding:1.5rem 1.5rem 4rem!important}
@@ -1164,53 +1153,50 @@ button,input,select,textarea,label,h1,h2,h3,h4,h5,h6,.modal-section-title,.modal
     <!-- Content -->
     <div class="auth-hero-content">
 
-      <!-- Logo -->
+      <!-- Brand bar -->
       <div class="auth-logo-wrap">
-        <div class="logo-inline auth-logo-lg"></div>
+        <div class="auth-brandbar">
+          <div class="auth-brand">
+            <img src="nyxcodex-logo.png" alt="NyxCodex logo" class="auth-brandmark">
+            <div>
+              <div class="auth-brandkicker">Clinical Simulation Deck</div>
+              <div class="auth-brandname">NyxCodex Training Lab</div>
+            </div>
+          </div>
+          <div class="auth-brandstatus">
+            <span class="auth-status-dot"></span>
+            <span>Live System</span>
+          </div>
+        </div>
       </div>
 
       <!-- Hero headline -->
       <div class="auth-headline-wrap">
         <div class="auth-status-row">
           <span class="auth-status-dot"></span>
-          <span class="auth-status-online">Live System</span>
-          <span class="auth-status-label">Staff Portal</span>
+          <span class="auth-status-online">SYSTEM_ONLINE</span>
+          <span class="auth-status-label">&nbsp;//&nbsp; STAFF PORTAL</span>
         </div>
         <h1 class="auth-hero-title">
           Build Clinical Calm
           <span class="auth-hero-title-accent">Before the Crisis Peaks.</span>
         </h1>
         <div id="auth-tagline">
-          NyxCodex blends scenario pressure, real-time AI coaching, and competency tracking so your team can practice difficult moments before they happen on shift.
-        </div>
-        <div class="auth-hero-kpis" aria-label="Platform highlights">
-          <div class="auth-hero-kpi"><strong>31</strong><span>Structured Modules</span></div>
-          <div class="auth-hero-kpi"><strong>AI</strong><span>Live Mentor Feedback</span></div>
-          <div class="auth-hero-kpi"><strong>Roleplay</strong><span>High-pressure Drills</span></div>
-          <div class="auth-hero-kpi"><strong>Mobile</strong><span>Shift-friendly Access</span></div>
+          NyxCodex gives psychiatric healthcare teams a place to rehearse difficult moments before they happen on shift with AI coaching, scenario labs, debriefing, and manager-ready visibility.
         </div>
         <div id="auth-hero-img">
           <article class="auth-preview-card">
             <div class="auth-preview-media">
-              <img src="lab.png" alt="NyxCodex app home and training dashboard preview">
+              <img src="lab.png" alt="NyxCodex de-escalation scenario lab interface">
             </div>
             <div class="auth-preview-copy">
-              <b>Training Dashboard</b>
-              <small>Readiness view and progress tracking</small>
+              <b>Scenario Lab</b>
+              <small>Roleplay difficult patient interactions</small>
             </div>
           </article>
           <article class="auth-preview-card">
             <div class="auth-preview-media">
-              <img src="hazards.png" alt="Patient room hazard assessment scenario preview">
-            </div>
-            <div class="auth-preview-copy">
-              <b>Environment Scans</b>
-              <small>Interactive room-safety walkthroughs</small>
-            </div>
-          </article>
-          <article class="auth-preview-card">
-            <div class="auth-preview-media">
-              <img src="microexpressions.png" alt="Patient microexpression coaching scenario preview">
+              <img src="microexpressions.png" alt="Patient microexpression recognition training">
             </div>
             <div class="auth-preview-copy">
               <b>Clinical Observation</b>
@@ -1219,13 +1205,40 @@ button,input,select,textarea,label,h1,h2,h3,h4,h5,h6,.modal-section-title,.modal
           </article>
           <article class="auth-preview-card">
             <div class="auth-preview-media">
-              <img src="success.png" alt="Successful de-escalation outcome preview">
+              <img src="hazards.png" alt="Patient room hazard assessment scenario">
+            </div>
+            <div class="auth-preview-copy">
+              <b>Environment Scans</b>
+              <small>Interactive room-safety walkthroughs</small>
+            </div>
+          </article>
+          <article class="auth-preview-card">
+            <div class="auth-preview-media">
+              <img src="success.png" alt="Successful de-escalation outcome feedback">
             </div>
             <div class="auth-preview-copy">
               <b>Outcome Review</b>
               <small>Debriefs with success and risk contrast</small>
             </div>
           </article>
+        </div>
+        <div class="auth-proof-band">
+          <div class="auth-proof-stat">
+            <strong>31</strong>
+            <span>Structured modules</span>
+          </div>
+          <div class="auth-proof-stat">
+            <strong>AI</strong>
+            <span>Live mentor feedback</span>
+          </div>
+          <div class="auth-proof-stat">
+            <strong>Ops</strong>
+            <span>Admin visibility built in</span>
+          </div>
+        </div>
+        <div class="auth-quote">
+          <span class="auth-quote-copy">“This feels less like annual compliance and more like a rehearsal room for real clinical pressure.”</span>
+          <span class="auth-quote-meta">Built for psychiatric hospitals, inpatient teams, and de-escalation readiness programs</span>
         </div>
       </div>
 
@@ -1253,8 +1266,8 @@ button,input,select,textarea,label,h1,h2,h3,h4,h5,h6,.modal-section-title,.modal
 
     <!-- Tab switcher -->
     <div class="auth-tab-wrap">
-      <div id="auth-panel-title">Welcome back</div>
-      <p id="auth-panel-sub">Sign in to continue your training.</p>
+      <div id="auth-panel-title">Welcome back to NyxCodex</div>
+      <p id="auth-panel-sub">Sign in to continue drills, labs, assigned scenarios, and progress tracking.</p>
       <div id="auth-tab-switch">
         <button onclick="showAuthTab('login')" id="tab-login"
           class="auth-tab-btn auth-tab-btn-start">
@@ -1281,15 +1294,19 @@ button,input,select,textarea,label,h1,h2,h3,h4,h5,h6,.modal-section-title,.modal
         <!-- Auth error shown here so it's always visible on mobile -->
         <div id="auth-error" class="auth-error"></div>
         <button class="btn btn-primary w-full auth-btn-primary" onclick="doSignIn()">
-          Sign In
+          Sign In 🔐
         </button>
         <div class="auth-divider">
           <div class="auth-divider-line"></div>
           <span class="auth-divider-text">or</span>
           <div class="auth-divider-line"></div>
         </div>
-        <button class="btn w-full auth-btn-google" onclick="doGoogleSignIn()">Continue with Google</button>
-        <button class="btn w-full auth-btn-guest" onclick="doAnonSignIn()">Enter Demo Workspace</button>
+        <button class="btn w-full auth-btn-google" onclick="doGoogleSignIn()">
+          <span class="auth-btn-icon">🔍</span> Continue with Google
+        </button>
+        <button class="btn w-full auth-btn-guest" onclick="doAnonSignIn()">
+          <span class="auth-btn-icon">👤</span> Continue as guest (anonymous)
+        </button>
       </div>
       <p class="auth-note auth-note-top">
         Don't have an account?
@@ -1301,8 +1318,10 @@ button,input,select,textarea,label,h1,h2,h3,h4,h5,h6,.modal-section-title,.modal
       </p>
       <div class="auth-demo-wrap">
         <p class="auth-demo-title">Exploring for your organization?</p>
-        <button onclick="startDemoMode()" class="auth-demo-btn">Preview the Platform</button>
-        <p class="auth-demo-sub">Guided demo, full platform access, no account required</p>
+        <button onclick="startDemoMode()" class="auth-demo-btn">
+          <span class="auth-demo-btn-icon">🎨</span> See the Platform in Action
+        </button>
+        <p class="auth-demo-sub">Open the full experience and see how training, drills, and admin oversight connect.</p>
       </div>
     </div>
 
@@ -1351,7 +1370,9 @@ button,input,select,textarea,label,h1,h2,h3,h4,h5,h6,.modal-section-title,.modal
             <input id="su-conf" class="input-field" type="password" placeholder="repeat password">
           </div>
         </div>
-        <button id="signup-btn" class="btn w-full auth-btn-signup" onclick="doSignUp()">Create Account</button>
+        <button id="signup-btn" class="btn w-full auth-btn-signup" onclick="doSignUp()">
+          Create Account ?
+        </button>
         <p class="auth-privacy">
           <span id="auth-privacy">Your information is stored securely and used only for training purposes.</span>
         </p>
@@ -1360,8 +1381,12 @@ button,input,select,textarea,label,h1,h2,h3,h4,h5,h6,.modal-section-title,.modal
           <span class="auth-divider-text">or</span>
           <div class="auth-divider-line"></div>
         </div>
-        <button class="btn w-full auth-btn-google" onclick="doGoogleSignIn()">Continue with Google</button>
-        <button class="btn w-full auth-btn-guest" onclick="doAnonSignIn()">Enter Demo Workspace</button>
+        <button class="btn w-full auth-btn-google" onclick="doGoogleSignIn()">
+          <span class="auth-btn-icon">🔍</span> Continue with Google
+        </button>
+        <button class="btn w-full auth-btn-guest" onclick="doAnonSignIn()">
+          <span class="auth-btn-icon">👤</span> Continue as guest (anonymous)
+        </button>
       </div>
       <p class="auth-note auth-note-mid">
         Already have an account?
@@ -1374,13 +1399,12 @@ button,input,select,textarea,label,h1,h2,h3,h4,h5,h6,.modal-section-title,.modal
     <!-- Trust badges -->
     <div class="auth-trust-row">
       <div class="auth-trust-item">
-        <span class="auth-trust-text">Secure Access</span>
+        <span class="auth-trust-icon">🔐</span>
+        <span class="auth-trust-text">Secure Auth</span>
       </div>
       <div class="auth-trust-item">
-        <span class="auth-trust-text">Mobile Ready</span>
-      </div>
-      <div class="auth-trust-item">
-        <span class="auth-trust-text">Clinical Training</span>
+        <span class="auth-trust-icon">📲</span>
+        <span class="auth-trust-text">Mobile Friendly</span>
       </div>
     </div>
   </div>
@@ -1605,12 +1629,12 @@ button,input,select,textarea,label,h1,h2,h3,h4,h5,h6,.modal-section-title,.modal
         </div>
       </div>
       <div style="border-top:1px solid #f1f5f9;padding-top:1rem;margin-top:.5rem">
-        <h3 class="modal-section-title">Assign Scenario</h3>
+        <h3 class="modal-section-title">📌 Assign Scenario</h3>
         <div style="display:flex;flex-direction:column;gap:.5rem">
           <div><label class="modal-label">Assignment note</label><input id="umm-assign-note" class="input-field" placeholder="e.g. Complete 2 PTSD scenarios this week"></div>
           <div class="grid-form-row">
             <div><label class="modal-label">Due Date</label><input id="umm-assign-due" type="date" class="input-field"></div>
-            <button onclick="saveAssignedScenario()" class="btn btn-primary" style="padding:.55rem 1rem;font-size:.82rem;white-space:nowrap">Assign</button>
+            <button onclick="saveAssignedScenario()" class="btn btn-primary" style="padding:.55rem 1rem;font-size:.82rem;white-space:nowrap">📌 Assign</button>
           </div>
           <div id="umm-assign-current" style="font-size:.78rem;color:#64748b;font-weight:600"></div>
         </div>
@@ -2122,17 +2146,20 @@ button,input,select,textarea,label,h1,h2,h3,h4,h5,h6,.modal-section-title,.modal
   <p id="app-loading-hint" style="color:#475569;font-size:.75rem;font-weight:600;display:none">Taking longer than usual &mdash; <a href="" onclick="location.reload();return false;" style="color:#60a5fa;text-decoration:underline">tap here to reload</a></p>
 </div>
 <script>
-// Failsafe: if the authenticated app is visible but still loading after 10 s,
-// show a manual reload hint. Never auto-reload while the user is entering login fields.
+// Failsafe: if the app never initialises within 10 s, show a reload hint.
+// If still stuck at 20 s, force a hard reload to bust any stale cache.
 (function(){
   var hint = document.getElementById('app-loading-hint');
-  var t1 = setTimeout(function(){
-    var app = document.getElementById('app');
+  var t1 = setTimeout(function(){ if(document.getElementById('app-loading') && document.getElementById('app-loading').style.display !== 'none') hint && (hint.style.display = ''); }, 10000);
+  var t2 = setTimeout(function(){
     var l = document.getElementById('app-loading');
-    if(app && app.style.display !== 'none' && l && l.style.display !== 'none') {
-      hint && (hint.style.display = '');
+    if(l && l.style.display !== 'none') {
+      // Hard reload bypassing the service worker cache
+      if('serviceWorker' in navigator) {
+        navigator.serviceWorker.getRegistrations().then(function(regs){ regs.forEach(function(r){ r.unregister(); }); location.reload(true); });
+      } else { location.reload(true); }
     }
-  }, 10000);
+  }, 20000);
 })();
 </script>
 <!-- Demo Mode Banner -->
@@ -2150,7 +2177,7 @@ button,input,select,textarea,label,h1,h2,h3,h4,h5,h6,.modal-section-title,.modal
         <div style="font-size:.62rem;font-weight:600;color:#94a3b8;font-style:italic">(Click &amp; drag if I'm in your way)</div>
       </div>
       <div style="display:flex;gap:.35rem">
-        <button id="pax-mute-btn" onclick="togglePaxMute(event)" style="border:none;background:#f1f5f9;color:#475569;border-radius:.6rem;padding:.25rem .5rem;font-weight:800;font-size:.75rem;cursor:pointer" title="Mute / Unmute">Mute</button>
+        <button id="pax-mute-btn" onclick="togglePaxMute(event)" style="border:none;background:#f1f5f9;color:#475569;border-radius:.6rem;padding:.25rem .5rem;font-weight:800;font-size:.75rem;cursor:pointer" title="Mute / Unmute">🔇</button>
         <button id="pax-minimize-btn" onclick="minimizePax(event)" style="border:none;background:#f1f5f9;color:#475569;border-radius:.6rem;padding:.25rem .55rem;font-weight:800;font-size:.75rem;cursor:pointer" title="Minimize">—</button>
       </div>
     </div>
@@ -2170,10 +2197,10 @@ button,input,select,textarea,label,h1,h2,h3,h4,h5,h6,.modal-section-title,.modal
 </div>
 
 <!-- Minimized pill -->
-<div id="avatar-mini" style="display:none;position:fixed;bottom:5rem;right:1rem;z-index:91;background:linear-gradient(135deg,#2563eb,#7c3aed);color:white;padding:.5rem .75rem;border-radius:.9rem;font-weight:900;cursor:pointer;box-shadow:0 8px 24px rgba(0,0,0,.25);font-size:.82rem" onclick="restorePax()">Vance (listening)</div>
+<div id="avatar-mini" style="display:none;position:fixed;bottom:5rem;right:1rem;z-index:91;background:linear-gradient(135deg,#2563eb,#7c3aed);color:white;padding:.5rem .75rem;border-radius:.9rem;font-weight:900;cursor:pointer;box-shadow:0 8px 24px rgba(0,0,0,.25);font-size:.82rem" onclick="restorePax()">🎓 Vance (listening)</div>
 
 <!-- Persistent Prof. Vance FAB — always visible during training -->
-<button id="vance-fab" onclick="openChat()" title="Ask Professor Vance" style="display:none;position:fixed;bottom:5.4rem;right:1.1rem;z-index:92;background:linear-gradient(135deg,#1d4ed8,#7c3aed);color:white;border:none;border-radius:50%;width:52px;height:52px;font-size:.78rem;font-weight:900;cursor:pointer;box-shadow:0 6px 20px rgba(37,99,235,.55);transition:transform .2s,box-shadow .2s" onmouseover="this.style.transform='scale(1.1)';this.style.boxShadow='0 8px 28px rgba(37,99,235,.7)'" onmouseout="this.style.transform='';this.style.boxShadow='0 6px 20px rgba(37,99,235,.55)'">Chat</button>
+<button id="vance-fab" onclick="openChat()" title="Ask Professor Vance" style="display:none;position:fixed;bottom:5.4rem;right:1.1rem;z-index:92;background:linear-gradient(135deg,#1d4ed8,#7c3aed);color:white;border:none;border-radius:50%;width:52px;height:52px;font-size:1.4rem;cursor:pointer;box-shadow:0 6px 20px rgba(37,99,235,.55);transition:transform .2s,box-shadow .2s" onmouseover="this.style.transform='scale(1.1)';this.style.boxShadow='0 8px 28px rgba(37,99,235,.7)'" onmouseout="this.style.transform='';this.style.boxShadow='0 6px 20px rgba(37,99,235,.55)'">🎓</button>
 
 <div style="position:fixed;top:0;left:0;right:0;height:4px;background:#1e293b;z-index:100">
   <div id="progress-bar" class="progress-bar" style="height:100%;background:linear-gradient(90deg,#2563eb,#7c3aed);width:3.7%;transition:width .4s ease"></div>
@@ -2199,7 +2226,7 @@ button,input,select,textarea,label,h1,h2,h3,h4,h5,h6,.modal-section-title,.modal
         <span style="color:#334155;margin:0 .1rem">·</span>
         <span id="nav-xp" style="color:#60a5fa">0 XP</span>
         <span style="color:#334155;margin:0 .1rem">·</span>
-        <span style="font-size:.7rem">LC</span>
+        <span style="font-size:.7rem">??</span>
         <span id="nav-lc" style="color:#34d399">0 LC</span>
       </div>
     </div>
@@ -2208,11 +2235,11 @@ button,input,select,textarea,label,h1,h2,h3,h4,h5,h6,.modal-section-title,.modal
 
     <!-- ? Feature buttons — uniform pill style -->
     <div id="nav-feature-group" style="display:flex;align-items:center;gap:.28rem">
-      <button id="nav-chat-btn" onclick="openChat()" title="Ask Professor Vance" style="display:flex;align-items:center;gap:.32rem;background:linear-gradient(135deg,rgba(96,165,250,.2),rgba(124,58,237,.18));border:1px solid rgba(96,165,250,.38);color:#93c5fd;padding:.38rem .7rem;border-radius:.65rem;font-size:.76rem;font-weight:800;cursor:pointer;white-space:nowrap;transition:filter .15s" onmouseover="this.style.filter='brightness(1.3)'" onmouseout="this.style.filter=''">Prof. Vance</button>
-      <button id="nav-lab-btn" onclick="openLabRoom()" title="NyxCodex Laboratory Room" style="display:flex;align-items:center;gap:.32rem;background:rgba(16,185,129,.14);border:1px solid rgba(16,185,129,.32);color:#6ee7b7;padding:.38rem .7rem;border-radius:.65rem;font-size:.76rem;font-weight:800;cursor:pointer;white-space:nowrap;transition:filter .15s" onmouseover="this.style.filter='brightness(1.3)'" onmouseout="this.style.filter=''">Lab</button>
-      <button id="nav-videos-btn" onclick="openVideoModal()" title="Training Videos" style="display:flex;align-items:center;gap:.32rem;background:rgba(251,191,36,.12);border:1px solid rgba(251,191,36,.3);color:#fde68a;padding:.38rem .7rem;border-radius:.65rem;font-size:.76rem;font-weight:800;cursor:pointer;white-space:nowrap;transition:filter .15s" onmouseover="this.style.filter='brightness(1.3)'" onmouseout="this.style.filter=''">Videos</button>
-      <button onclick="toggleAmbience()" id="ambience-btn" title="Toggle ambient sound" style="background:rgba(59,130,246,.1);border:1px solid rgba(59,130,246,.22);color:#93c5fd;padding:.38rem .6rem;border-radius:.65rem;font-size:.78rem;font-weight:800;cursor:pointer;transition:filter .15s" onmouseover="this.style.filter='brightness(1.3)'" onmouseout="this.style.filter=''">Sound</button>
-      <button id="nav-admin-btn" onclick="openAdminPrompt()" title="Admin Dashboard" style="background:rgba(124,58,237,.1);border:1px solid rgba(124,58,237,.26);color:#c4b5fd;padding:.38rem .6rem;border-radius:.65rem;font-size:.78rem;font-weight:800;cursor:pointer;transition:filter .15s" onmouseover="this.style.filter='brightness(1.3)'" onmouseout="this.style.filter=''">Admin</button>
+      <button id="nav-chat-btn" onclick="openChat()" title="Ask Professor Vance" style="display:flex;align-items:center;gap:.32rem;background:linear-gradient(135deg,rgba(96,165,250,.2),rgba(124,58,237,.18));border:1px solid rgba(96,165,250,.38);color:#93c5fd;padding:.38rem .7rem;border-radius:.65rem;font-size:.76rem;font-weight:800;cursor:pointer;white-space:nowrap;transition:filter .15s" onmouseover="this.style.filter='brightness(1.3)'" onmouseout="this.style.filter=''">🎓 <span>Prof. Vance</span></button>
+      <button id="nav-lab-btn" onclick="openLabRoom()" title="NyxCodex Laboratory Room" style="display:flex;align-items:center;gap:.32rem;background:rgba(16,185,129,.14);border:1px solid rgba(16,185,129,.32);color:#6ee7b7;padding:.38rem .7rem;border-radius:.65rem;font-size:.76rem;font-weight:800;cursor:pointer;white-space:nowrap;transition:filter .15s" onmouseover="this.style.filter='brightness(1.3)'" onmouseout="this.style.filter=''">🧪 <span>Lab</span></button>
+      <button id="nav-videos-btn" onclick="openVideoModal()" title="Training Videos" style="display:flex;align-items:center;gap:.32rem;background:rgba(251,191,36,.12);border:1px solid rgba(251,191,36,.3);color:#fde68a;padding:.38rem .7rem;border-radius:.65rem;font-size:.76rem;font-weight:800;cursor:pointer;white-space:nowrap;transition:filter .15s" onmouseover="this.style.filter='brightness(1.3)'" onmouseout="this.style.filter=''">🎬 <span>Videos</span></button>
+      <button onclick="toggleAmbience()" id="ambience-btn" title="Toggle ambient sound" style="background:rgba(59,130,246,.1);border:1px solid rgba(59,130,246,.22);color:#93c5fd;padding:.38rem .6rem;border-radius:.65rem;font-size:.85rem;cursor:pointer;transition:filter .15s" onmouseover="this.style.filter='brightness(1.3)'" onmouseout="this.style.filter=''">🎵</button>
+      <button id="nav-admin-btn" onclick="openAdminPrompt()" title="Admin Dashboard" style="background:rgba(124,58,237,.1);border:1px solid rgba(124,58,237,.26);color:#c4b5fd;padding:.38rem .6rem;border-radius:.65rem;font-size:.85rem;cursor:pointer;transition:filter .15s" onmouseover="this.style.filter='brightness(1.3)'" onmouseout="this.style.filter=''">⚙️</button>
     </div>
 
     <!-- Divider -->
@@ -2221,28 +2248,28 @@ button,input,select,textarea,label,h1,h2,h3,h4,h5,h6,.modal-section-title,.modal
     <!-- ? Navigation controls -->
     <div id="nav-controls-group" style="display:flex;align-items:center;gap:.28rem;flex-shrink:0">
       <button id="nav-prev-btn" onclick="prevSlide()" title="Previous slide" style="background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);color:white;width:36px;height:36px;border-radius:.65rem;font-size:1.15rem;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .15s" onmouseover="this.style.background='rgba(255,255,255,.18)'" onmouseout="this.style.background='rgba(255,255,255,.07)'">&#8249;</button>
-      <button id="nav-home-btn" onclick="showHomeGateway()" title="Home Hub" style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);color:#64748b;width:50px;height:36px;border-radius:.65rem;font-size:.7rem;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:color .15s" onmouseover="this.style.color='white'" onmouseout="this.style.color='#64748b'">Home</button>
+      <button id="nav-home-btn" onclick="showHomeGateway()" title="Home Hub" style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);color:#64748b;width:36px;height:36px;border-radius:.65rem;font-size:.95rem;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:color .15s" onmouseover="this.style.color='white'" onmouseout="this.style.color='#64748b'">🏠</button>
       <button id="nav-next-btn" onclick="nextSlide()" title="Next slide" style="background:linear-gradient(135deg,#2563eb,#1d4ed8);color:white;width:36px;height:36px;border-radius:.65rem;font-size:1.15rem;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 3px 10px rgba(37,99,235,.5);transition:filter .15s" onmouseover="this.style.filter='brightness(1.15)'" onmouseout="this.style.filter=''">&#8250;</button>
       <button id="nav-more-btn" onclick="toggleMobileNavSheet()" title="More actions" aria-expanded="false" style="display:none;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.14);color:white;width:36px;height:36px;border-radius:.65rem;font-size:1rem;cursor:pointer;align-items:center;justify-content:center">⋯</button>
       <!-- Account pill -->
-      <button id="nav-account-btn" onclick="openAccountModal()" title="My Account" style="display:flex;align-items:center;gap:.35rem;background:rgba(147,197,253,.18);border:1px solid rgba(147,197,253,.5);cursor:pointer;padding:.28rem .55rem .28rem .28rem;border-radius:.65rem;flex-shrink:0;transition:background .15s,border-color .15s" onmouseover="this.style.background='rgba(147,197,253,.28)';this.style.borderColor='rgba(191,219,254,.75)'" onmouseout="this.style.background='rgba(147,197,253,.18)';this.style.borderColor='rgba(147,197,253,.5)'">
+      <button id="nav-account-btn" onclick="openAccountModal()" title="My Account" style="display:flex;align-items:center;gap:.35rem;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);cursor:pointer;padding:.28rem .55rem .28rem .28rem;border-radius:.65rem;flex-shrink:0;transition:background .15s" onmouseover="this.style.background='rgba(255,255,255,.12)'" onmouseout="this.style.background='rgba(255,255,255,.05)'">
         <div id="nav-avatar-initials" style="width:24px;height:24px;background:linear-gradient(135deg,#2563eb,#7c3aed);border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:900;color:white;font-size:.68rem;flex-shrink:0"></div>
-        <span id="nav-name" style="color:#f8fbff;font-weight:900;font-size:.78rem;white-space:nowrap;text-shadow:0 1px 0 rgba(15,23,42,.45)">Account</span>
+        <span id="nav-name" style="color:white;font-weight:800;font-size:.72rem;white-space:nowrap">Account</span>
       </button>
       <button id="nav-signout-btn" onclick="doSignOut()" title="Sign out" style="background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.18);color:#fca5a5;padding:.35rem .55rem;border-radius:.65rem;font-size:.72rem;font-weight:800;cursor:pointer;white-space:nowrap;transition:background .15s" onmouseover="this.style.background='rgba(239,68,68,.22)'" onmouseout="this.style.background='rgba(239,68,68,.08)'">Sign Out</button>
 <!-- Mobile overflow sheet for bottom nav -->
     </div>
   </div>
 </nav>
+<div id="mobile-nav-sheet-backdrop" onclick="closeMobileNavSheet()">
   <div id="mobile-nav-sheet" onclick="event.stopPropagation()">
-<!-- -------------------------------- ORG SETUP WIZARD -- -->
-    <button onclick="openChat();closeMobileNavSheet()">Prof. Vance</button>
-    <button onclick="openLabRoom();closeMobileNavSheet()">Lab</button>
-    <button onclick="openVideoModal();closeMobileNavSheet()">Videos</button>
-    <button onclick="openAccountModal();closeMobileNavSheet()">My Account</button>
-    <button onclick="toggleAmbience();closeMobileNavSheet()">Ambient</button>
-    <button onclick="openAdminPrompt();closeMobileNavSheet()">Admin</button>
-    <button onclick="doSignOut();closeMobileNavSheet()" style="grid-column:1/-1;border-color:rgba(239,68,68,.35);color:#fca5a5">Sign Out</button>
+    <button onclick="openChat();closeMobileNavSheet()">🎓 Prof. Vance</button>
+    <button onclick="openLabRoom();closeMobileNavSheet()">🧪 Lab</button>
+    <button onclick="openVideoModal();closeMobileNavSheet()">🎬 Videos</button>
+    <button onclick="openAccountModal();closeMobileNavSheet()">👤 My Account</button>
+    <button onclick="toggleAmbience();closeMobileNavSheet()">🎵 Ambient</button>
+    <button onclick="openAdminPrompt();closeMobileNavSheet()">⚙️ Admin</button>
+    <button onclick="doSignOut();closeMobileNavSheet()" style="grid-column:1/-1;border-color:rgba(239,68,68,.35);color:#fca5a5">🚪 Sign Out</button>
   </div>
 </div>
 
@@ -3879,19 +3906,7 @@ function applyTenantContent() {
   if(el('lab-patient-name')) el('lab-patient-name').innerHTML = `${T.patientName} <span style="font-size:.75rem;font-weight:600;color:#94a3b8">\u2014 ${T.patientDx}</span>`;
   document.querySelectorAll('.tenant-lab-bg').forEach(img => { img.src = T.labImageUrl; });
 }
-function sanitizeUiLabels() {
-  const emojiPrefix = /^[\s\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}\u{FE0F}\u{200D}]+/u;
-  document.querySelectorAll('h1,h2,h3,.modal-section-title,.admin-tab-btn,#main-nav button,#mobile-nav-sheet button').forEach(el => {
-    const txt = (el.textContent || '').replace(emojiPrefix, '').replace(/\s{2,}/g, ' ').trim();
-    if (txt) el.textContent = txt;
-  });
-}
-document.addEventListener('DOMContentLoaded', () => {
-  renderInlineLogos();
-  applyTenantContent();
-  applyAuthTabFromUrl();
-  sanitizeUiLabels();
-});
+document.addEventListener('DOMContentLoaded', () => { renderInlineLogos(); applyTenantContent(); applyAuthTabFromUrl(); });
 const CHAT_ENDPOINT = (() => {
   const sameOrigin = '/api/pax-chat';
   const tenantOrigin = String(window.TENANT?.orgWebsite || '').trim().replace(/\/+$/, '');
@@ -4021,8 +4036,8 @@ function showAuthTab(tab) {
     signupBtn.style.color      = tab==='signup' ? '#0c1b2d' : '#9fb0c7';
     signupBtn.style.boxShadow  = tab==='signup' ? '0 6px 18px rgba(125,211,252,.25)' : 'none';
   }
-  if(title) title.textContent = tab==='login' ? 'Welcome back' : 'Join the team';
-  if(sub)   sub.textContent   = tab==='login' ? 'Sign in to continue your training.' : 'Create your staff training account.';
+  if(title) title.textContent = tab==='login' ? 'Welcome back to NyxCodex' : 'Start your training workspace';
+  if(sub)   sub.textContent   = tab==='login' ? 'Sign in to continue drills, labs, assigned scenarios, and progress tracking.' : 'Create your account to enter the platform and begin staff training.';
 }
 
 function applyAuthTabFromUrl() {
@@ -4087,7 +4102,7 @@ async function doSignIn() {
   } catch(e) {
     const msg = e.message.replace('Firebase: ','').replace(/\(.*?\)/g,'').trim() || 'Sign in failed. Check your email and password.';
     if(err){err.textContent=msg;err.style.display='block';}
-    if(btn){ btn.disabled=false; btn.textContent='Sign In'; btn.style.opacity='1'; }
+    if(btn){ btn.disabled=false; btn.textContent='Sign In 🔐'; btn.style.opacity='1'; }
   }
 }
 
@@ -4121,7 +4136,7 @@ async function doSignUp() {
     err.textContent = msg.includes('email-already-in-use') ? 'That email is already registered. Try signing in.' :
                       msg.includes('invalid-email') ? 'Please enter a valid email address.' : msg;
     err.style.display='block';
-    if(btn){btn.disabled=false;btn.textContent='Create Account';btn.style.opacity='1';}
+    if(btn){btn.disabled=false;btn.textContent='Create Account ?';btn.style.opacity='1';}
   }
 }
 
@@ -4260,22 +4275,6 @@ function initApp() {
 }
 
 // --- Slide Navigation ------------------------------------
-function getSlideTipFn(index) {
-  const patientName = window.TENANT?.patientName || 'Marcus';
-  const tips = [
-    (name) => `Welcome, ${name}. We are going to build calm before the crisis peaks. Take your time and focus on the details that change patient safety outcomes.`,
-    (name) => `${name}, start by scanning the environment before you focus on the patient. Small hazards become major problems fast in a behavioral health setting.`,
-    (name) => `${name}, watch for the early cues here. Body language and pacing usually tell you what is rising before the words do.`,
-    (name) => `${name}, validation comes before direction. If ${patientName} does not feel heard, resistance usually climbs.`,
-    (name) => `${name}, protect the reaction gap here. Space buys you time, lowers pressure, and gives the patient a better chance to regulate.`,
-    (name) => `${name}, keep your tone slower and lower than the room around you. Your nervous system state is part of the intervention.`,
-    (name) => `${name}, look for the need underneath the behavior. The correct response is often shaped by fear, overload, or loss of control.`,
-    (name) => `${name}, offer structure without cornering the patient. Clear choices reduce friction better than ultimatums.`,
-    (name) => `${name}, stay clinically neutral and keep moving one step at a time. Good de-escalation is usually steady, not dramatic.`
-  ];
-  return tips[index] || tips[tips.length - 1];
-}
-
 function showSlide(n) {
   const slides = document.querySelectorAll('.slide');
   const certIndex = slides.length ? slides.length-1 : 0;
@@ -4356,7 +4355,7 @@ function showSlide(n) {
     if(target === 0) {
       scheduleVance(()=>showAvatarAndSpeak('_direct_', _fn, `Welcome, ${_fn}! Are you ready to begin? I'm here to help and guide you through every module on this journey.`), 400);
     } else {
-      const tipFn = getSlideTipFn(target);
+      const tipFn = slideTips[target] || slideTips[slideTips.length-1];
       scheduleVance(()=>showAvatarAndSpeak('_direct_', _fn, tipFn(_fn)), 400);
     }
   }
@@ -4551,12 +4550,11 @@ function refreshHubCertStatus() {
 function refreshHubBadges() {
   const el = document.getElementById('hub-badges-wrap');
   if(!el) return;
-  const achievements = window.ACHIEVEMENTS || [];
   const earned = window._userData?.achievements || {};
   const earnedIds = Object.keys(earned);
-  if(!earnedIds.length || !achievements.length) { el.style.display='none'; return; }
+  if(!earnedIds.length) { el.style.display='none'; return; }
   el.style.display = 'block';
-  el.innerHTML = `<div style="font-size:.7rem;font-weight:900;color:#64748b;text-transform:uppercase;letter-spacing:.07em;margin-bottom:.5rem">Achievements \u2014 ${earnedIds.length} / ${achievements.length} unlocked</div><div style="display:flex;flex-wrap:wrap;gap:.4rem">${achievements.map(a=>{
+  el.innerHTML = `<div style="font-size:.7rem;font-weight:900;color:#64748b;text-transform:uppercase;letter-spacing:.07em;margin-bottom:.5rem">Achievements \u2014 ${earnedIds.length} / ${ACHIEVEMENTS.length} unlocked</div><div style="display:flex;flex-wrap:wrap;gap:.4rem">${ACHIEVEMENTS.map(a=>{
     const u=!!earned[a.id];
     return `<div title="${a.name}: ${a.desc}" style="width:2.2rem;height:2.2rem;border-radius:.55rem;display:flex;align-items:center;justify-content:center;font-size:1.05rem;background:${u?'linear-gradient(135deg,rgba(37,99,235,.25),rgba(124,58,237,.22))':'rgba(255,255,255,.05)'};border:1px solid ${u?'rgba(124,58,237,.4)':'rgba(255,255,255,.07)'};opacity:${u?1:.28};cursor:${u?'help':'default'};transition:transform .12s" ${u?`onmouseover="this.style.transform='scale(1.2)'"onmouseout="this.style.transform=''"`:''} >${a.icon}</div>`;
   }).join('')}</div>`;
@@ -5271,7 +5269,6 @@ function saveProgress() {
   }).catch(()=>{}); // suppress permission errors — slide navigation always succeeds
 }
 
-async function sendChatMessage() {
   // First-time users get the tutorial automatically
   if(chatLoading) return;
   const input = document.getElementById('chat-input');
@@ -5327,37 +5324,16 @@ async function sendChatMessage() {
   speakWithVance(reply);
 }
 
-function openChat() {
-  const panel = document.getElementById('chat-panel');
-  if(!panel) return;
-  panel.style.display = 'flex';
-  const input = document.getElementById('chat-input');
-  if(input) setTimeout(() => input.focus(), 30);
-}
-
-function closeChat() {
-  const panel = document.getElementById('chat-panel');
-  if(panel) panel.style.display = 'none';
-}
-
-function openChatFromPax(evt) {
-  if(evt) {
-    evt.preventDefault();
-    evt.stopPropagation();
-  }
-  openChat();
-}
-
 function updatePaxMiniLabel() {
   const mini = document.getElementById('avatar-mini');
-  if(mini) mini.textContent = paxMuted ? 'Vance (muted)' : 'Vance (listening)';
+  if(mini) mini.textContent = paxMuted ? '?? Vance (muted)' : '?? Vance (listening)';
 }
 
 function togglePaxMute(evt) {
   if(evt) evt.stopPropagation();
   paxMuted = !paxMuted;
   const btn = document.getElementById('pax-mute-btn');
-  if(btn) btn.textContent = paxMuted ? 'Unmute' : 'Mute';
+  if(btn) btn.textContent = paxMuted ? '??' : '??';
   if(paxMuted && window._vanceAudio) { window._vanceAudio.pause(); window._vanceAudio.currentTime=0; }
   updatePaxMiniLabel();
 }
@@ -5432,7 +5408,7 @@ function showGuide() {
   const ud = window._userData || {};
   const fn = window._currentUser;
   const firstName = ud.firstName || (fn?.displayName||'').split(' ')[0] || 'there';
-  const tipFn = getSlideTipFn(currentSlide);
+  const tipFn = slideTips[currentSlide] || slideTips[slideTips.length-1];
   showAvatarAndSpeak('_direct_', firstName, tipFn(firstName));
 }
 
@@ -5638,9 +5614,9 @@ function showAvatarAndSpeak(context, name, directText) {
   if(directText) {
     text = directText;
   } else if(context === 'welcome') {
-    text = getSlideTipFn(0)(name);
+    text = slideTips[0](name);
   } else {
-    text = getSlideTipFn(currentSlide)(name);
+    text = slideTips[currentSlide] ? slideTips[currentSlide](name) : slideTips[slideTips.length-1](name);
   }
 
   cont.style.display = 'flex';
@@ -6979,7 +6955,27 @@ async function loadSettings() {
       </div>`;
   } catch(e) {
     el.innerHTML=`<p style="color:#ef4444;font-size:.875rem">Error: ${e.message}</p>`;
+        <!-- Push Campaign -->
+        <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:1.25rem;padding:1.5rem;margin-bottom:1.5rem">
+          <h3 style="font-weight:900;font-size:.875rem;color:#0f172a;text-transform:uppercase;letter-spacing:.07em;margin-bottom:.25rem">📣 Push Notification Campaign</h3>
+          <p style="font-size:.78rem;color:#64748b;margin:0 0 1rem">Send an immediate push to all subscribed staff (requires VAPID key above).</p>
+          <div style="display:grid;gap:.65rem">
+            <div><label style="font-size:.7rem;font-weight:800;color:#475569;display:block;margin-bottom:.3rem">Message</label><textarea id="setting-push-msg" class="input-field" rows="2" placeholder="e.g. Reminder: Annual training due this Friday!" style="resize:vertical"></textarea></div>
+            <button onclick="sendPushCampaign()" class="btn btn-primary" style="font-size:.82rem;padding:.55rem 1.2rem;align-self:start">🚀 Send to All Subscribers</button>
+            <div id="push-campaign-result"></div>
+          </div>
+        </div>
   }
+        <!-- Monthly Team Challenge -->
+        <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:1.25rem;padding:1.5rem;margin-bottom:1.5rem">
+          <h3 style="font-weight:900;font-size:.875rem;color:#0f172a;text-transform:uppercase;letter-spacing:.07em;margin-bottom:.5rem">🏆 Monthly Team Challenge</h3>
+          <p style="font-size:.78rem;color:#64748b;margin:0 0 1rem">Set a month-long org-wide XP target. Staff see a live progress bar on their hub.</p>
+          <div style="display:grid;gap:.65rem">
+            <div><label style="font-size:.72rem;font-weight:800;color:#475569;display:block;margin-bottom:.3rem">Challenge Label</label><input id="setting-challenge-label" class="input-field" placeholder="e.g. March Mastery — 10,000 XP Together" value="${settings?.monthlyChallenge?.label||''}"></div>
+            <div><label style="font-size:.72rem;font-weight:800;color:#475569;display:block;margin-bottom:.3rem">XP Target</label><input id="setting-challenge-target" type="number" min="0" class="input-field" style="max-width:160px" value="${settings?.monthlyChallenge?.target||''}"></div>
+            <button onclick="saveMonthlyChallenge()" class="btn btn-primary" style="font-size:.82rem;padding:.55rem 1.2rem;align-self:start">Save Challenge</button>
+          </div>
+        </div>
 }
 
 async function saveTrainingYear() {

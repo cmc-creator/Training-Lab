@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>NyxCodex&#8482; | Clinical De-Escalation Training Platform</title>
-  <meta name="description" content="NyxCodex&#8482; is an AI-powered clinical training platform for psychiatric healthcare professionals. Master de-escalation with immersive simulations.">
+  <meta name="description" content="NyxCodex&#8482; helps psychiatric healthcare teams rehearse difficult moments before they happen on shift with AI coaching, scenario labs, and manager-ready visibility.">
   <link rel="icon" type="image/png" href="nyxcodex-logo.png">
   <link rel="apple-touch-icon" href="nyxcodex-logo.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -13,18 +13,24 @@
   <style>
     :root{
       --bg:#0c1018;
+      --bg-deep:#080c14;
       --ink:#f5f7fb;
       --muted:#b8c0d1;
+      --soft:#8f9ab0;
       --line:rgba(255,255,255,.12);
-      --panel:rgba(14,20,32,.74);
+      --line-strong:rgba(255,255,255,.2);
+      --panel:rgba(14,20,32,.76);
+      --panel-strong:rgba(12,18,29,.92);
       --accent:#f0b86d;
       --accent-2:#7dd3fc;
       --ok:#7ddf9f;
-      --danger:#ff7c6c;
+      --shadow:0 24px 60px rgba(0,0,0,.28);
     }
     *{box-sizing:border-box}
     html,body{margin:0;padding:0;min-height:100%;background:var(--bg);color:var(--ink)}
+    html{scroll-behavior:smooth}
     body{font-family:"Syne",sans-serif;overflow-x:hidden}
+    a{color:inherit}
 
     .atmosphere,.atmosphere:before,.atmosphere:after{position:fixed;inset:0;pointer-events:none}
     .atmosphere{
@@ -40,7 +46,6 @@
       background-image:linear-gradient(rgba(255,255,255,.08) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.08) 1px,transparent 1px);
       background-size:34px 34px;
       opacity:.08;
-      z-index:0;
     }
     .atmosphere:after{
       content:"";
@@ -48,63 +53,76 @@
       mix-blend-mode:soft-light;
       opacity:.16;
       animation:drift 12s ease-in-out infinite alternate;
-      z-index:0;
     }
     @keyframes drift{from{transform:translateY(0)}to{transform:translateY(16px)}}
-    @keyframes rise{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+    @keyframes rise{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
 
-    .shell{position:relative;z-index:1;max-width:1180px;margin:0 auto;padding:1rem 1rem 2rem}
-    .topline{
-      display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.75rem;
-      border:1px solid var(--line);border-radius:18px;background:var(--panel);
-      backdrop-filter:blur(12px);padding:.75rem .9rem;
-      animation:rise .7s ease both;
+    .shell{position:relative;z-index:1;max-width:1220px;margin:0 auto;padding:1rem 1rem 2.4rem}
+    .site-header{
+      display:flex;align-items:center;justify-content:space-between;gap:.9rem;flex-wrap:wrap;
+      border:1px solid var(--line);border-radius:20px;background:var(--panel);
+      backdrop-filter:blur(14px);padding:.75rem .9rem;animation:rise .7s ease both;
     }
-    .brand{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.5rem;min-width:0;width:100%}
-    .brand img{width:136px;height:136px;object-fit:contain;border-radius:14px;background:rgba(255,255,255,.06)}
-    .brand div{min-width:0;text-align:center}
-    .brand .kicker{font:700 .62rem/1 "IBM Plex Mono",monospace;letter-spacing:.15em;color:var(--accent-2);text-transform:uppercase}
-    .brand .name{font:800 1rem/1.1 "Fraunces",serif;letter-spacing:.01em;white-space:normal;overflow:visible;text-overflow:clip}
-    .status{display:flex;align-items:center;justify-content:center;gap:.45rem;font:700 .66rem/1 "IBM Plex Mono",monospace;color:var(--ok);letter-spacing:.08em;text-transform:uppercase}
+    .brand{display:flex;align-items:center;gap:.75rem;min-width:0;text-decoration:none}
+    .brand img{width:68px;height:68px;object-fit:contain;border-radius:14px;background:rgba(255,255,255,.06)}
+    .brand-copy{min-width:0}
+    .kicker{font:700 .62rem/1 "IBM Plex Mono",monospace;letter-spacing:.15em;color:var(--accent-2);text-transform:uppercase}
+    .name{font:800 1rem/1.08 "Fraunces",serif;letter-spacing:.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .header-actions{display:flex;align-items:center;gap:.55rem;flex-wrap:wrap}
+    .status{display:flex;align-items:center;gap:.45rem;font:700 .66rem/1 "IBM Plex Mono",monospace;color:var(--ok);letter-spacing:.08em;text-transform:uppercase;padding:.65rem .75rem;border:1px solid rgba(125,223,159,.18);border-radius:14px;background:rgba(125,223,159,.07)}
     .dot{width:8px;height:8px;border-radius:50%;background:var(--ok);box-shadow:0 0 0 0 rgba(125,223,159,.5);animation:pulse 2.2s infinite}
     @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(125,223,159,.5)}100%{box-shadow:0 0 0 10px rgba(125,223,159,0)}}
+    .nav-link,
+    .btn,
+    .btn-secondary,
+    .btn-tertiary{
+      min-height:44px;display:inline-flex;align-items:center;justify-content:center;text-decoration:none;cursor:pointer;
+      border-radius:14px;padding:.72rem 1rem;font:700 .74rem/1 "IBM Plex Mono",monospace;letter-spacing:.07em;text-transform:uppercase;
+      transition:transform .18s ease,background .2s ease,color .2s ease,border-color .2s ease,box-shadow .2s ease;
+    }
+    .nav-link{border:1px solid rgba(255,255,255,.16);background:rgba(255,255,255,.04);color:#d8dfea}
+    .btn{background:linear-gradient(130deg,var(--accent),#ffd79a);color:#251402;border:1px solid rgba(255,235,198,.7);box-shadow:0 10px 28px rgba(240,184,109,.18)}
+    .btn-secondary{border:1px solid rgba(125,211,252,.5);background:rgba(125,211,252,.1);color:var(--accent-2)}
+    .btn-tertiary{border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.05);color:#dbe4f3}
+    .btn:hover,.btn-secondary:hover,.btn-tertiary:hover,.nav-link:hover{transform:translateY(-2px)}
 
     .hero{
-      margin-top:1rem;border:1px solid var(--line);border-radius:24px;background:var(--panel);overflow:hidden;
-      display:grid;grid-template-columns:1fr;backdrop-filter:blur(12px);
-      animation:rise .8s ease .1s both;
+      margin-top:1rem;border:1px solid var(--line);border-radius:26px;background:var(--panel);overflow:hidden;
+      display:grid;grid-template-columns:1fr;backdrop-filter:blur(12px);box-shadow:var(--shadow);animation:rise .8s ease .08s both;
     }
-    .hero-copy{padding:1.1rem 1.1rem 1.4rem}
+    .hero-copy{padding:1.15rem 1.1rem 1.35rem}
     .tag{
-      display:inline-flex;align-items:center;gap:.5rem;padding:.4rem .65rem;border-radius:999px;
+      display:inline-flex;align-items:center;gap:.5rem;padding:.42rem .68rem;border-radius:999px;
       border:1px solid rgba(240,184,109,.45);background:rgba(240,184,109,.12);
       font:700 .62rem/1 "IBM Plex Mono",monospace;letter-spacing:.08em;text-transform:uppercase;color:var(--accent)
     }
-    h1{margin:.95rem 0 .6rem;font:800 clamp(1.9rem,9vw,3.4rem)/.95 "Fraunces",serif;letter-spacing:-.01em}
+    h1{margin:.95rem 0 .65rem;font:800 clamp(2.25rem,11vw,4.75rem)/.92 "Fraunces",serif;letter-spacing:-.03em;max-width:12ch}
     h1 span{display:block;color:var(--accent-2)}
-    .lead{margin:0;color:var(--muted);font-size:1rem;line-height:1.55;max-width:58ch}
-    .actions{margin-top:1.1rem;display:flex;flex-wrap:wrap;gap:.65rem}
-    .cta,
-    .ghost,
-    .control{
-      min-height:44px;display:inline-flex;align-items:center;justify-content:center;text-decoration:none;cursor:pointer;
-      border-radius:13px;padding:.66rem .95rem;font:700 .75rem/1 "IBM Plex Mono",monospace;letter-spacing:.07em;text-transform:uppercase;
-      transition:transform .18s ease,background .2s ease,color .2s ease,border-color .2s ease;
-    }
-    .cta{background:linear-gradient(130deg,var(--accent),#ffd79a);color:#251402;border:1px solid rgba(255,235,198,.65)}
-    .cta:hover{transform:translateY(-2px)}
-    .ghost{border:1px solid rgba(125,211,252,.52);background:rgba(125,211,252,.1);color:var(--accent-2)}
-    .ghost:hover{transform:translateY(-2px)}
-    .control{border:1px solid rgba(255,255,255,.24);background:rgba(255,255,255,.06);color:#d8dfea}
+    .lead{margin:0;color:var(--muted);font-size:1rem;line-height:1.62;max-width:60ch}
+    .lead strong{color:#ecf4ff}
+    .hero-actions{margin-top:1.15rem;display:flex;flex-wrap:wrap;gap:.65rem}
+    .proof-strip{margin-top:1rem;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.55rem}
+    .proof-pill{border:1px solid rgba(255,255,255,.14);border-radius:14px;background:rgba(255,255,255,.05);padding:.75rem .8rem}
+    .proof-pill b{display:block;font:800 .74rem/1 "IBM Plex Mono",monospace;color:var(--accent-2);letter-spacing:.08em;text-transform:uppercase}
+    .proof-pill span{display:block;margin-top:.35rem;color:#d5dced;font-size:.84rem;line-height:1.45}
+    .testimonial{margin-top:1rem;border:1px solid rgba(240,184,109,.22);border-radius:18px;background:linear-gradient(145deg,rgba(240,184,109,.1),rgba(255,255,255,.03));padding:1rem}
+    .testimonial q{display:block;font:600 1rem/1.6 "Fraunces",serif;color:#fff;margin:0}
+    .testimonial small{display:block;margin-top:.6rem;font:700 .62rem/1 "IBM Plex Mono",monospace;color:#d9b16c;letter-spacing:.1em;text-transform:uppercase}
 
-    .hero-panel{
-      border-top:1px solid var(--line);padding:1rem;background:linear-gradient(145deg,rgba(255,255,255,.03),rgba(255,255,255,.01));
-      display:grid;grid-template-columns:1fr;gap:.65rem
-    }
+    .hero-panel{border-top:1px solid var(--line);padding:1rem;background:linear-gradient(160deg,rgba(255,255,255,.04),rgba(255,255,255,.015));display:grid;gap:.75rem}
+    .panel-head{display:flex;align-items:flex-start;justify-content:space-between;gap:.75rem}
+    .panel-head h2{margin:0;font:800 1.45rem/1.05 "Fraunces",serif}
+    .panel-head p{margin:.35rem 0 0;color:var(--muted);font-size:.9rem;line-height:1.5}
     .gridline{display:grid;grid-template-columns:1fr 1fr;gap:.65rem}
-    .kpi{border:1px solid rgba(255,255,255,.14);border-radius:13px;padding:.75rem;background:rgba(7,10,17,.45)}
-    .kpi b{display:block;font:800 1.2rem/1 "Fraunces",serif;color:var(--accent)}
-    .kpi small{display:block;margin-top:.2rem;font:700 .62rem/1 "IBM Plex Mono",monospace;color:#aeb7c8;letter-spacing:.08em;text-transform:uppercase}
+    .kpi{border:1px solid rgba(255,255,255,.14);border-radius:16px;padding:.85rem;background:rgba(7,10,17,.45)}
+    .kpi b{display:block;font:800 1.35rem/1 "Fraunces",serif;color:var(--accent)}
+    .kpi small{display:block;margin-top:.24rem;font:700 .62rem/1.2 "IBM Plex Mono",monospace;color:#aeb7c8;letter-spacing:.08em;text-transform:uppercase}
+    .story-card{border:1px solid rgba(125,211,252,.18);border-radius:18px;background:rgba(125,211,252,.05);padding:1rem}
+    .story-card h3{margin:0 0 .55rem;font:800 .76rem/1 "IBM Plex Mono",monospace;color:var(--accent-2);letter-spacing:.08em;text-transform:uppercase}
+    .story-card p{margin:0;color:#dbe4f3;font-size:.92rem;line-height:1.56}
+    .story-list{display:grid;gap:.5rem;margin:0;padding:0;list-style:none}
+    .story-list li{border-top:1px solid rgba(255,255,255,.08);padding-top:.55rem;color:#d8dfea;font-size:.88rem;line-height:1.5}
+    .story-list li:first-child{border-top:none;padding-top:0}
 
     .showcase{
       margin-top:1rem;border:1px solid var(--line);border-radius:24px;background:var(--panel);padding:1rem;
@@ -121,32 +139,62 @@
     .shot-copy{padding:.9rem}
     .shot-copy b{display:block;font:700 1rem/1.2 "Syne",sans-serif;color:var(--ink)}
     .shot-copy small{display:block;margin-top:.25rem;font:700 .62rem/1.4 "IBM Plex Mono",monospace;color:#aeb7c8;letter-spacing:.08em;text-transform:uppercase}
-    .modules{margin-top:1rem;display:grid;grid-template-columns:1fr;gap:.65rem}
-    .module{
-      border:1px solid var(--line);border-radius:16px;background:var(--panel);padding:.95rem;
-      animation:rise .65s ease both;
-    }
-    .module:nth-child(1){animation-delay:.12s}
-    .module:nth-child(2){animation-delay:.2s}
-    .module:nth-child(3){animation-delay:.28s}
-    .module .head{font:700 .62rem/1 "IBM Plex Mono",monospace;color:var(--accent-2);letter-spacing:.12em;text-transform:uppercase}
-    .module h3{margin:.55rem 0 .4rem;font:700 1.05rem/1.2 "Syne",sans-serif}
-    .module p{margin:0;color:var(--muted);font-size:.92rem;line-height:1.5}
 
-    footer{margin:1rem 0 0;padding:1rem .2rem .3rem;font:700 .62rem/1.4 "IBM Plex Mono",monospace;color:#99a3b8;letter-spacing:.08em;text-transform:uppercase}
-    footer a{color:inherit}
+    .stats{margin-top:1rem;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.65rem}
+    .stat-card{border:1px solid var(--line);border-radius:18px;background:var(--panel);padding:.95rem;animation:rise .65s ease both}
+    .stat-card strong{display:block;font:800 1.45rem/1 "Fraunces",serif;color:#fff}
+    .stat-card span{display:block;margin-top:.25rem;font:700 .62rem/1.35 "IBM Plex Mono",monospace;color:var(--accent-2);letter-spacing:.08em;text-transform:uppercase}
+
+    .section{margin-top:1rem;border:1px solid var(--line);border-radius:24px;background:var(--panel);padding:1rem;backdrop-filter:blur(12px)}
+    .section-kicker{font:700 .62rem/1 "IBM Plex Mono",monospace;letter-spacing:.14em;color:var(--accent-2);text-transform:uppercase}
+    .section-head{display:grid;gap:.5rem;margin-bottom:1rem}
+    .section-head h2{margin:0;font:800 clamp(1.65rem,6vw,2.65rem)/.96 "Fraunces",serif;max-width:16ch}
+    .section-head p{margin:0;color:var(--muted);font-size:.96rem;line-height:1.62;max-width:68ch}
+
+    .feature-grid,.ops-grid,.role-grid,.journey-grid,.faq-grid{display:grid;grid-template-columns:1fr;gap:.7rem}
+    .feature-card,.ops-card,.role-card,.journey-card,.faq-card{
+      border:1px solid rgba(255,255,255,.12);border-radius:18px;background:rgba(255,255,255,.04);padding:1rem;
+    }
+    .feature-card h3,.ops-card h3,.role-card h3,.journey-card h3,.faq-card h3{margin:.2rem 0 .4rem;font:700 1.05rem/1.25 "Syne",sans-serif}
+    .feature-card p,.ops-card p,.role-card p,.journey-card p,.faq-card p{margin:0;color:var(--muted);font-size:.92rem;line-height:1.58}
+    .feature-card .eyebrow,.ops-card .eyebrow,.role-card .eyebrow,.journey-card .eyebrow{font:700 .62rem/1 "IBM Plex Mono",monospace;color:var(--accent);letter-spacing:.12em;text-transform:uppercase}
+
+    .ops-grid .ops-card{background:linear-gradient(160deg,rgba(255,255,255,.045),rgba(125,211,252,.03))}
+    .role-card{min-height:100%}
+    .role-chip{display:inline-flex;align-items:center;gap:.4rem;border:1px solid rgba(255,255,255,.12);border-radius:999px;padding:.36rem .6rem;font:700 .62rem/1 "IBM Plex Mono",monospace;letter-spacing:.08em;text-transform:uppercase;color:#dbe4f3;background:rgba(255,255,255,.05);margin-bottom:.7rem}
+    .journey-card{position:relative;padding-top:1.2rem}
+    .journey-step{display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:999px;background:linear-gradient(135deg,var(--accent),#ffd79a);color:#261708;font:800 .82rem/1 "IBM Plex Mono",monospace;margin-bottom:.75rem}
+    .quote-card{border:1px solid rgba(125,223,159,.2);border-radius:20px;background:linear-gradient(160deg,rgba(125,223,159,.08),rgba(255,255,255,.03));padding:1rem;margin-top:1rem}
+    .quote-card q{display:block;margin:0;font:600 1rem/1.65 "Fraunces",serif;color:#edf7ff}
+    .quote-card small{display:block;margin-top:.65rem;font:700 .62rem/1 "IBM Plex Mono",monospace;color:#98e5b2;letter-spacing:.1em;text-transform:uppercase}
+
+    .cta-band{margin-top:1rem;border:1px solid rgba(240,184,109,.28);border-radius:24px;background:linear-gradient(135deg,rgba(240,184,109,.16),rgba(125,211,252,.08));padding:1.1rem}
+    .cta-band h2{margin:0 0 .45rem;font:800 clamp(1.55rem,6vw,2.4rem)/1 "Fraunces",serif;max-width:12ch}
+    .cta-band p{margin:0;color:#e6edf9;font-size:.96rem;line-height:1.62;max-width:60ch}
+    .cta-band .hero-actions{margin-top:1rem}
+
+    footer{margin:1rem 0 0;padding:1rem .2rem .2rem;font:700 .62rem/1.5 "IBM Plex Mono",monospace;color:#99a3b8;letter-spacing:.08em;text-transform:uppercase}
+    footer a{text-decoration:none}
 
     @media (min-width:760px){
-      .shell{padding:1.3rem 1.3rem 2.5rem}
-      .hero{grid-template-columns:1.25fr .95fr;min-height:520px}
-      .hero-copy{padding:1.5rem 1.5rem 1.8rem}
+      .shell{padding:1.25rem 1.25rem 2.7rem}
+      .hero{grid-template-columns:1.12fr .88fr;min-height:640px}
+      .hero-copy{padding:1.45rem 1.45rem 1.7rem}
       .hero-panel{border-top:none;border-left:1px solid var(--line);padding:1.2rem}
       .showcase{padding:1.2rem}
       .showcase-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
-      .modules{grid-template-columns:repeat(3,minmax(0,1fr));gap:.8rem}
+      .stats{grid-template-columns:repeat(4,minmax(0,1fr))}
+      .feature-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+      .ops-grid{grid-template-columns:1.1fr .9fr}
+      .role-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+      .journey-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+      .faq-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
     }
     @media (max-width:430px){
-      .brand img{width:116px;height:116px}
+      .brand img{width:58px;height:58px}
+      .proof-strip,.stats,.gridline{grid-template-columns:1fr}
+      .header-actions{width:100%}
+      .header-actions .nav-link,.header-actions .btn-secondary{flex:1}
     }
   </style>
 </head>
@@ -154,15 +202,20 @@
   <div class="atmosphere" aria-hidden="true"></div>
 
   <main class="shell">
-    <header class="topline" aria-label="Platform status">
-      <a class="brand" href="index.html" style="text-decoration:none;color:inherit">
+    <header class="site-header" aria-label="Platform status">
+      <a class="brand" href="index.html">
         <img src="nyxcodex-logo.png" alt="NyxCodex logo">
-        <div>
+        <div class="brand-copy">
           <div class="kicker">Clinical Simulation Deck</div>
           <div class="name">NyxCodex Training Lab</div>
         </div>
       </a>
-      <div class="status"><span class="dot"></span>Live System</div>
+      <div class="header-actions">
+        <a class="nav-link" href="#platform">Platform</a>
+        <a class="nav-link" href="#workflow">How It Works</a>
+        <a class="btn-secondary" href="trainer_pro.html?auth=signup">Start Setup</a>
+        <div class="status"><span class="dot"></span>Live System</div>
+      </div>
     </header>
 
     <section class="hero" aria-label="Hero section">
@@ -170,27 +223,63 @@
         <div class="tag">Psych Unit Readiness Platform</div>
         <h1>Build Clinical Calm <span>Before the Crisis Peaks.</span></h1>
         <p class="lead">
-          NyxCodex blends scenario pressure, real-time AI coaching, and competency tracking so your team can practice difficult moments before they happen on shift.
+          NyxCodex gives psychiatric healthcare teams a place to rehearse the hard moments before they happen on shift. <strong>AI coaching, role-based drills, manager visibility, and clinical debriefing</strong> live in one platform built for behavioral health operations.
         </p>
-        <div class="actions">
-          <a class="cta" href="trainer_pro.html?auth=login">Sign In</a>
-          <a class="ghost" href="trainer_pro.html?auth=signup">Sign Up</a>
-          <a class="control" href="trainer_pro.html">View Platform</a>
+        <div class="hero-actions">
+          <a class="btn" href="trainer_pro.html?auth=signup">Launch Team Access</a>
+          <a class="btn-secondary" href="trainer_pro.html?auth=login">Staff Sign In</a>
+          <a class="btn-tertiary" href="trainer_pro.html">View Platform</a>
+        </div>
+        <div class="proof-strip">
+          <div class="proof-pill">
+            <b>Scenario Pressure</b>
+            <span>Staff practice refusal, escalation, dysregulation, and crisis conversations before they happen live.</span>
+          </div>
+          <div class="proof-pill">
+            <b>Clinical Coaching</b>
+            <span>Professor Vance gives immediate feedback, debrief language, and next-step recommendations.</span>
+          </div>
+          <div class="proof-pill">
+            <b>Operational Visibility</b>
+            <span>Leaders track completion, XP, readiness, and due dates without chasing spreadsheets.</span>
+          </div>
+          <div class="proof-pill">
+            <b>Shift-Friendly</b>
+            <span>Built for mobile access, short drills, and fast check-ins between patient care demands.</span>
+          </div>
+        </div>
+        <div class="testimonial">
+          <q>“This feels less like annual compliance and more like a rehearsal room for real clinical pressure.”</q>
+          <small>Designed for psychiatric hospitals, inpatient teams, and de-escalation readiness programs</small>
         </div>
       </div>
 
-      <aside class="hero-panel" aria-label="Quick metrics and redirect status">
+      <aside class="hero-panel" aria-label="Product summary">
+        <div class="panel-head">
+          <div>
+            <h2>Train the moment that matters.</h2>
+            <p>Move from one-time orientation to repeatable readiness with a training system staff will actually use.</p>
+          </div>
+        </div>
         <div class="gridline">
           <div class="kpi"><b>31</b><small>Structured Modules</small></div>
           <div class="kpi"><b>AI</b><small>Live Mentor Feedback</small></div>
         </div>
         <div class="gridline">
-          <div class="kpi"><b>Roleplay</b><small>High-pressure Drills</small></div>
-          <div class="kpi"><b>Mobile</b><small>Shift-friendly Access</small></div>
+          <div class="kpi"><b>Lab</b><small>Roleplay + Debrief</small></div>
+          <div class="kpi"><b>Mobile</b><small>Shift-Friendly Access</small></div>
         </div>
-        <div class="kpi" style="border-color:rgba(240,184,109,.38)">
-          <b style="font-size:1.02rem;color:#ffd79a">Ready when you are</b>
-          <small>Choose Sign In or Sign Up to enter the training app.</small>
+        <div class="story-card">
+          <h3>Why teams switch</h3>
+          <p>Most de-escalation training explains what to do. NyxCodex lets staff rehearse it, score it, and improve it before the next difficult interaction lands on the unit.</p>
+        </div>
+        <div class="story-card">
+          <h3>What leaders get</h3>
+          <ul class="story-list">
+            <li>Role-based training paths for frontline staff, leads, and managers.</li>
+            <li>Manager-assigned scenarios, challenge campaigns, and due-date reminders.</li>
+            <li>Certificate, completion, and performance data in a single operational view.</li>
+          </ul>
         </div>
       </aside>
     </section>
@@ -199,61 +288,186 @@
       <div class="showcase-head">
         <div class="showcase-kicker">Inside The App</div>
         <h2>What staff actually see in the platform.</h2>
-        <p>These are real examples from the training experience, not placeholder art. They show the dashboard, room-safety practice, and patient observation workflow.</p>
+        <p>Real examples from the training experience — the scenario lab, patient observation coaching, and de-escalation outcome screens.</p>
       </div>
       <div class="showcase-grid">
         <article class="shot">
           <div class="shot-media">
-            <img src="lab.png" alt="NyxCodex dashboard and training lab interface example">
+            <img src="lab.png" alt="NyxCodex de-escalation scenario lab interface">
           </div>
           <div class="shot-copy">
-            <b>Training Dashboard</b>
-            <small>Progress, modules, and launch points</small>
+            <b>De-Escalation Lab</b>
+            <small>Scenario roleplay with AI-guided decision trees</small>
           </div>
         </article>
         <article class="shot">
           <div class="shot-media">
-            <img src="hazards.png" alt="Room hazard identification training example">
-          </div>
-          <div class="shot-copy">
-            <b>Environment Hazard Scans</b>
-            <small>Interactive safety observation drills</small>
-          </div>
-        </article>
-        <article class="shot">
-          <div class="shot-media">
-            <img src="microexpressions.png" alt="Microexpression recognition training example">
+            <img src="microexpressions.png" alt="Patient microexpression recognition training">
           </div>
           <div class="shot-copy">
             <b>Microexpression Coaching</b>
-            <small>Patient cues and escalation awareness</small>
+            <small>Patient cue and escalation awareness drills</small>
+          </div>
+        </article>
+        <article class="shot">
+          <div class="shot-media">
+            <img src="success.png" alt="Successful de-escalation protocol outcome screen">
+          </div>
+          <div class="shot-copy">
+            <b>Outcome Review</b>
+            <small>Protocol-followed and safety zone maintained feedback</small>
           </div>
         </article>
       </div>
     </section>
 
-    <section class="modules" aria-label="Platform highlights">
-      <article class="module">
-        <div class="head">Scenario Core</div>
-        <h3>Escalation arcs that feel real</h3>
-        <p>Train across autism, PTSD, bipolar, psychosis, and medication refusal scenarios with de-escalation scoring.</p>
-      </article>
-      <article class="module">
-        <div class="head">Clinical Coaching</div>
-        <h3>Professor Vance in the loop</h3>
-        <p>Get immediate feedback, debrief summaries, and better next-step options after each response.</p>
-      </article>
-      <article class="module">
-        <div class="head">Team Operations</div>
-        <h3>Admin visibility without clutter</h3>
-        <p>Track progress, completion, and readiness signals for staff and departments in one workflow.</p>
-      </article>
+    <section class="stats" aria-label="Platform proof points">
+      <article class="stat-card"><strong>Daily drills</strong><span>Short practice loops built for actual shift rhythm</span></article>
+      <article class="stat-card"><strong>Scenario history</strong><span>Track mastery across diagnoses and response quality</span></article>
+      <article class="stat-card"><strong>Clinical notes</strong><span>Export debriefs into printable supervision-ready language</span></article>
+      <article class="stat-card"><strong>Admin control</strong><span>Manage access, reminders, push campaigns, and readiness from one hub</span></article>
+    </section>
+
+    <section class="section" id="platform" aria-label="Platform benefits">
+      <div class="section-head">
+        <div class="section-kicker">Platform Value</div>
+        <h2>Everything your training team needs to move from slides to readiness.</h2>
+        <p>NyxCodex combines structured education, scenario practice, AI debriefing, and leadership oversight into one experience. That means fewer disconnected tools, fewer manual follow-ups, and more reps where staff actually need them.</p>
+      </div>
+      <div class="feature-grid">
+        <article class="feature-card">
+          <div class="eyebrow">Scenario Core</div>
+          <h3>Escalation arcs that feel clinically real</h3>
+          <p>Practice autism, PTSD, bipolar, psychosis, borderline traits, and medication refusal scenarios with graded de-escalation scoring.</p>
+        </article>
+        <article class="feature-card">
+          <div class="eyebrow">Clinical Coaching</div>
+          <h3>Professor Vance stays in the loop</h3>
+          <p>Staff get real-time coaching, better phrasing, and post-incident debriefs without waiting for a live educator to review every attempt.</p>
+        </article>
+        <article class="feature-card">
+          <div class="eyebrow">Measurement</div>
+          <h3>Progress that leaders can actually use</h3>
+          <p>XP, lab credits, mastery badges, completion data, and assignment tracking help teams see who is building confidence and who needs support.</p>
+        </article>
+      </div>
+      <div class="quote-card">
+        <q>“If your staff can only read about de-escalation, they still have to improvise under pressure. If they can rehearse it, they show up differently.”</q>
+        <small>NyxCodex positioning</small>
+      </div>
+    </section>
+
+    <section class="section" id="workflow" aria-label="Workflow section">
+      <div class="section-head">
+        <div class="section-kicker">How It Works</div>
+        <h2>A simple loop: learn, rehearse, debrief.</h2>
+        <p>The product is built to feel operationally light. Staff move through structured content, jump into high-pressure scenario labs, and leave with clearer language for the next real interaction.</p>
+      </div>
+      <div class="journey-grid">
+        <article class="journey-card">
+          <div class="journey-step">01</div>
+          <div class="eyebrow">Learn</div>
+          <h3>Deliver the baseline</h3>
+          <p>Use structured modules to standardize your de-escalation language, expectations, and annual readiness workflow.</p>
+        </article>
+        <article class="journey-card">
+          <div class="journey-step">02</div>
+          <div class="eyebrow">Rehearse</div>
+          <h3>Put staff under realistic pressure</h3>
+          <p>Run scenario labs, daily drills, and diagnosis-specific practice loops so staff can build calm before the floor gets loud.</p>
+        </article>
+        <article class="journey-card">
+          <div class="journey-step">03</div>
+          <div class="eyebrow">Measure</div>
+          <h3>Coach and track improvement</h3>
+          <p>Managers assign follow-up scenarios, review progress, and use debrief outputs to reinforce stronger clinical communication.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="section" aria-label="Role specific value">
+      <div class="section-head">
+        <div class="section-kicker">Who It Serves</div>
+        <h2>Built for the whole psychiatric team, not just the LMS administrator.</h2>
+        <p>Different users need different value. NyxCodex gives each role a reason to come back instead of treating training as a one-time event.</p>
+      </div>
+      <div class="role-grid">
+        <article class="role-card">
+          <div class="role-chip">Frontline Staff</div>
+          <h3>Practice what to say when tension rises</h3>
+          <p>Short drills, guided responses, scenario scoring, and debrief coaching help staff rehearse before the next difficult patient interaction.</p>
+        </article>
+        <article class="role-card">
+          <div class="role-chip">Managers</div>
+          <h3>Assign practice instead of sending reminders into the void</h3>
+          <p>Use scenario assignments, due dates, and readiness views to direct coaching where it is actually needed.</p>
+        </article>
+        <article class="role-card">
+          <div class="role-chip">Administrators</div>
+          <h3>See completion, momentum, and operational gaps</h3>
+          <p>Track certification readiness, leaderboard engagement, and team-wide challenge progress without leaving the platform.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="section" aria-label="Operations and oversight">
+      <div class="section-head">
+        <div class="section-kicker">Operations</div>
+        <h2>Admin visibility without clutter.</h2>
+        <p>Training leadership should not need three dashboards and a spreadsheet to understand who is ready. NyxCodex keeps the operational layer connected to the learning experience.</p>
+      </div>
+      <div class="ops-grid">
+        <article class="ops-card">
+          <div class="eyebrow">Manager Controls</div>
+          <h3>Turn coaching into action</h3>
+          <p>Assign scenarios, extend due dates, send nudges, and track who has completed specific follow-up work after a weak lab performance.</p>
+        </article>
+        <article class="ops-card">
+          <div class="eyebrow">Engagement Layer</div>
+          <h3>Keep training active between deadlines</h3>
+          <p>Use daily streaks, team challenges, push campaigns, lab credits, and achievement badges to keep the platform active beyond annual compliance windows.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="section" aria-label="FAQ section">
+      <div class="section-head">
+        <div class="section-kicker">FAQ</div>
+        <h2>Questions leaders usually ask before rollout.</h2>
+      </div>
+      <div class="faq-grid">
+        <article class="faq-card">
+          <h3>Is this only for annual training?</h3>
+          <p>No. It covers structured annual curriculum, but the stronger value is ongoing rehearsal through drills, labs, and follow-up coaching.</p>
+        </article>
+        <article class="faq-card">
+          <h3>Will staff use it on mobile?</h3>
+          <p>Yes. The interface is designed for mobile-first access so staff can complete quick reps and assigned work between real unit demands.</p>
+        </article>
+        <article class="faq-card">
+          <h3>Can managers target weaker areas?</h3>
+          <p>Yes. Scenario history, mastery counts, due dates, and assignment tools support directed coaching rather than broad reminders.</p>
+        </article>
+        <article class="faq-card">
+          <h3>What makes this different from a normal LMS?</h3>
+          <p>Most LMS tools deliver information. NyxCodex is built around rehearsal, response quality, clinical debriefing, and operational readiness.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="cta-band" aria-label="Final call to action">
+      <h2>Bring the hard conversations into practice before they hit the unit.</h2>
+      <p>Use the landing page as the front door, move staff directly into the training app, and give leadership a system that feels credible to clinicians and useful to operations.</p>
+      <div class="hero-actions">
+        <a class="btn" href="trainer_pro.html?auth=signup">Create an Account</a>
+        <a class="btn-secondary" href="trainer_pro.html?auth=login">Sign In</a>
+        <a class="btn-tertiary" href="https://nyxcollectivellc.com" target="_blank" rel="noopener">Contact Nyx Collective</a>
+      </div>
     </section>
 
     <footer>
       &#169; 2026 NyxCodex &#8226; <a href="https://nyxcollectivellc.com" target="_blank" rel="noopener">Nyx Collective LLC</a> &#8226; All Rights Reserved
     </footer>
   </main>
-
 </body>
 </html>
