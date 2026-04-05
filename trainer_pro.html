@@ -1806,6 +1806,76 @@ button:focus-visible,a:focus-visible,[tabindex]:focus-visible{
 /* ── DARK MODE: global input fields ── */
 :root:not([data-theme="light"]) .input-field{background:#0c1018!important;border-color:rgba(255,255,255,.1)!important;color:#f0f4fb!important}
 :root:not([data-theme="light"]) .input-field:focus{background:#0e1422!important;border-color:#60a5fa!important}
+
+/* ── DARK MODE: Prof. Vance speech bubble + controls ── */
+:root:not([data-theme="light"]) #avatar-speech{background:#111828!important;color:#e2e8f0!important;border:1px solid rgba(255,255,255,.1)!important}
+:root:not([data-theme="light"]) #avatar-speech div[style*="border-top:8px solid #fff"]{border-top-color:#111828!important}
+:root:not([data-theme="light"]) #pax-mute-btn,
+:root:not([data-theme="light"]) #pax-minimize-btn{background:rgba(255,255,255,.08)!important;color:#94a3b8!important}
+:root:not([data-theme="light"]) #avatar-container>div:last-child{background:rgba(255,255,255,.1)!important;color:#e2e8f0!important}
+/* ── DARK MODE: nav bar slide counter ── */
+:root:not([data-theme="light"]) #nav-slide-counter{color:#94a3b8!important}
+/* ── DARK MODE: lab modal inline elements ── */
+:root:not([data-theme="light"]) #lab-modal h3[style*="color:#0f172a"]{color:#eef2fb!important}
+:root:not([data-theme="light"]) #lab-modal div[style*="background:#ecfdf3"]{background:rgba(34,197,94,.1)!important;border-color:rgba(34,197,94,.2)!important;color:#86efac!important}
+:root:not([data-theme="light"]) #lab-modal div[style*="background:#f8fafc"]{background:#0c1018!important;border-color:rgba(255,255,255,.08)!important}
+:root:not([data-theme="light"]) #lab-scenario-box{background:#0c1018!important;border-color:rgba(255,255,255,.08)!important;color:#e2e8f0!important}
+:root:not([data-theme="light"]) #lab-modal div[style*="background:#fffaf5"]{background:rgba(251,146,60,.07)!important;border-color:rgba(251,146,60,.2)!important}
+:root:not([data-theme="light"]) #lab-modal h4[style*="color:#92400e"]{color:#fb923c!important}
+:root:not([data-theme="light"]) #lab-modal ul[style*="color:#92400e"]{color:#fdba74!important}
+:root:not([data-theme="light"]) #lab-modal div[style*="color:#b45309"]{color:#fb923c!important}
+:root:not([data-theme="light"]) #lab-score-panel{background:#111828!important;border-color:rgba(255,255,255,.08)!important}
+:root:not([data-theme="light"]) #lab-score-panel div[style*="color:#0f172a"]{color:#eef2fb!important}
+:root:not([data-theme="light"]) #lab-feedback{color:#94a3b8!important}
+/* ── DARK MODE: drill modal inline elements ── */
+:root:not([data-theme="light"]) #drill-streak-display{background:rgba(245,158,11,.15)!important;border-color:rgba(245,158,11,.3)!important;color:#fbbf24!important}
+:root:not([data-theme="light"]) #drill-scenario-box{background:#0c1018!important;border-color:rgba(255,255,255,.08)!important;color:#e2e8f0!important}
+:root:not([data-theme="light"]) #drill-score-panel{background:#111828!important;border-color:rgba(255,255,255,.08)!important}
+:root:not([data-theme="light"]) #drill-score-panel div[style*="color:#0f172a"]{color:#eef2fb!important}
+:root:not([data-theme="light"]) #drill-feedback{color:#94a3b8!important}
+:root:not([data-theme="light"]) #drill-streak-bonus{color:#fbbf24!important}
+:root:not([data-theme="light"]) #drill-step-1 div[style*="color:#a16207"],
+:root:not([data-theme="light"]) #drill-step-2 div[style*="color:#a16207"]{color:#fbbf24!important}
+/* ── DARK MODE: admin pin modal inline ── */
+:root:not([data-theme="light"]) #admin-pin-modal h2[style*="color:#0f172a"]{color:#eef2fb!important}
+:root:not([data-theme="light"]) #admin-pin-modal button[style*="background:#f1f5f9"]{background:rgba(255,255,255,.07)!important;color:#b8c0d1!important}
+/* ── DARK MODE: account modal inline text values ── */
+:root:not([data-theme="light"]) #account-modal h2[style*="color:#0f172a"],
+:root:not([data-theme="light"]) #account-modal h3[style*="color:#0f172a"],
+:root:not([data-theme="light"]) #account-modal p[style*="color:#0f172a"]{color:#eef2fb!important}
+/* ── DARK MODE: micro-expression buttons + Vance tip ── */
+:root:not([data-theme="light"]) #microexp-vance-text{color:#93c5fd!important}
+:root:not([data-theme="light"]) #microexp-vance-tip{background:rgba(37,99,235,.1)!important;border-left-color:#3b82f6!important}
+:root:not([data-theme="light"]) button[onclick*="answerMicroExp('Fear')"],
+:root:not([data-theme="light"]) button[onclick*="answerMicroExp('Neutral')"]{background:rgba(34,197,94,.08)!important;border-color:rgba(34,197,94,.25)!important;color:#86efac!important}
+:root:not([data-theme="light"]) button[onclick*="answerMicroExp('Fear')"]{background:rgba(37,99,235,.1)!important;border-color:rgba(37,99,235,.25)!important;color:#93c5fd!important}
+:root:not([data-theme="light"]) button[onclick*="answerMicroExp('Anger')"]{background:rgba(239,68,68,.1)!important;border-color:rgba(239,68,68,.3)!important;color:#fca5a5!important}
+:root:not([data-theme="light"]) button[onclick*="answerMicroExp('Sadness')"]{background:rgba(124,58,237,.1)!important;border-color:rgba(124,58,237,.25)!important;color:#c4b5fd!important}
+/* ── DARK MODE: broad catch for orphaned dark text + light buttons inside modal cards ── */
+:root:not([data-theme="light"]) .modal-card div[style*="color:#475569"],
+:root:not([data-theme="light"]) .modal-card span[style*="color:#475569"],
+:root:not([data-theme="light"]) .modal-card p[style*="color:#475569"]{color:#94a3b8!important}
+:root:not([data-theme="light"]) .modal-card button[style*="background:#f1f5f9"]{background:rgba(255,255,255,.07)!important;color:#b8c0d1!important}
+/* ── DARK MODE: chat message bubbles (dynamically rendered) ── */
+:root:not([data-theme="light"]) #chat-messages div[style*="background:#dbeafe"]{background:rgba(37,99,235,.2)!important;border-color:rgba(37,99,235,.3)!important;color:#bfdbfe!important}
+:root:not([data-theme="light"]) #chat-messages div[style*="background:#eff6ff"]{background:rgba(99,102,241,.12)!important;border-color:rgba(99,102,241,.2)!important;color:#c7d2fe!important}
+:root:not([data-theme="light"]) #chat-messages div[style*="color:#1d4ed8"]{color:#60a5fa!important}
+:root:not([data-theme="light"]) #chat-messages div[style*="color:#475569"]{color:#94a3b8!important}
+/* ── DARK MODE: admin modal inner info/light boxes ── */
+:root:not([data-theme="light"]) .modal-card.admin div[style*="background:#eff6ff"],
+:root:not([data-theme="light"]) .modal-card.admin div[style*="background:#f0f9ff"]{background:rgba(37,99,235,.08)!important;border-color:rgba(37,99,235,.2)!important}
+:root:not([data-theme="light"]) .modal-card.admin p[style*="color:#1e40af"],
+:root:not([data-theme="light"]) .modal-card.admin p[style*="color:#1d4ed8"],
+:root:not([data-theme="light"]) .modal-card.admin div[style*="color:#1d4ed8"],
+:root:not([data-theme="light"]) .modal-card.admin div[style*="color:#2563eb"]{color:#60a5fa!important}
+:root:not([data-theme="light"]) .modal-card.admin p[style*="color:#3b82f6"],
+:root:not([data-theme="light"]) .modal-card.admin p[style*="color:#1e3a8a"]{color:#93c5fd!important}
+:root:not([data-theme="light"]) .modal-card.admin tr[style*="background:#eff6ff"]{background:rgba(37,99,235,.1)!important}
+:root:not([data-theme="light"]) .modal-card.admin button[style*="background:#eff6ff"]{background:rgba(37,99,235,.1)!important;border-color:rgba(37,99,235,.25)!important;color:#93c5fd!important}
+/* ── DARK MODE: slide inline blue tip boxes ── */
+:root:not([data-theme="light"]) .slide div[style*="background:#eff6ff"]{background:rgba(37,99,235,.1)!important;border-left-color:#3b82f6!important}
+:root:not([data-theme="light"]) .slide div[style*="background:#eff6ff"] p{color:#93c5fd!important}
+:root:not([data-theme="light"]) .slide div[style*="background:#eff6ff"] p[style*="font-weight:800"]{color:#60a5fa!important}
 </style>
 </head>
 <body>
