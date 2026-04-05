@@ -1,13 +1,13 @@
 {
-  "name": "NyxLab™",
-  "short_name": "NyxLab™",
-  "description": "NyxLab™ by Nyx Collective LLC — De-escalation & Crisis Intervention Training for Destiny Springs Healthcare",
+  "name": "NyxCodex™ — Clinical De-Escalation Training",
+  "short_name": "NyxCodex™",
+  "description": "NyxCodex™ by NyxCollective LLC — AI-powered de-escalation & crisis intervention simulation for psychiatric healthcare professionals.",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
   "orientation": "any",
-  "background_color": "#0f172a",
-  "theme_color": "#2563eb",
+  "background_color": "#0c1018",
+  "theme_color": "#0c1018",
   "categories": ["education", "medical"],
   "icons": [
     {
