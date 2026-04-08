@@ -1,18 +1,22 @@
-# Destiny Springs Healthcare - De-escalation Training Lab
+# NyxCodex™ — Clinical De-Escalation Training
+### NyxCollective LLC · AI-Powered Psychiatric Crisis Simulation
 
-An interactive, AI-powered clinical training platform for psychiatric healthcare professionals. Built for Destiny Springs Healthcare inpatient acute care facility.
+An interactive, AI-powered clinical training platform for psychiatric healthcare professionals. Multi-tenant, white-label ready, and deployed globally via GitHub Pages + Firebase.
 
 ## Features
 
-✨ **AI Clinical Mentor** - Professor Vance guides staff through real-world scenarios
-🧩 **Diagnosis-Specific Training** - Autism, ADHD, Schizophrenia, Bipolar, PTSD, Depression, Anxiety, BPD
-🎮 **Interactive Crisis Scenarios** - Practice responses with AI scoring (A-F)
-📊 **Team Leaderboard** - Track progress across your entire staff
-🏆 **Achievement System** - XP, certificates, performance tracking
-🤖 **Roleplay Script Generator** - Create huddle training materials instantly
-📝 **Clinical Debrief Assistant** - AI supervisor feedback on real incidents
-💻 **Mobile-First Design** - Built to work cleanly on phones, tablets, and desktops
-🎓 **PDF Certificates** - Print professional training completion documents
+✨ **AI Clinical Mentor** — Professor Vance coaches staff through real-world scenarios in real time
+🧩 **Diagnosis-Specific Training** — Autism, ADHD, Schizophrenia, Bipolar, PTSD, Depression, Anxiety, BPD
+🎮 **Interactive Crisis Lab** — Practice responses with AI scoring (A-F), difficulty tiers, custom scenarios
+📊 **Team Leaderboard** — Real-time rankings with department filter and multi-org support
+🏆 **Gamification** — XP, levels, Lab Credits, monthly org challenges, completion certificates
+🔔 **Push Notifications** — VAPID-based training reminders and deadline alerts
+📚 **Custom Scenario Builder** — Admins create facility-specific scenarios stored in Firebase
+🌙 **Dark + Light Theme** — Default deep navy + Gold & Silver light theme with toggle
+📱 **PWA / Offline Ready** — Installable, cached via Service Worker, works offline
+🎓 **PDF Certificates** — Auto-generated on completion with org branding
+🔐 **Firebase Auth + Multi-Tenant** — Per-org data isolation, TOTP 2FA, role-based access (owner/admin/manager)
+🏥 **HR Integrations** — Outbound webhooks (Zapier/Make), xAPI/LRS, CSV export
 
 ## 🚀 Production Platform
 
@@ -28,63 +32,44 @@ Staff can access the platform directly from any device with internet connection.
 
 ### For Staff
 1. Visit the live platform URL above
-2. Click "Sign Up" to create your account
-3. Use your facility email and create a secure password
-4. Start training immediately!
+2. Click **Sign Up** and create an account with your work email
+3. Enter your Gemini API key when prompted (free at https://aistudio.google.com/)
+4. Begin training immediately — progress saves to the cloud automatically
 
 ### For Administrators
 1. Log in with your admin credentials
-2. Press the **"A"** key to access the Admin Dashboard
-3. View team leaderboard, user analytics, and generate reports
-
-## Quick Start (Local Development)
-
-### 1. Get a Free Gemini API Key
-- Go to [Google AI Studio](https://aistudio.google.com/)
-- Click "Create API Key"
-- Copy your key (keep it secret!)
-
-### 2. Run the Trainer Locally
-- Open `trainer.html` in any modern web browser
-- Paste your API key when prompted on the Interactive Lab slide
-- Start training!
+2. Press **`A`** to open the Admin Dashboard
+3. Manage staff, view leaderboard, build custom scenarios, export compliance reports
+4. Configure push notifications, HR webhooks, and org settings under **Settings**
 
 ## How Data is Saved
 
-Your progress is automatically saved to your browser's local storage:
-- ✅ Scenarios completed
-- ✅ Response scores (A-F)
-- ✅ XP earned
-- ✅ Completed diagnoses
-- ✅ Personal notes
+All progress is saved automatically to **Firebase Realtime Database**, scoped per org:
+- ✅ Slide progress, XP, level, Lab Credits
+- ✅ Scenario scores (A-F), response history
+- ✅ Certificates with timestamp
+- ✅ Custom scenarios created by admins
+- ✅ Works across all devices — no localStorage dependency
 
-### For Teams/Organizations
-
-**Export Team Progress:**
-1. Each employee trains using their browser
-2. Use the **Admin Dashboard** (accessible from the menu)
-3. Export all staff progress as JSON
-4. View team leaderboard
-
-**Import Data:**
-- Admin can import previously exported JSON files
-- Merge multiple employee datasets
-- Backup and restore training records
+> `trainer.html` (standalone, localStorage-only) remains in the repo as an offline fallback. Direct staff to the live URL, not to this file.
 
 ## Usage
 
 ### Slides
-- **Slides 1-6**: Core de-escalation concepts
-- **Slide 7**: Diagnosis-specific training library
-- **Slide 8**: Interactive crisis scenarios & script builder
-- **Slide 9**: Clinical debrief assistant
+- **Slides 1–6**: Core de-escalation concepts (body language, grounding, verbal skills, environment)
+- **Slides 7–14**: Diagnosis-specific modules (Autism, ADHD, Schizophrenia, Bipolar, PTSD, Depression, Anxiety, BPD)
+- **Slides 15–20**: Advanced techniques (micro-expressions, choice architecture, trauma-informed care, restraint alternatives)
+- **Slides 21–28**: Practice scenarios, Challenge Drill, Clinical Lab, Debrief Assistant
+- **Slides 29–32**: Wellness, final quiz, certificate
 - **Slide 10**: Quick reference checklist
 - **Slide 11**: Completion summary
 
 ### Controls
-- **Right/Left Arrow Keys**: Navigate slides
-- **Navigation Buttons**: Bottom right of screen
-- **Keyboard Shortcut**: Press `A` for Admin Dashboard
+- **`→` / `↓`**: Next slide
+- **`←` / `↑`**: Previous slide
+- **`A`**: Open Admin Dashboard
+- **`?`**: Show keyboard shortcuts overlay
+- Navigation buttons also available bottom-right
 
 ## Admin Dashboard
 
@@ -100,10 +85,11 @@ Features:
 ## Data Privacy & Security
 
 ⚠️ **Important Security Notes:**
-- Your API key should NEVER be committed to Git
-- Each user enters their own API key when using the platform
-- Local storage is encrypted by your browser
-- Data is never sent to external servers (except Gemini AI for analysis)
+- Gemini API keys are session-only and never persisted to Firebase
+- Each user enters their own API key — it is never stored server-side
+- All Firebase traffic is HTTPS; data is scoped per org (`orgs/{orgId}/`)
+- Firebase Auth + role-based rules prevent cross-org data access
+- TOTP 2FA available for owner accounts
 
 ## Deployment
 
@@ -132,30 +118,44 @@ For detailed deployment instructions, see [DEPLOYMENT_GUIDE.md](DEPLOYMENT_GUIDE
 ## File Structure
 
 ```
-Training Lab/
+NyxCodex/
 ├── .github/
-│   └── workflows/
-│       └── deploy.yml       # GitHub Actions deployment workflow
-├── index.html               # Landing page (redirects to trainer_pro)
-├── trainer.html             # Standalone trainer (local storage)
-├── trainer_pro.html         # Production trainer (Firebase backend)
-├── README.md               # This file
-├── DEPLOYMENT_GUIDE.md     # Detailed deployment instructions
-├── .gitignore              # Prevents API keys from being committed
-└── backups/                # Your exported training data backups
+│   ├── workflows/deploy.yml      # GitHub Actions → GitHub Pages
+│   └── copilot-instructions.md   # Copilot project context
+├── api/                          # Vercel serverless functions
+│   ├── pax-chat.js               # Prof. Vance AI chat proxy
+│   ├── push.js                   # Push notification broadcast
+│   ├── tts.js                    # ElevenLabs TTS proxy
+│   ├── webhook-proxy.js          # HR/Zapier outbound webhooks
+│   └── hr/completion.js          # HR completion sync endpoint
+├── functions/                    # Firebase Cloud Functions (optional)
+├── index.html                    # Landing page (always entry point)
+├── trainer_pro.html              # Production trainer (Firebase)
+├── trainer.html                  # Standalone fallback (localStorage only)
+├── tenant.config.js              # White-label org configuration
+├── sw.js                         # Service Worker (offline + PWA)
+├── manifest.json                 # PWA manifest
+├── ADMIN_MANUAL.md               # Admin operations guide
+├── DEPLOYMENT_GUIDE.md           # Firebase + GitHub Pages setup
+├── WHITE_LABEL_GUIDE.md          # How to onboard new client orgs
+├── QUICK_START.md                # Staff onboarding guide
+├── START_HERE.md                 # New admin setup (7 steps)
+├── OPERATIONS_CHECKLIST.md       # Weekly/monthly maintenance
+├── DATA_ARCHITECTURE.md          # Firebase schema reference
+└── FIREBASE_SETUP.md             # Firebase configuration reference
 ```
 
 ## Troubleshooting
 
 **API Key not working?**
-- Verify the key is from Google AI Studio
-- Check that you have API quota remaining
-- Try pasting the key again
+- Verify the key is from [Google AI Studio](https://aistudio.google.com/)
+- Check remaining quota (free tier: 1,500 requests/day)
+- Re-enter the key in the settings panel and try again
 
 **Data not saving?**
-- Check browser's local storage quota (usually 5-10MB)
-- Clear old data via Admin Dashboard
-- Try a different browser
+- Confirm you are on the live URL (not opening `trainer.html` locally)
+- Check browser console for Firebase permission errors
+- Verify Firebase security rules are published
 
 **Scenarios not loading?**
 - Ensure API key is active

@@ -1,6 +1,6 @@
 # De-escalation Mastery Lab™ — White Label Onboarding Guide
 
-**For:** Destiny Springs Healthcare (Platform Owner)  
+**For:** NyxCollective LLC (Platform Owner)  
 **Purpose:** Step-by-step guide to deploying a new branded instance for a client facility  
 **Time to deploy:** ~30–45 minutes for a new client  
 

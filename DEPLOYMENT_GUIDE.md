@@ -1,11 +1,12 @@
-# Hospital Training Lab - Deployment Guide
+# NyxCodex™ — Deployment Guide
+### NyxCollective LLC
 
 ## Overview
 
-You now have a **complete, enterprise-grade training platform** ready to deploy for Destiny Springs Healthcare. This guide walks you from "zero" to "live and production-ready" in approximately 60 minutes.
+This guide walks you from "zero" to "live and production-ready" in approximately 60 minutes.
 
 **What You're Getting:**
-- 22+ interactive training slides covering de-escalation, diagnosis recognition, and crisis response
+- 32 interactive training slides covering de-escalation, diagnosis recognition, and crisis response
 - User authentication system (staff sign up/login with email)
 - Real-time data persistence (cloud-based, survives browser refreshes and device changes)
 - Admin dashboard with leaderboard, user management, analytics, and reporting
@@ -35,7 +36,7 @@ Before starting, ensure you have:
 ### 1.1 Open Firebase Console
 1. Visit https://console.firebase.google.com
 2. Click **"Add project"** (blue button top-left)
-3. Enter project name: `Destiny Springs Training Lab`
+3. Enter project name: something org-specific, e.g. `nyxcodex-org-training`
 4. Check both checkboxes (analytics is optional but recommended)
 5. Click **"Create project"** - wait for setup to complete (1-2 minutes)
 
@@ -86,7 +87,7 @@ Click **"Continue to console"** when done.
 1. Open trainer_pro.html in your browser (double-click the file)
 2. You'll see a **login screen** with "Sign Up" tab
 3. Enter:
-   - Email: `admin@destinysprings.local` (or your facility email)
+   - Email: `admin@yourfacility.com` (your real facility email)
    - Password: Something strong (12+ characters, mix of numbers/symbols)
 4. Click **"Sign Up"** - wait 2-3 seconds for account creation
 
@@ -124,10 +125,10 @@ const firebaseConfig = {
 ```javascript
 const firebaseConfig = {
   apiKey: "AIzaSyD8UQAVR_GslkMyBSxjJEygHFcrbajr37c",
-  authDomain: "destiny-springs-lab.firebaseapp.com",
-  databaseURL: "https://destiny-springs-lab-default-rtdb.firebaseio.com",
-  projectId: "destiny-springs-lab",
-  storageBucket: "destiny-springs-lab.appspot.com",
+  authDomain: "nyxcodex-yourorg.firebaseapp.com",
+  databaseURL: "https://nyxcodex-yourorg-default-rtdb.firebaseio.com",
+  projectId: "nyxcodex-yourorg",
+  storageBucket: "nyxcodex-yourorg.appspot.com",
   messagingSenderId: "123456789012",
   appId: "1:123456789012:web:abc123def456"
 };

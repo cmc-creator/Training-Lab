@@ -1,16 +1,20 @@
-# 🚀 START HERE - Destiny Springs Healthcare Training Platform
+# 🚀 START HERE — NyxCodex™ Platform Setup
+### NyxCollective LLC · Clinical De-Escalation Training
 
 ## What You Have
 
-You now have a **complete, enterprise-grade AI-powered training platform** ready to deploy. This is not a prototype or template – it's a fully functional healthcare training system with:
+A **complete, production-grade AI-powered training platform** ready to deploy. This is not a prototype — it is a fully functional multi-tenant healthcare training system:
 
-✅ **22+ Interactive Training Slides** covering de-escalation, diagnosis recognition, mental health conditions  
-✅ **User Authentication System** - Staff register with email/password  
-✅ **Cloud Data Persistence** - All training data stored securely on Google Firebase  
-✅ **Real-Time Admin Dashboard** - Facility directors see leaderboard, user metrics, and compliance reports  
-✅ **Gamification System** - XP, levels, scores, certificates to motivate staff  
-✅ **Mobile-First Responsive Design** - Built for phones first and scales cleanly to tablets and desktops  
-✅ **Zero Server Infrastructure** - Fully hosted on free GitHub Pages + Firebase
+✅ **32 Interactive Training Slides** — de-escalation, diagnosis modules, advanced techniques, assessment  
+✅ **Firebase Authentication** — staff register/login with email + password  
+✅ **Cloud Data Persistence** — all training data stored securely in Firebase, synced across devices  
+✅ **Real-Time Admin Dashboard** — leaderboard, user management, custom scenario builder, CSV export  
+✅ **Push Notifications** — VAPID-based training deadline reminders via Service Worker  
+✅ **Custom Scenario Library** — admins create facility-specific crisis scenarios, stored in Firebase  
+✅ **Dark + Light Theme** — default deep navy + Gold & Silver toggle  
+✅ **PWA / Offline Ready** — installable on mobile, cached assets, works on slow networks  
+✅ **White-Label Multi-Tenant** — `tenant.config.js` powers fully branded client deployments  
+✅ **Zero Server Infrastructure** — hosted free on GitHub Pages + Firebase + Vercel (for APIs)
 
 ---
 
@@ -18,12 +22,12 @@ You now have a **complete, enterprise-grade AI-powered training platform** ready
 
 | Metric | Value |
 |--------|-------|
-| **Setup Time** | ~60 minutes |
+| **Setup Time** | ~60 minutes (first time) |
 | **Cost** | $0 (free tier handles 100+ staff) |
 | **Staff Capacity** | 1,000+ concurrent users |
 | **Data Backup** | Automatic (Firebase) |
-| **Technical Support** | Self-service docs included |
-| **Time to Live** | Today (steps below take 1 hour) |
+| **Technical Support** | Full docs in repo |
+| **Time to Live** | Today (steps below) |
 
 ---
 
@@ -31,13 +35,12 @@ You now have a **complete, enterprise-grade AI-powered training platform** ready
 
 ### ✅ Step 1: Create Firebase Project (10 minutes)
 1. Visit https://console.firebase.google.com
-2. Click **"Add project"**
-3. Name it: `Destiny Springs Training Lab`
-4. Follow prompts to create project (1-2 minutes of waiting)
-5. Enable **Authentication** (email/password)
-6. Create **Realtime Database** (us-central1 region)
+2. Click **Add project**
+3. Name it: something org-specific, e.g. `nyxcodex-org-training`
+4. Enable **Authentication** (email/password)
+5. Create **Realtime Database** (us-central1 or nearest region)
 
-**Why**: This is where your staff data and login information will live (completely secure).
+**Why**: This is where your staff accounts and training data live.
 
 ### ✅ Step 2: Get Firebase Configuration (5 minutes)
 1. In Firebase Console, go to **Project Settings** (gear icon)
@@ -56,12 +59,11 @@ You now have a **complete, enterprise-grade AI-powered training platform** ready
 **Why**: This tells the training platform where to store/retrieve staff data.
 
 ### ✅ Step 4: Create Admin Account (5 minutes)
-1. Open `trainer_pro.html` in your browser (double-click the file)
-2. Click **"Sign Up"**
-3. Create account with your facility email
-4. Copy your **UID** from Firebase Console → Authentication → Users
+1. Open the live GitHub Pages URL (or `trainer_pro.html` locally for testing)
+2. Click **Sign Up** and create your admin account
+3. Go to Firebase Console → Authentication → Users to find your UID
 
-**Why**: You need admin access to see the dashboard and manage staff training data.
+**Why**: You need your UID to grant yourself admin/owner role in Firebase.
 
 ### ✅ Step 5: Apply Firebase Security Rules (10 minutes)
 1. Go to Firebase Console → **Realtime Database** → **"Rules"** tab
@@ -108,27 +110,25 @@ After completing the 7 steps above, your training platform will be:
 
 **Day 1 - First Login**
 1. Staff visit: https://cmc-creator.github.io/NyxCodex/
-2. Click **"Sign Up"**
+2. Click **Sign Up**
 3. Enter work email and create password
-4. Immediately see training program (22 slides)
-5. Can start with any diagnosis module
+4. Enter Gemini API key when prompted (free at https://aistudio.google.com/)
+5. Begin 32-slide training program immediately
 
 **Ongoing - Training Progress**
-1. Staff return to same URL
+1. Staff return to same URL on any device
 2. Log in with same email/password
-3. See their previous progress (XP, level, scores)
-4. Continue where they left off
-5. Complete quiz sections, get scores
-6. Unlock unlocked diagnoses
-7. Download certificate when finished
+3. Progress is fully cloud-synced (XP, level, scores, slide position)
+4. Complete quiz, earn certificate
+5. Download PDF certificate when finished
 
 **For You - Admin Dashboard**
-1. Log in as admin (press "A" key or scroll to admin button)
-2. See 4 tabs:
-   - **Leaderboard**: Who's trained, XP rankings, medals for top performers
-   - **Users**: Full staff list with completion % and average scores
-   - **Analytics**: 4 KPI cards (total users, completion %, avg score, scenarios completed)
-   - **Reports**: Export CSV for compliance, batch certificate generation
+1. Log in and press `A` to open Admin Dashboard
+2. Four core tabs:
+   - **Leaderboard**: Staff rankings, XP, department filter
+   - **Users**: Full staff list, completion %, scores, assign scenarios
+   - **Scenarios**: Build + manage custom facility scenarios
+   - **Settings**: Training year, push notifications, HR webhooks, TOTP 2FA, admin roles
 
 ---
 
@@ -138,13 +138,13 @@ All of these are in your GitHub repo:
 
 | Document | Purpose | Read When |
 |----------|---------|-----------|
-| **DEPLOYMENT_GUIDE.md** | Step-by-step setup with screenshots | Before starting |
-| **OPERATIONS_CHECKLIST.md** | Weekly/monthly/yearly maintenance tasks | After going live |
+| **DEPLOYMENT_GUIDE.md** | Firebase + Vercel setup with examples | Before starting |
+| **OPERATIONS_CHECKLIST.md** | Weekly/monthly maintenance tasks | After going live |
 | **FIREBASE_SETUP.md** | Deep Firebase technical reference | If something breaks |
-| **ADMIN_MANUAL.md** | How to use admin dashboard | For admins |
-| **QUICK_START.md** | Training guide for new staff | Give to staff |
-| **DATA_ARCHITECTURE.md** | Technical data structure reference | Never (unless developer) |
-| **README.md** | Project overview | Quick reference |
+| **ADMIN_MANUAL.md** | How to use the admin dashboard | For all admins |
+| **QUICK_START.md** | Trainee onboarding guide | Give to staff |
+| **WHITE_LABEL_GUIDE.md** | How to deploy a new client org | When onboarding clients |
+| **DATA_ARCHITECTURE.md** | Firebase schema reference | For developers only |
 
 ---
 

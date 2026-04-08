@@ -1,9 +1,10 @@
-# Destiny Springs Healthcare - Training Platform Operations Checklist
+# NyxCodex™ — Training Platform Operations Checklist
+### NyxCollective LLC
 
 ## Pre-Launch Verification (Before Staff Access)
 
 ### Firebase Setup Verification
-- [ ] Firebase project created and named "Destiny Springs Training Lab"
+- [ ] Firebase project created (e.g. `nyxcodex-org-training`)
 - [ ] Authentication enabled with Email/Password sign-in
 - [ ] Realtime Database created in us-central1 region
 - [ ] Security rules published (green checkmark on "Rules" tab)
@@ -83,7 +84,7 @@
 ### Every Friday
 - [ ] Backup Firebase data (Export JSON)
   - [ ] Console → Realtime Database → ⋮ → Export JSON
-  - [ ] Save with date: `backup_2024_01_12.json`
+  - [ ] Save with date: `backup_YYYY_MM_DD.json`
 - [ ] Generate monthly compliance certificate batch
 - [ ] Send staff engagement email (include leaderboard highlights)
 
@@ -176,14 +177,19 @@
   - [ ] Correlation between completion and incident rates?
 
 ### Content Audit
-- [ ] Review all 22 slides:
+- [ ] Review all 32 slides:
   - [ ] Is diagnosis content still accurate?
   - [ ] Are crisis scenarios realistic for your facility?
   - [ ] Should any de-escalation techniques be updated?
   - [ ] Are role-play scripts culturally appropriate?
 
+- [ ] Custom Scenario Library audit:
+  - [ ] Review active scenarios in Admin → Scenarios tab
+  - [ ] Archive or delete outdated scenarios
+  - [ ] Create new scenarios based on recent facility incidents
+
 - [ ] Consider additions:
-  - [ ] Any new diagnosis modules needed? (currently have 6)
+  - [ ] Any new diagnosis modules needed? (currently have 8)
   - [ ] New scenarios based on recent facility incidents?
   - [ ] Additional language versions?
 
